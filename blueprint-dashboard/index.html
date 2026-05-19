@@ -1661,6 +1661,353 @@
     padding-top: .85rem;
     border-top: 1px solid var(--color-border);
   }
+
+  /* ============================================================
+     V17_A: AUTH LOGIN DIALOG
+     ============================================================ */
+  dialog.modal--auth { max-width: 440px; }
+  dialog.modal--auth .auth-mode-forgot,
+  dialog.modal--auth .auth-mode-verify { display: none; }
+  dialog.modal--auth[data-mode="login"] .auth-mode-forgot,
+  dialog.modal--auth[data-mode="login"] .auth-mode-verify { display: none; }
+  dialog.modal--auth[data-mode="forgot"] .auth-mode-login,
+  dialog.modal--auth[data-mode="forgot"] .auth-mode-verify { display: none; }
+  dialog.modal--auth[data-mode="forgot"] .auth-mode-forgot { display: block; }
+  dialog.modal--auth[data-mode="verify"] .auth-mode-login,
+  dialog.modal--auth[data-mode="verify"] .auth-mode-forgot { display: none; }
+  dialog.modal--auth[data-mode="verify"] .auth-mode-verify { display: block; }
+  .auth-seed-banner {
+    background: var(--color-accent-soft);
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 0.85rem;
+    font-size: 0.82rem;
+    margin-bottom: 0.85rem;
+  }
+  .auth-seed-banner strong { color: var(--color-accent); }
+  .auth-error {
+    color: var(--color-danger);
+    font-size: 0.82rem;
+    margin-top: 0.5rem;
+    display: none;
+  }
+  .auth-error[data-visible] { display: block; }
+  .auth-link {
+    color: var(--color-brand);
+    font-size: 0.82rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+  }
+  .auth-link:hover { color: var(--color-brand-2); }
+
+  /* ============================================================
+     V17_A: PROFILE SCREEN
+     ============================================================ */
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .profile-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--color-brand-soft);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-brand);
+    font-size: 1.75rem; font-weight: 700;
+    flex-shrink: 0;
+    border: 2px solid var(--color-border);
+  }
+  .profile-info h2 { margin: 0; font-size: 1.25rem; }
+  .profile-info .profile-role-badge { margin-top: 0.25rem; }
+  .profile-section {
+    margin-top: 1.5rem;
+  }
+  .profile-section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .profile-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+  }
+  @media (max-width: 640px) { .profile-form-grid { grid-template-columns: 1fr; } }
+  .profile-field label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-2);
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .profile-field input,
+  .profile-field select {
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    transition: border-color var(--duration-1) var(--ease);
+  }
+  .profile-field input:focus,
+  .profile-field select:focus {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 1px;
+    border-color: var(--color-brand);
+  }
+  .profile-field--readonly input {
+    background: var(--color-surface-2);
+    color: var(--color-text-muted);
+    cursor: default;
+  }
+  .profile-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  /* ============================================================
+     V17_A: USERS SCREEN
+     ============================================================ */
+  .users-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .users-search {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 0.875rem;
+  }
+  .users-search:focus {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 1px;
+  }
+  .users-table-wrap {
+    overflow-x: auto;
+    margin-top: 1rem;
+  }
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .users-table th,
+  .users-table td {
+    text-align: left;
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+  }
+  .users-table th {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    background: var(--color-surface-2);
+    position: sticky;
+    top: 0;
+  }
+  .users-table tr:hover td { background: var(--color-surface-2); }
+  .users-table .user-actions {
+    display: flex;
+    gap: 0.25rem;
+    white-space: nowrap;
+  }
+  .users-table .user-actions .btn { font-size: 0.75rem; padding: 0.25rem 0.5rem; min-height: 28px; }
+  .users-cards { display: none; }
+  @media (max-width: 768px) {
+    .users-table-wrap { display: none; }
+    .users-cards { display: grid; gap: 0.75rem; }
+  }
+  .user-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1rem;
+  }
+  .user-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .user-card-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--color-brand-soft);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-brand);
+    font-size: 0.85rem; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .user-card-name { font-weight: 600; }
+  .user-card-email { font-size: 0.78rem; color: var(--color-text-muted); }
+  .user-card-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+  .user-card-actions {
+    display: flex;
+    gap: 0.35rem;
+    margin-top: 0.65rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .user-card-actions .btn { font-size: 0.75rem; padding: 0.25rem 0.5rem; min-height: 28px; }
+
+  /* Module access grid */
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+  .module-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-2);
+    font-size: 0.8rem;
+  }
+  .module-item select {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  /* ============================================================
+     V17_A: SETTINGS SCREEN
+     ============================================================ */
+  .settings-section {
+    margin-top: 1.5rem;
+  }
+  .settings-section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+  }
+  @media (max-width: 640px) { .settings-grid { grid-template-columns: 1fr; } }
+  .settings-field label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-2);
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .settings-field .field-hint {
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    margin-top: 0.2rem;
+  }
+  .settings-field input,
+  .settings-field select {
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    transition: border-color var(--duration-1) var(--ease);
+  }
+  .settings-field input:focus,
+  .settings-field select:focus {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 1px;
+    border-color: var(--color-brand);
+  }
+  .settings-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .data-mgmt-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 640px) { .data-mgmt-grid { grid-template-columns: 1fr; } }
+  .data-mgmt-card {
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .data-mgmt-card i { color: var(--color-text-muted); margin-bottom: 0.5rem; }
+  .data-mgmt-card h3 { font-size: 0.95rem; margin-bottom: 0.35rem; }
+  .data-mgmt-card p { font-size: 0.82rem; color: var(--color-text-muted); margin-bottom: 0.85rem; }
+
+  /* Inline status toast */
+  .rc-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-3);
+    z-index: 100;
+    transform: translateY(120%);
+    transition: transform var(--duration-2) var(--ease);
+    max-width: 360px;
+  }
+  .rc-toast[data-visible] { transform: translateY(0); }
+  .rc-toast--success { background: var(--color-success); color: #fff; }
+  .rc-toast--error { background: var(--color-danger); color: #fff; }
+  .rc-toast--info { background: var(--color-brand); color: #fff; }
 </style>
 </head>
 
@@ -1723,7 +2070,7 @@
       <img class="brand-logo brand-logo--light" src="rockcrete-logo-horizontal.svg" alt="Rockcrete USA" />
       <img class="brand-logo brand-logo--dark" src="rockcrete-logo-horizontal-dark.svg" alt="Rockcrete USA" />
       <div class="brand-text">
-        <div style="display:flex;align-items:baseline;gap:0.4em;flex-wrap:wrap;"><div class="name" data-es="Rockcrete USA · Blueprint" data-en="Rockcrete USA · Blueprint">Rockcrete USA · Blueprint</div><span class="v17-badge" style="color:#fff;background:#ef4444;font-weight:700;font-size:0.58rem;letter-spacing:0.06em;padding:0.15em 0.45em;border-radius:3px;display:inline-block;text-transform:uppercase;line-height:1;">V17</span></div>
+        <div style="display:flex;align-items:baseline;gap:0.4em;flex-wrap:wrap;"><div class="name" data-es="Rockcrete USA · Blueprint" data-en="Rockcrete USA · Blueprint">Rockcrete USA · Blueprint</div><span class="v17-badge" style="color:#fff;background:#ef4444;font-weight:700;font-size:0.58rem;letter-spacing:0.06em;padding:0.15em 0.45em;border-radius:3px;display:inline-block;text-transform:uppercase;line-height:1;">V17_A</span></div>
         <div class="sub" data-es="Reconstrucción del Sitio Web" data-en="Website Rebuild">Website Rebuild</div>
       </div>
     </div>
@@ -1810,6 +2157,18 @@
       <div class="eyebrow" data-es="Interno (Admin)" data-en="Internal (Admin only)">Internal (Admin only)</div>
       <a class="nav-link" data-route="panel" data-admin-only href="#panel"><i data-lucide="activity" aria-hidden="true"></i><span data-es="Panel de Operaciones" data-en="Operations Panel">Operations Panel</span></a>
       <a class="nav-link" data-route="pricing" data-admin-only href="#pricing"><i data-lucide="dollar-sign" aria-hidden="true"></i><span data-es="Precios y Facturación" data-en="Pricing &amp; Invoicing">Pricing &amp; Invoicing</span></a>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ACCOUNT NAV GROUP — shown when logged in                     -->
+    <!-- Profile always visible when logged in; Users/Settings only   -->
+    <!-- for super_admin. Visibility controlled by JS.                -->
+    <!-- ============================================================ -->
+    <div class="nav-group nav-group--account" id="navGroupAccount" style="display:none;">
+      <div class="eyebrow" data-es="Cuenta" data-en="Account">Account</div>
+      <a class="nav-link" data-route="profile" href="#profile" data-rc-auth="loggedin"><i data-lucide="user-circle" aria-hidden="true"></i><span data-es="Mi Perfil" data-en="My Profile">My Profile</span></a>
+      <a class="nav-link" data-route="users" href="#users" data-rc-auth="super_admin"><i data-lucide="users-cog" aria-hidden="true"></i><span data-es="Gestión de Usuarios" data-en="User Management">User Management</span></a>
+      <a class="nav-link" data-route="settings" href="#settings" data-rc-auth="super_admin"><i data-lucide="settings" aria-hidden="true"></i><span data-es="Configuración del Sistema" data-en="System Settings">System Settings</span></a>
     </div>
 
     <!-- ============================================================ -->
@@ -3428,6 +3787,289 @@
   </div><!-- /screen-pricing -->
 
   <!-- ============================================================ -->
+  <!-- SCREEN: PROFILE (logged-in users)                            -->
+  <!-- ============================================================ -->
+  <div class="screen" id="screen-profile">
+    <div class="section-header">
+      <span class="eyebrow" data-es="Cuenta" data-en="Account">Account</span>
+      <h2 class="display" data-es="Mi Perfil" data-en="My Profile">My Profile</h2>
+    </div>
+
+    <!-- Profile header with avatar -->
+    <div class="card profile-header" id="profileHeader">
+      <div class="profile-avatar" id="profileAvatar">?</div>
+      <div class="profile-info">
+        <h2 id="profileName">—</h2>
+        <div class="profile-role-badge"><span class="badge badge--brand" id="profileRole">—</span></div>
+        <div style="font-size:0.82rem; color: var(--color-text-muted); margin-top:0.25rem;" id="profileEmail">—</div>
+      </div>
+    </div>
+
+    <!-- Edit profile form -->
+    <div class="card profile-section">
+      <div class="profile-section-title" data-es="Información Personal" data-en="Personal Information">Personal Information</div>
+      <div class="profile-form-grid">
+        <div class="profile-field">
+          <label data-es="Nombre para Mostrar" data-en="Display Name">Display Name</label>
+          <input type="text" id="profileDisplayName" placeholder="" />
+        </div>
+        <div class="profile-field profile-field--readonly">
+          <label data-es="Correo Electrónico" data-en="Email">Email</label>
+          <input type="email" id="profileEmailField" readonly />
+        </div>
+        <div class="profile-field">
+          <label data-es="Teléfono" data-en="Phone">Phone</label>
+          <input type="tel" id="profilePhone" placeholder="" />
+        </div>
+        <div class="profile-field">
+          <label data-es="Título" data-en="Title">Title</label>
+          <input type="text" id="profileTitle" placeholder="" />
+        </div>
+        <div class="profile-field">
+          <label data-es="Organización" data-en="Organization">Organization</label>
+          <input type="text" id="profileOrg" placeholder="" />
+        </div>
+        <div class="profile-field profile-field--readonly">
+          <label data-es="Rol" data-en="Role">Role</label>
+          <input type="text" id="profileRoleField" readonly />
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn--primary" id="profileSaveBtn" onclick="rcProfileSave()">
+          <i data-lucide="save" aria-hidden="true"></i>
+          <span data-es="Guardar Cambios" data-en="Save Changes">Save Changes</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Change password -->
+    <div class="card profile-section">
+      <div class="profile-section-title" data-es="Cambiar Contraseña" data-en="Change Password">Change Password</div>
+      <div class="profile-form-grid">
+        <div class="profile-field">
+          <label data-es="Contraseña Actual" data-en="Current Password">Current Password</label>
+          <input type="password" id="profileCurrentPw" placeholder="" />
+        </div>
+        <div class="profile-field">
+          <label data-es="Nueva Contraseña" data-en="New Password">New Password</label>
+          <input type="password" id="profileNewPw" placeholder="" />
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn--secondary" id="profileChangePwBtn" onclick="rcProfileChangePassword()">
+          <i data-lucide="key-round" aria-hidden="true"></i>
+          <span data-es="Actualizar Contraseña" data-en="Update Password">Update Password</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Preferences -->
+    <div class="card profile-section">
+      <div class="profile-section-title" data-es="Preferencias" data-en="Preferences">Preferences</div>
+      <div class="profile-form-grid">
+        <div class="profile-field">
+          <label data-es="Idioma" data-en="Language">Language</label>
+          <select id="profileLang">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
+        <div class="profile-field">
+          <label data-es="Tema" data-en="Theme">Theme</label>
+          <select id="profileTheme">
+            <option value="auto">Auto</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn--secondary" id="profilePrefsBtn" onclick="rcProfileSavePrefs()">
+          <i data-lucide="sliders-horizontal" aria-hidden="true"></i>
+          <span data-es="Guardar Preferencias" data-en="Save Preferences">Save Preferences</span>
+        </button>
+      </div>
+    </div>
+  </div><!-- /screen-profile -->
+
+  <!-- ============================================================ -->
+  <!-- SCREEN: USERS (Super Admin only)                             -->
+  <!-- ============================================================ -->
+  <div class="screen" id="screen-users">
+    <div class="section-header">
+      <span class="eyebrow" data-es="Administración" data-en="Administration">Administration</span>
+      <h2 class="display" data-es="Gestión de Usuarios" data-en="User Management">User Management</h2>
+    </div>
+
+    <div class="card">
+      <div class="users-toolbar">
+        <input type="search" class="users-search" id="usersSearchInput" placeholder="Search users by name, email, or role..." oninput="rcUsersFilter()" />
+        <button class="btn btn--primary" onclick="rcUserCreate()">
+          <i data-lucide="user-plus" aria-hidden="true"></i>
+          <span data-es="Crear Usuario" data-en="Create User">Create User</span>
+        </button>
+        <button class="btn btn--secondary" onclick="rcUserInvite()">
+          <i data-lucide="mail-plus" aria-hidden="true"></i>
+          <span data-es="Invitar Usuario" data-en="Invite User">Invite User</span>
+        </button>
+        <button class="btn btn--ghost" onclick="rcUsersRefresh()">
+          <i data-lucide="refresh-cw" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <!-- Desktop table -->
+      <div class="users-table-wrap" id="usersTableWrap">
+        <table class="users-table" id="usersTable">
+          <thead>
+            <tr>
+              <th data-es="Nombre" data-en="Name">Name</th>
+              <th data-es="Correo" data-en="Email">Email</th>
+              <th data-es="Rol" data-en="Role">Role</th>
+              <th data-es="Estado" data-en="Status">Status</th>
+              <th data-es="Último Acceso" data-en="Last Login">Last Login</th>
+              <th data-es="Acciones" data-en="Actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="6" style="text-align:center; color: var(--color-text-muted); padding: 2rem;">Loading users...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile cards -->
+      <div class="users-cards" id="usersCards">
+        <div style="text-align:center; color: var(--color-text-muted); padding: 2rem;">Loading users...</div>
+      </div>
+    </div>
+  </div><!-- /screen-users -->
+
+  <!-- ============================================================ -->
+  <!-- SCREEN: SETTINGS (Super Admin only)                          -->
+  <!-- ============================================================ -->
+  <div class="screen" id="screen-settings">
+    <div class="section-header">
+      <span class="eyebrow" data-es="Administración" data-en="Administration">Administration</span>
+      <h2 class="display" data-es="Configuración del Sistema" data-en="System Settings">System Settings</h2>
+    </div>
+
+    <!-- Email Configuration -->
+    <div class="card settings-section">
+      <div class="settings-section-title" data-es="Configuración de Correo" data-en="Email Configuration">Email Configuration</div>
+      <div class="settings-grid">
+        <div class="settings-field">
+          <label data-es="Nombre del Remitente" data-en="From Name">From Name</label>
+          <input type="text" id="settingsFromName" placeholder="" />
+        </div>
+        <div class="settings-field">
+          <label data-es="Correo del Remitente" data-en="From Email">From Email</label>
+          <input type="email" id="settingsFromEmail" placeholder="" />
+        </div>
+        <div class="settings-field">
+          <label data-es="Correo de Respuesta" data-en="Reply-To Email">Reply-To Email</label>
+          <input type="email" id="settingsReplyTo" placeholder="" />
+        </div>
+        <div class="settings-field">
+          <label data-es="Clave API de Resend" data-en="Resend API Key">Resend API Key</label>
+          <input type="password" id="settingsResendKey" placeholder="" />
+          <div class="field-hint" data-es="Se muestra enmascarada por seguridad. Ingrese una nueva clave para actualizar." data-en="Masked for security. Enter a new key to update.">Masked for security. Enter a new key to update.</div>
+        </div>
+      </div>
+      <div class="settings-actions">
+        <button class="btn btn--secondary" onclick="rcSettingsVerifyEmail()">
+          <i data-lucide="plug-check" aria-hidden="true"></i>
+          <span data-es="Verificar Conexión" data-en="Verify Connection">Verify Connection</span>
+        </button>
+        <button class="btn btn--secondary" onclick="rcSettingsTestEmail()">
+          <i data-lucide="send" aria-hidden="true"></i>
+          <span data-es="Enviar Correo de Prueba" data-en="Send Test Email">Send Test Email</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- System Settings -->
+    <div class="card settings-section">
+      <div class="settings-section-title" data-es="Configuración del Sistema" data-en="System Settings">System Settings</div>
+      <div class="settings-grid">
+        <div class="settings-field">
+          <label data-es="Duración de Sesión (días)" data-en="Session Duration (days)">Session Duration (days)</label>
+          <input type="number" id="settingsSessionDays" min="1" max="30" />
+          <div class="field-hint" data-es="1-30 días" data-en="1-30 days">1-30 days</div>
+        </div>
+        <div class="settings-field">
+          <label data-es="Expiración del Código de Restablecimiento (minutos)" data-en="Reset Code Expiry (minutes)">Reset Code Expiry (minutes)</label>
+          <input type="number" id="settingsResetExpiry" min="5" max="60" />
+          <div class="field-hint" data-es="5-60 minutos" data-en="5-60 minutes">5-60 minutes</div>
+        </div>
+        <div class="settings-field">
+          <label data-es="Máximo de Intentos de Login" data-en="Max Login Attempts">Max Login Attempts</label>
+          <input type="number" id="settingsMaxLogin" min="3" max="20" />
+        </div>
+        <div class="settings-field">
+          <label data-es="Máximo de Intentos de Restablecimiento" data-en="Max Reset Attempts">Max Reset Attempts</label>
+          <input type="number" id="settingsMaxReset" min="3" max="10" />
+        </div>
+        <div class="settings-field">
+          <label data-es="Duración de Bloqueo por Login (minutos)" data-en="Login Lockout Duration (minutes)">Login Lockout Duration (minutes)</label>
+          <input type="number" id="settingsLockoutMins" min="5" max="60" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Branding -->
+    <div class="card settings-section">
+      <div class="settings-section-title" data-es="Marca" data-en="Branding">Branding</div>
+      <div class="settings-grid">
+        <div class="settings-field">
+          <label data-es="Nombre del Portal" data-en="Portal Name">Portal Name</label>
+          <input type="text" id="settingsPortalName" placeholder="" />
+        </div>
+        <div class="settings-field">
+          <label data-es="Nombre de la Empresa" data-en="Company Name">Company Name</label>
+          <input type="text" id="settingsCompanyName" placeholder="" />
+        </div>
+        <div class="settings-field">
+          <label data-es="Empresa de Gestión" data-en="Management Company">Management Company</label>
+          <input type="text" id="settingsMgmtCompany" placeholder="" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Save all settings -->
+    <div style="margin-top: 1rem;">
+      <button class="btn btn--primary" onclick="rcSettingsSave()">
+        <i data-lucide="save" aria-hidden="true"></i>
+        <span data-es="Guardar Toda la Configuración" data-en="Save All Settings">Save All Settings</span>
+      </button>
+    </div>
+
+    <!-- Data Management -->
+    <div class="card settings-section">
+      <div class="settings-section-title" data-es="Gestión de Datos" data-en="Data Management">Data Management</div>
+      <div class="data-mgmt-grid">
+        <div class="data-mgmt-card">
+          <i data-lucide="download" style="width:28px;height:28px;"></i>
+          <h3 data-es="Exportar Datos" data-en="Export Data">Export Data</h3>
+          <p data-es="Descargar todos los datos del sistema como JSON" data-en="Download all system data as JSON">Download all system data as JSON</p>
+          <button class="btn btn--secondary" onclick="rcSettingsExport()">
+            <i data-lucide="download" aria-hidden="true"></i>
+            <span data-es="Exportar Todo" data-en="Export All">Export All</span>
+          </button>
+        </div>
+        <div class="data-mgmt-card">
+          <i data-lucide="upload" style="width:28px;height:28px;"></i>
+          <h3 data-es="Importar Datos" data-en="Import Data">Import Data</h3>
+          <p data-es="Cargar datos desde un archivo JSON exportado previamente" data-en="Upload data from a previously exported JSON file">Upload data from a previously exported JSON file</p>
+          <input type="file" id="settingsImportFile" accept=".json" style="display:none;" onchange="rcSettingsImport(event)" />
+          <button class="btn btn--secondary" onclick="document.getElementById('settingsImportFile').click()">
+            <i data-lucide="upload" aria-hidden="true"></i>
+            <span data-es="Importar Archivo" data-en="Import File">Import File</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div><!-- /screen-settings -->
+
+  <!-- ============================================================ -->
   <!-- SCREEN: FALLBACK (orphan routes)                             -->
   <!-- ============================================================ -->
   <div class="screen" id="screen-placeholder">
@@ -3449,6 +4091,108 @@
   </main>
 </div>
 </div>
+
+<!-- ============================================================ -->
+<!-- LOGIN DIALOG (modal, NOT a screen)                           -->
+<!-- ============================================================ -->
+<dialog class="modal modal--auth" id="authLoginDialog" data-mode="login">
+  <form method="dialog" class="modal-form" onsubmit="return false;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="authDialogTitle">
+        <span data-es="Iniciar Sesión" data-en="Sign In">Sign In</span>
+      </h3>
+      <div class="modal-sub" id="authDialogSub">
+        <span data-es="Accede al portal del proyecto" data-en="Access the project portal">Access the project portal</span>
+      </div>
+    </div>
+    <div class="modal-body">
+      <!-- Seed banner (shown when no users exist) -->
+      <div class="auth-seed-banner" id="authSeedBanner" style="display:none;">
+        <strong data-es="Primera vez:" data-en="First time:">First time:</strong>
+        <span data-es="No hay usuarios registrados. Crea una cuenta de Super Admin para comenzar." data-en="No users registered. Create a Super Admin account to get started.">No users registered. Create a Super Admin account to get started.</span>
+      </div>
+
+      <!-- LOGIN MODE -->
+      <div class="auth-mode-login">
+        <div class="modal-fields">
+          <div>
+            <label for="authEmail" data-es="Correo Electrónico" data-en="Email">Email</label>
+            <input type="email" id="authEmail" name="email" autocomplete="email" required />
+          </div>
+          <div>
+            <label for="authPassword" data-es="Contraseña" data-en="Password">Password</label>
+            <input type="password" id="authPassword" name="password" autocomplete="current-password" required />
+          </div>
+        </div>
+        <div style="margin-top: 0.5rem;">
+          <button type="button" class="auth-link" onclick="rcAuthSwitchToForgot()">
+            <span data-es="¿Olvidaste tu contraseña?" data-en="Forgot Password?">Forgot Password?</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- FORGOT PASSWORD MODE -->
+      <div class="auth-mode-forgot">
+        <div class="modal-fields">
+          <div>
+            <label for="authForgotEmail" data-es="Correo Electrónico" data-en="Email">Email</label>
+            <input type="email" id="authForgotEmail" name="forgotEmail" autocomplete="email" required />
+          </div>
+        </div>
+        <div style="margin-top: 0.5rem;">
+          <button type="button" class="auth-link" onclick="rcAuthSwitchToLogin()">
+            <span data-es="Volver a Iniciar Sesión" data-en="Back to Sign In">Back to Sign In</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- VERIFY CODE MODE -->
+      <div class="auth-mode-verify">
+        <div class="modal-fields">
+          <div>
+            <label for="authVerifyCode" data-es="Código de Verificación" data-en="Verification Code">Verification Code</label>
+            <input type="text" id="authVerifyCode" name="code" autocomplete="one-time-code" required />
+          </div>
+          <div>
+            <label for="authNewPassword" data-es="Nueva Contraseña" data-en="New Password">New Password</label>
+            <input type="password" id="authNewPassword" name="newPassword" autocomplete="new-password" required minlength="8" />
+          </div>
+        </div>
+        <div style="margin-top: 0.5rem;">
+          <button type="button" class="auth-link" onclick="rcAuthSwitchToForgot()">
+            <span data-es="Reenviar código" data-en="Resend code">Resend code</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Error message -->
+      <div class="auth-error" id="authError"></div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn" data-action="cancel" onclick="rcAuthClose()">
+        <span data-es="Cancelar" data-en="Cancel">Cancel</span>
+      </button>
+      <!-- Login mode buttons -->
+      <button type="button" class="btn btn--primary auth-mode-login" id="authLoginBtn" onclick="rcAuthLogin()">
+        <span data-es="Iniciar Sesión" data-en="Sign In">Sign In</span>
+      </button>
+      <button type="button" class="btn btn--primary auth-mode-login" id="authSeedBtn" style="display:none;" onclick="rcAuthSeed()">
+        <span data-es="Crear Super Admin" data-en="Seed Super Admin">Seed Super Admin</span>
+      </button>
+      <!-- Forgot mode button -->
+      <button type="button" class="btn btn--primary auth-mode-forgot" onclick="rcAuthForgotPassword()">
+        <span data-es="Enviar Código" data-en="Send Code">Send Code</span>
+      </button>
+      <!-- Verify mode button -->
+      <button type="button" class="btn btn--primary auth-mode-verify" onclick="rcAuthVerifyReset()">
+        <span data-es="Restablecer Contraseña" data-en="Reset Password">Reset Password</span>
+      </button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Toast notification -->
+<div class="rc-toast" id="rcToast"></div>
 
 <script>
   // ============================================================
@@ -6071,6 +6815,1016 @@
     }, 500);
     // Fallback: try after 5 seconds regardless
     setTimeout(() => { clearInterval(checkTracker); initProgressDashboard(); }, 5000);
+  }
+
+  // ============================================================
+  // V17_A: AUTH & USER MANAGEMENT — FULL JS
+  // ============================================================
+
+  /* ── Toast helper ────────────────────────────────────────────── */
+  function rcToast(msg, type) {
+    type = type || 'info';
+    var t = document.getElementById('rcToast');
+    if (!t) return;
+    t.textContent = msg;
+    t.className = 'rc-toast rc-toast--' + type;
+    t.setAttribute('data-visible', '');
+    clearTimeout(t._tid);
+    t._tid = setTimeout(function() { t.removeAttribute('data-visible'); }, 3500);
+  }
+
+  /* ── Current user state ──────────────────────────────────────── */
+  window.__rcCurrentUser = null;
+
+  function rcIsLoggedIn() { return !!window.__rcCurrentUser; }
+  function rcIsSuperAdmin() { return window.__rcCurrentUser && window.__rcCurrentUser.role === 'super_admin'; }
+
+  /* ── API helper ──────────────────────────────────────────────── */
+  async function rcApi(path, opts) {
+    opts = opts || {};
+    try {
+      var res = await fetch(path, {
+        method: opts.method || 'GET',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {}),
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+        credentials: 'same-origin'
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+      return data;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /* ── Update sidebar/auth UI based on login state ─────────────── */
+  function rcUpdateAuthUI() {
+    var user = window.__rcCurrentUser;
+    var loginBtn = document.getElementById('navAuthLogin');
+    var profileBtn = document.getElementById('navAuthProfile');
+    var logoutBtn = document.getElementById('navAuthLogout');
+    var profileLabel = document.getElementById('navAuthProfileLabel');
+    var accountGroup = document.getElementById('navGroupAccount');
+
+    if (user) {
+      // Logged in
+      if (loginBtn) loginBtn.hidden = true;
+      if (profileBtn) profileBtn.hidden = false;
+      if (logoutBtn) logoutBtn.hidden = false;
+      if (profileLabel) profileLabel.textContent = user.displayName || user.name || 'Profile';
+      if (accountGroup) accountGroup.style.display = '';
+
+      // Show/hide nav links based on auth level
+      var links = accountGroup ? accountGroup.querySelectorAll('[data-rc-auth]') : [];
+      links.forEach(function(link) {
+        var level = link.getAttribute('data-rc-auth');
+        if (level === 'loggedin') {
+          link.style.display = '';
+        } else if (level === 'super_admin') {
+          link.style.display = rcIsSuperAdmin() ? '' : 'none';
+        } else {
+          link.style.display = 'none';
+        }
+      });
+
+      // Filter sidebar nav-links based on moduleAccess
+      rcFilterSidebarModules();
+    } else {
+      // Not logged in
+      if (loginBtn) loginBtn.hidden = false;
+      if (profileBtn) profileBtn.hidden = true;
+      if (logoutBtn) logoutBtn.hidden = true;
+      if (accountGroup) accountGroup.style.display = 'none';
+
+      // Show all nav links (no filtering when not logged in)
+      document.querySelectorAll('.sidebar .nav-link[data-route]').forEach(function(link) {
+        link.style.display = '';
+      });
+    }
+  }
+
+  /* ── Filter sidebar nav-links based on user's moduleAccess ──── */
+  function rcFilterSidebarModules() {
+    var user = window.__rcCurrentUser;
+    if (!user || !user.moduleAccess) return;
+
+    // Account group links are always handled by rcUpdateAuthUI
+    var accountRoutes = ['profile', 'users', 'settings'];
+
+    document.querySelectorAll('.sidebar .nav-link[data-route]').forEach(function(link) {
+      var route = link.getAttribute('data-route');
+      if (accountRoutes.indexOf(route) >= 0) return; // handled separately
+
+      var access = user.moduleAccess[route];
+      if (access === 'none') {
+        link.style.display = 'none';
+      } else {
+        link.style.display = '';
+      }
+    });
+  }
+
+  /* ── Check auth on page load ─────────────────────────────────── */
+  async function rcAuthInit() {
+    try {
+      var data = await rcApi('/api/auth?action=me');
+      if (data.user) {
+        window.__rcCurrentUser = data.user;
+        rcUpdateAuthUI();
+      }
+    } catch (e) {
+      // Not logged in — that's fine
+      window.__rcCurrentUser = null;
+      rcUpdateAuthUI();
+    }
+  }
+
+  /* ── Login Dialog: open/close/mode switching ─────────────────── */
+  function rcAuthOpen() {
+    var dlg = document.getElementById('authLoginDialog');
+    if (!dlg) return;
+    dlg.setAttribute('data-mode', 'login');
+    rcAuthClearError();
+    // Clear fields
+    var emailField = document.getElementById('authEmail');
+    var pwField = document.getElementById('authPassword');
+    if (emailField) emailField.value = '';
+    if (pwField) pwField.value = '';
+    // Check if any users exist (to show seed option)
+    rcAuthCheckSeed();
+    dlg.showModal();
+    setTimeout(function() { if (emailField) emailField.focus(); }, 100);
+  }
+
+  function rcAuthClose() {
+    var dlg = document.getElementById('authLoginDialog');
+    if (dlg && dlg.open) dlg.close();
+    rcAuthClearError();
+  }
+
+  function rcAuthSwitchToForgot() {
+    var dlg = document.getElementById('authLoginDialog');
+    if (dlg) dlg.setAttribute('data-mode', 'forgot');
+    rcAuthClearError();
+    // Pre-fill email if available
+    var loginEmail = document.getElementById('authEmail');
+    var forgotEmail = document.getElementById('authForgotEmail');
+    if (loginEmail && forgotEmail && !forgotEmail.value) {
+      forgotEmail.value = loginEmail.value;
+    }
+    setTimeout(function() { if (forgotEmail) forgotEmail.focus(); }, 100);
+  }
+
+  function rcAuthSwitchToLogin() {
+    var dlg = document.getElementById('authLoginDialog');
+    if (dlg) dlg.setAttribute('data-mode', 'login');
+    rcAuthClearError();
+    setTimeout(function() { var e = document.getElementById('authEmail'); if (e) e.focus(); }, 100);
+  }
+
+  function rcAuthShowError(msg) {
+    var el = document.getElementById('authError');
+    if (el) { el.textContent = msg; el.setAttribute('data-visible', ''); }
+  }
+
+  function rcAuthClearError() {
+    var el = document.getElementById('authError');
+    if (el) { el.textContent = ''; el.removeAttribute('data-visible'); }
+  }
+
+  async function rcAuthCheckSeed() {
+    try {
+      var data = await rcApi('/api/auth?action=check-seed');
+      var seedBtn = document.getElementById('authSeedBtn');
+      var loginBtn = document.getElementById('authLoginBtn');
+      var seedBanner = document.getElementById('authSeedBanner');
+      if (data.canSeed) {
+        if (seedBtn) seedBtn.style.display = '';
+        if (seedBanner) seedBanner.style.display = '';
+        if (loginBtn) loginBtn.style.display = 'none';
+      } else {
+        if (seedBtn) seedBtn.style.display = 'none';
+        if (seedBanner) seedBanner.style.display = 'none';
+        if (loginBtn) loginBtn.style.display = '';
+      }
+    } catch (e) {
+      // API failed — default to showing login, hiding seed
+      var seedBtn = document.getElementById('authSeedBtn');
+      var seedBanner = document.getElementById('authSeedBanner');
+      var loginBtn = document.getElementById('authLoginBtn');
+      if (seedBtn) seedBtn.style.display = 'none';
+      if (seedBanner) seedBanner.style.display = 'none';
+      if (loginBtn) loginBtn.style.display = '';
+    }
+  }
+
+  /* ── Login ────────────────────────────────────────────────────── */
+  async function rcAuthLogin() {
+    rcAuthClearError();
+    var email = document.getElementById('authEmail').value.trim();
+    var password = document.getElementById('authPassword').value;
+    if (!email || !password) { rcAuthShowError('Email and password are required.'); return; }
+
+    try {
+      var data = await rcApi('/api/auth?action=login', {
+        method: 'POST',
+        body: { email: email, password: password }
+      });
+      if (data.ok && data.user) {
+        window.__rcCurrentUser = data.user;
+        rcUpdateAuthUI();
+        rcAuthClose();
+        rcToast('Welcome back, ' + (data.user.displayName || data.user.name) + '!', 'success');
+      } else {
+        rcAuthShowError(data.error || 'Login failed.');
+      }
+    } catch (e) {
+      rcAuthShowError(e.message);
+    }
+  }
+
+  /* ── Seed Super Admin ─────────────────────────────────────────── */
+  async function rcAuthSeed() {
+    rcAuthClearError();
+    var email = document.getElementById('authEmail').value.trim();
+    var password = document.getElementById('authPassword').value;
+    if (!email || !password) { rcAuthShowError('Email and password are required.'); return; }
+    if (password.length < 8) { rcAuthShowError('Password must be at least 8 characters.'); return; }
+
+    try {
+      var name = email.split('@')[0];
+      var data = await rcApi('/api/auth?action=seed', {
+        method: 'POST',
+        body: { email: email, password: password, name: name }
+      });
+      if (data.ok && data.user) {
+        rcAuthClose();
+        // Auto-login after seed
+        window.__rcCurrentUser = data.user;
+        rcUpdateAuthUI();
+        rcToast('Super Admin account created! You are now logged in.', 'success');
+      } else {
+        rcAuthShowError(data.error || 'Seed failed.');
+      }
+    } catch (e) {
+      rcAuthShowError(e.message);
+    }
+  }
+
+  /* ── Forgot Password ──────────────────────────────────────────── */
+  async function rcAuthForgotPassword() {
+    rcAuthClearError();
+    var email = document.getElementById('authForgotEmail').value.trim();
+    if (!email) { rcAuthShowError('Email is required.'); return; }
+
+    try {
+      var data = await rcApi('/api/auth?action=forgot-password', {
+        method: 'POST',
+        body: { email: email }
+      });
+      rcToast(data.message || 'If an account exists, a code has been sent.', 'info');
+      // Switch to verify mode
+      var dlg = document.getElementById('authLoginDialog');
+      if (dlg) dlg.setAttribute('data-mode', 'verify');
+      rcAuthClearError();
+    } catch (e) {
+      rcAuthShowError(e.message);
+    }
+  }
+
+  /* ── Verify Reset Code ────────────────────────────────────────── */
+  async function rcAuthVerifyReset() {
+    rcAuthClearError();
+    var email = document.getElementById('authForgotEmail').value.trim();
+    var code = document.getElementById('authVerifyCode').value.trim();
+    var newPassword = document.getElementById('authNewPassword').value;
+    if (!email || !code || !newPassword) { rcAuthShowError('All fields are required.'); return; }
+    if (newPassword.length < 8) { rcAuthShowError('Password must be at least 8 characters.'); return; }
+
+    try {
+      var data = await rcApi('/api/auth?action=verify-reset', {
+        method: 'POST',
+        body: { email: email, code: code, newPassword: newPassword }
+      });
+      if (data.ok) {
+        rcAuthClose();
+        rcToast('Password reset successful. You can now sign in.', 'success');
+        rcAuthSwitchToLogin();
+      } else {
+        rcAuthShowError(data.error || 'Reset failed.');
+      }
+    } catch (e) {
+      rcAuthShowError(e.message);
+    }
+  }
+
+  /* ── Logout ───────────────────────────────────────────────────── */
+  async function rcAuthLogout() {
+    try {
+      await rcApi('/api/auth?action=logout', { method: 'POST' });
+    } catch (e) { /* ignore */ }
+    window.__rcCurrentUser = null;
+    rcUpdateAuthUI();
+    showScreen('home');
+    rcToast('You have been signed out.', 'info');
+  }
+
+  /* ── Wire up auth buttons ─────────────────────────────────────── */
+  document.getElementById('navAuthLogin')?.addEventListener('click', function() { rcAuthOpen(); });
+  document.getElementById('navAuthProfile')?.addEventListener('click', function() { showScreen('profile'); rcProfileLoad(); });
+  document.getElementById('navAuthLogout')?.addEventListener('click', function() { rcAuthLogout(); });
+
+  // Close dialog on escape/backdrop click
+  document.getElementById('authLoginDialog')?.addEventListener('cancel', function(e) {
+    e.preventDefault();
+    rcAuthClose();
+  });
+
+  // Enter key in password field triggers login
+  document.getElementById('authPassword')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); rcAuthLogin(); }
+  });
+
+  /* ── Initialize auth on load ──────────────────────────────────── */
+  rcAuthInit();
+
+  /* ============================================================
+     PROFILE SCREEN
+     ============================================================ */
+
+  async function rcProfileLoad() {
+    if (!rcIsLoggedIn()) { showScreen('home'); return; }
+    try {
+      var data = await rcApi('/api/profile');
+      var u = data.user;
+      if (!u) return;
+
+      // Update header
+      var avatar = document.getElementById('profileAvatar');
+      var initials = (u.displayName || u.name || '?').split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+      if (avatar) avatar.textContent = initials;
+      var nameEl = document.getElementById('profileName');
+      if (nameEl) nameEl.textContent = u.displayName || u.name || '—';
+      var roleEl = document.getElementById('profileRole');
+      if (roleEl) roleEl.textContent = u.role ? u.role.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); }) : '—';
+      var emailEl = document.getElementById('profileEmail');
+      if (emailEl) emailEl.textContent = u.email || '—';
+
+      // Fill form fields
+      var dnField = document.getElementById('profileDisplayName');
+      if (dnField) dnField.value = u.displayName || '';
+      var efField = document.getElementById('profileEmailField');
+      if (efField) efField.value = u.email || '';
+      var phField = document.getElementById('profilePhone');
+      if (phField) phField.value = u.phone || '';
+      var tiField = document.getElementById('profileTitle');
+      if (tiField) tiField.value = u.title || '';
+      var orgField = document.getElementById('profileOrg');
+      if (orgField) orgField.value = u.organization || '';
+      var rfField = document.getElementById('profileRoleField');
+      if (rfField) rfField.value = u.role ? u.role.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); }) : '—';
+
+      // Preferences
+      var langSel = document.getElementById('profileLang');
+      if (langSel) langSel.value = (u.preferences && u.preferences.language) || 'en';
+      var themeSel = document.getElementById('profileTheme');
+      if (themeSel) themeSel.value = (u.preferences && u.preferences.theme) || 'auto';
+    } catch (e) {
+      rcToast('Failed to load profile: ' + e.message, 'error');
+    }
+  }
+
+  async function rcProfileSave() {
+    try {
+      var body = {
+        displayName: document.getElementById('profileDisplayName').value.trim(),
+        phone: document.getElementById('profilePhone').value.trim(),
+        title: document.getElementById('profileTitle').value.trim(),
+        organization: document.getElementById('profileOrg').value.trim()
+      };
+      var data = await rcApi('/api/profile', { method: 'PUT', body: body });
+      if (data.ok) {
+        // Update current user
+        if (data.user) window.__rcCurrentUser = data.user;
+        rcUpdateAuthUI();
+        rcProfileLoad();
+        rcToast('Profile updated successfully.', 'success');
+      }
+    } catch (e) {
+      rcToast('Failed to save profile: ' + e.message, 'error');
+    }
+  }
+
+  async function rcProfileChangePassword() {
+    var currentPw = document.getElementById('profileCurrentPw').value;
+    var newPw = document.getElementById('profileNewPw').value;
+    if (!currentPw || !newPw) { rcToast('Both password fields are required.', 'error'); return; }
+    if (newPw.length < 8) { rcToast('New password must be at least 8 characters.', 'error'); return; }
+
+    try {
+      var data = await rcApi('/api/auth?action=change-password', {
+        method: 'POST',
+        body: { currentPassword: currentPw, newPassword: newPw }
+      });
+      if (data.ok) {
+        document.getElementById('profileCurrentPw').value = '';
+        document.getElementById('profileNewPw').value = '';
+        rcToast('Password changed successfully.', 'success');
+      }
+    } catch (e) {
+      rcToast('Failed to change password: ' + e.message, 'error');
+    }
+  }
+
+  async function rcProfileSavePrefs() {
+    try {
+      var prefs = {
+        language: document.getElementById('profileLang').value,
+        theme: document.getElementById('profileTheme').value
+      };
+      var data = await rcApi('/api/profile', {
+        method: 'PUT',
+        body: { preferences: prefs }
+      });
+      if (data.ok) {
+        if (data.user) window.__rcCurrentUser = data.user;
+        // Apply language
+        if (prefs.language && typeof setLang === 'function') setLang(prefs.language);
+        // Apply theme
+        if (prefs.theme && typeof setTheme === 'function') setTheme(prefs.theme);
+        rcToast('Preferences saved.', 'success');
+      }
+    } catch (e) {
+      rcToast('Failed to save preferences: ' + e.message, 'error');
+    }
+  }
+
+  /* ============================================================
+     USERS SCREEN
+     ============================================================ */
+
+  var __rcUsersCache = [];
+
+  async function rcUsersRefresh() {
+    if (!rcIsSuperAdmin()) { showScreen('home'); return; }
+    try {
+      var data = await rcApi('/api/users');
+      __rcUsersCache = data.users || [];
+      rcUsersRender(__rcUsersCache);
+    } catch (e) {
+      rcToast('Failed to load users: ' + e.message, 'error');
+    }
+  }
+
+  function rcUsersFilter() {
+    var q = (document.getElementById('usersSearchInput').value || '').toLowerCase();
+    var filtered = __rcUsersCache.filter(function(u) {
+      return u.name.toLowerCase().indexOf(q) >= 0 ||
+             u.email.toLowerCase().indexOf(q) >= 0 ||
+             u.role.toLowerCase().indexOf(q) >= 0;
+    });
+    rcUsersRender(filtered);
+  }
+
+  function rcUsersRender(users) {
+    var tbody = document.getElementById('usersTableBody');
+    var cards = document.getElementById('usersCards');
+    if (!tbody || !cards) return;
+
+    if (!users.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--color-text-muted); padding: 2rem;">No users found.</td></tr>';
+      cards.innerHTML = '<div style="text-align:center; color: var(--color-text-muted); padding: 2rem;">No users found.</div>';
+      return;
+    }
+
+    var roleBadge = function(role) {
+      var cls = role === 'super_admin' ? 'badge--brand' : role === 'admin' ? 'badge--info' : '';
+      return '<span class="badge ' + cls + '">' + escapeHTML(role.replace(/_/g, ' ')) + '</span>';
+    };
+    var statusBadge = function(status) {
+      var cls = status === 'active' ? 'badge--success' : status === 'suspended' ? 'badge--warn' : '';
+      return '<span class="badge ' + cls + '">' + escapeHTML(status || 'active') + '</span>';
+    };
+    var lastLogin = function(d) {
+      if (!d) return '<span style="color: var(--color-text-muted);">Never</span>';
+      var dt = new Date(d);
+      return '<span style="font-size:0.8rem;">' + escapeHTML(dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})) + '</span>';
+    };
+    var initials = function(name) {
+      return (name || '?').split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+    };
+
+    // Table rows
+    tbody.innerHTML = users.map(function(u) {
+      return '<tr>' +
+        '<td><div style="display:flex;align-items:center;gap:.5rem;"><div class="user-card-avatar">' + escapeHTML(initials(u.name)) + '</div><span>' + escapeHTML(u.name) + '</span></div></td>' +
+        '<td style="font-size:0.82rem; color: var(--color-text-muted);">' + escapeHTML(u.email) + '</td>' +
+        '<td>' + roleBadge(u.role) + '</td>' +
+        '<td>' + statusBadge(u.status) + '</td>' +
+        '<td>' + lastLogin(u.lastLoginAt) + '</td>' +
+        '<td><div class="user-actions">' +
+          '<button class="btn btn--ghost" onclick="rcUserEdit(\'' + escapeHTML(u.id) + '\')"><i data-lucide="pencil" style="width:14px;height:14px;"></i></button>' +
+          '<button class="btn btn--ghost" onclick="rcUserModuleAccess(\'' + escapeHTML(u.id) + '\')"><i data-lucide="shield" style="width:14px;height:14px;"></i></button>' +
+          '<button class="btn btn--ghost" onclick="rcUserResetPassword(\'' + escapeHTML(u.id) + '\')"><i data-lucide="key-round" style="width:14px;height:14px;"></i></button>' +
+          (u.role !== 'super_admin' ? '<button class="btn btn--ghost" style="color:var(--color-danger);" onclick="rcUserDelete(\'' + escapeHTML(u.id) + '\')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>' : '') +
+        '</div></td>' +
+      '</tr>';
+    }).join('');
+
+    // Mobile cards
+    cards.innerHTML = users.map(function(u) {
+      return '<div class="user-card">' +
+        '<div class="user-card-header">' +
+          '<div class="user-card-avatar">' + escapeHTML(initials(u.name)) + '</div>' +
+          '<div><div class="user-card-name">' + escapeHTML(u.name) + '</div><div class="user-card-email">' + escapeHTML(u.email) + '</div></div>' +
+        '</div>' +
+        '<div class="user-card-meta">' + roleBadge(u.role) + statusBadge(u.status) + '</div>' +
+        '<div class="user-card-actions">' +
+          '<button class="btn btn--ghost" onclick="rcUserEdit(\'' + escapeHTML(u.id) + '\')"><i data-lucide="pencil" style="width:14px;height:14px;"></i> <span>Edit</span></button>' +
+          '<button class="btn btn--ghost" onclick="rcUserModuleAccess(\'' + escapeHTML(u.id) + '\')"><i data-lucide="shield" style="width:14px;height:14px;"></i> <span>Access</span></button>' +
+          '<button class="btn btn--ghost" onclick="rcUserResetPassword(\'' + escapeHTML(u.id) + '\')"><i data-lucide="key-round" style="width:14px;height:14px;"></i></button>' +
+          (u.role !== 'super_admin' ? '<button class="btn btn--ghost" style="color:var(--color-danger);" onclick="rcUserDelete(\'' + escapeHTML(u.id) + '\')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    // Re-create lucide icons in new HTML
+    if (window.lucide) lucide.createIcons();
+  }
+
+  /* ── Create User ──────────────────────────────────────────────── */
+  async function rcUserCreate() {
+    var result = await showModal({
+      title: 'Create User',
+      sub: 'Add a new user to the portal.',
+      fields: [
+        { name: 'name', label_en: 'Full Name', label_es: 'Nombre Completo', required: true },
+        { name: 'email', label_en: 'Email', label_es: 'Correo Electrónico', required: true },
+        { name: 'password', label_en: 'Password', label_es: 'Contraseña', required: true, type: 'info', value: 'Minimum 8 characters' },
+        { name: 'passwordVal', label_en: 'Password', label_es: 'Contraseña', required: true },
+        { name: 'role', label_en: 'Role', label_es: 'Rol', type: 'select', required: true, value: 'client',
+          options: [
+            { value: 'admin', label_en: 'Admin' },
+            { value: 'pm', label_en: 'Project Manager' },
+            { value: 'webdev', label_en: 'Web Developer' },
+            { value: 'devops', label_en: 'DevOps' },
+            { value: 'seo', label_en: 'SEO' },
+            { value: 'ui_ux', label_en: 'UI/UX' },
+            { value: 'team', label_en: 'Team Member' },
+            { value: 'client_admin', label_en: 'Client Admin' },
+            { value: 'client', label_en: 'Client' }
+          ]
+        },
+        { name: 'phone', label_en: 'Phone', label_es: 'Teléfono' },
+        { name: 'title', label_en: 'Title', label_es: 'Título' },
+        { name: 'organization', label_en: 'Organization', label_es: 'Organización' }
+      ],
+      confirmText: 'Create User'
+    });
+    if (!result) return;
+
+    if (result.passwordVal && result.passwordVal.length < 8) {
+      rcToast('Password must be at least 8 characters.', 'error');
+      return;
+    }
+
+    try {
+      await rcApi('/api/users', {
+        method: 'POST',
+        body: {
+          name: result.name,
+          email: result.email,
+          password: result.passwordVal,
+          role: result.role,
+          phone: result.phone || '',
+          title: result.title || '',
+          organization: result.organization || ''
+        }
+      });
+      rcToast('User created successfully.', 'success');
+      rcUsersRefresh();
+    } catch (e) {
+      rcToast('Failed to create user: ' + e.message, 'error');
+    }
+  }
+
+  /* ── Edit User ────────────────────────────────────────────────── */
+  async function rcUserEdit(userId) {
+    var user = __rcUsersCache.find(function(u) { return u.id === userId; });
+    if (!user) return;
+
+    var result = await showModal({
+      title: 'Edit User',
+      sub: user.name + ' (' + user.email + ')',
+      fields: [
+        { name: 'name', label_en: 'Full Name', label_es: 'Nombre Completo', required: true, value: user.name },
+        { name: 'email', label_en: 'Email', label_es: 'Correo Electrónico', required: true, value: user.email },
+        { name: 'role', label_en: 'Role', label_es: 'Rol', type: 'select', required: true, value: user.role,
+          options: [
+            { value: 'admin', label_en: 'Admin' },
+            { value: 'pm', label_en: 'Project Manager' },
+            { value: 'webdev', label_en: 'Web Developer' },
+            { value: 'devops', label_en: 'DevOps' },
+            { value: 'seo', label_en: 'SEO' },
+            { value: 'ui_ux', label_en: 'UI/UX' },
+            { value: 'team', label_en: 'Team Member' },
+            { value: 'client_admin', label_en: 'Client Admin' },
+            { value: 'client', label_en: 'Client' }
+          ]
+        },
+        { name: 'status', label_en: 'Status', label_es: 'Estado', type: 'select', value: user.status || 'active',
+          options: [
+            { value: 'active', label_en: 'Active', label_es: 'Activo' },
+            { value: 'suspended', label_en: 'Suspended', label_es: 'Suspendido' },
+            { value: 'invited', label_en: 'Invited', label_es: 'Invitado' }
+          ]
+        },
+        { name: 'phone', label_en: 'Phone', label_es: 'Teléfono', value: user.phone || '' },
+        { name: 'title', label_en: 'Title', label_es: 'Título', value: user.title || '' },
+        { name: 'organization', label_en: 'Organization', label_es: 'Organización', value: user.organization || '' }
+      ],
+      confirmText: 'Save Changes'
+    });
+    if (!result) return;
+
+    try {
+      await rcApi('/api/users', {
+        method: 'PUT',
+        body: {
+          userId: userId,
+          name: result.name,
+          email: result.email,
+          role: result.role,
+          status: result.status,
+          phone: result.phone,
+          title: result.title,
+          organization: result.organization
+        }
+      });
+      rcToast('User updated successfully.', 'success');
+      rcUsersRefresh();
+    } catch (e) {
+      rcToast('Failed to update user: ' + e.message, 'error');
+    }
+  }
+
+  /* ── Delete User ──────────────────────────────────────────────── */
+  async function rcUserDelete(userId) {
+    var user = __rcUsersCache.find(function(u) { return u.id === userId; });
+    if (!user) return;
+
+    var result = await showModal({
+      title: 'Delete User',
+      sub: 'Are you sure you want to remove ' + user.name + '? This action cannot be undone.',
+      fields: [],
+      confirmText: 'Delete',
+      cancelText: 'Cancel'
+    });
+    if (!result) return;
+
+    try {
+      await rcApi('/api/users', {
+        method: 'DELETE',
+        body: { userId: userId }
+      });
+      rcToast('User removed.', 'success');
+      rcUsersRefresh();
+    } catch (e) {
+      rcToast('Failed to delete user: ' + e.message, 'error');
+    }
+  }
+
+  /* ── Module Access ────────────────────────────────────────────── */
+  async function rcUserModuleAccess(userId) {
+    var user = __rcUsersCache.find(function(u) { return u.id === userId; });
+    if (!user) return;
+
+    // Fetch module registry
+    var modules = [];
+    var roleDefaults = {};
+    try {
+      var data = await rcApi('/api/users?action=modules');
+      modules = data.modules || [];
+      roleDefaults = data.roleDefaults || {};
+    } catch (e) {
+      rcToast('Failed to load modules: ' + e.message, 'error');
+      return;
+    }
+
+    var currentAccess = user.moduleAccess || {};
+
+    // Build modal with module grid
+    var isES = (typeof lang === 'function' && lang() === 'es');
+    var dlg = document.createElement('dialog');
+    dlg.className = 'modal';
+    dlg.style.maxWidth = '640px';
+
+    var moduleHTML = modules.map(function(m) {
+      var current = currentAccess[m.id] || 'none';
+      return '<div class="module-item" data-module-id="' + escapeHTML(m.id) + '">' +
+        '<span title="' + escapeHTML(m.category) + ': ' + escapeHTML(m.name) + '">' + escapeHTML(m.name) + '</span>' +
+        '<select data-module="' + escapeHTML(m.id) + '">' +
+          '<option value="none"' + (current === 'none' ? ' selected' : '') + '>None</option>' +
+          '<option value="read"' + (current === 'read' ? ' selected' : '') + '>Read</option>' +
+          '<option value="write"' + (current === 'write' ? ' selected' : '') + '>Write</option>' +
+          '<option value="admin"' + (current === 'admin' ? ' selected' : '') + '>Admin</option>' +
+        '</select>' +
+      '</div>';
+    }).join('');
+
+    dlg.innerHTML =
+      '<form method="dialog" class="modal-form">' +
+        '<div class="modal-header">' +
+          '<h3 class="modal-title">Module Access — ' + escapeHTML(user.name) + '</h3>' +
+          '<div class="modal-sub">Role: ' + escapeHTML(user.role) + ' · Set access level per module.</div>' +
+        '</div>' +
+        '<div class="modal-body">' +
+          '<div style="margin-bottom: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">' +
+            '<button type="button" class="btn btn--secondary" id="rcApplyRoleDefaults">Apply Role Defaults</button>' +
+          '</div>' +
+          '<div class="module-grid" id="rcModuleGrid">' + moduleHTML + '</div>' +
+        '</div>' +
+        '<div class="modal-actions">' +
+          '<button type="button" class="btn" data-action="cancel">' + (isES ? 'Cancelar' : 'Cancel') + '</button>' +
+          '<button type="submit" class="btn btn--primary" data-action="ok">' + (isES ? 'Guardar' : 'Save') + '</button>' +
+        '</div>' +
+      '</form>';
+
+    document.body.appendChild(dlg);
+    if (window.lucide) lucide.createIcons();
+    dlg.showModal();
+
+    // Apply role defaults button
+    dlg.querySelector('#rcApplyRoleDefaults')?.addEventListener('click', function() {
+      var defaults = roleDefaults[user.role] || {};
+      dlg.querySelectorAll('[data-module]').forEach(function(sel) {
+        var moduleId = sel.getAttribute('data-module');
+        if (defaults[moduleId]) sel.value = defaults[moduleId];
+      });
+    });
+
+    // Cancel
+    dlg.querySelector('[data-action="cancel"]')?.addEventListener('click', function() {
+      dlg.close(); dlg.remove();
+    });
+
+    // Save
+    dlg.querySelector('form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var newAccess = {};
+      dlg.querySelectorAll('[data-module]').forEach(function(sel) {
+        newAccess[sel.getAttribute('data-module')] = sel.value;
+      });
+
+      rcApi('/api/users', {
+        method: 'PUT',
+        body: { userId: userId, moduleAccess: newAccess }
+      }).then(function() {
+        rcToast('Module access updated.', 'success');
+        rcUsersRefresh();
+      }).catch(function(err) {
+        rcToast('Failed: ' + err.message, 'error');
+      });
+
+      dlg.close(); dlg.remove();
+    });
+
+    dlg.addEventListener('cancel', function() { dlg.remove(); });
+  }
+
+  /* ── Invite User ──────────────────────────────────────────────── */
+  async function rcUserInvite() {
+    var result = await showModal({
+      title: 'Invite User',
+      sub: 'Send an invitation to join the portal.',
+      fields: [
+        { name: 'name', label_en: 'Full Name', label_es: 'Nombre Completo', required: true },
+        { name: 'email', label_en: 'Email', label_es: 'Correo Electrónico', required: true },
+        { name: 'role', label_en: 'Role', label_es: 'Rol', type: 'select', value: 'team',
+          options: [
+            { value: 'admin', label_en: 'Admin' },
+            { value: 'pm', label_en: 'Project Manager' },
+            { value: 'webdev', label_en: 'Web Developer' },
+            { value: 'devops', label_en: 'DevOps' },
+            { value: 'seo', label_en: 'SEO' },
+            { value: 'ui_ux', label_en: 'UI/UX' },
+            { value: 'team', label_en: 'Team Member' },
+            { value: 'client_admin', label_en: 'Client Admin' },
+            { value: 'client', label_en: 'Client' }
+          ]
+        }
+      ],
+      confirmText: 'Send Invitation'
+    });
+    if (!result) return;
+
+    try {
+      var data = await rcApi('/api/users?action=invite', {
+        method: 'POST',
+        body: { name: result.name, email: result.email, role: result.role }
+      });
+      rcToast(data.message || 'Invitation sent.', 'success');
+      rcUsersRefresh();
+    } catch (e) {
+      rcToast('Failed to invite user: ' + e.message, 'error');
+    }
+  }
+
+  /* ── Reset User Password ──────────────────────────────────────── */
+  async function rcUserResetPassword(userId) {
+    var user = __rcUsersCache.find(function(u) { return u.id === userId; });
+    if (!user) return;
+
+    var result = await showModal({
+      title: 'Reset Password',
+      sub: 'Set a new password for ' + user.name + '.',
+      fields: [
+        { name: 'newPassword', label_en: 'New Password', label_es: 'Nueva Contraseña', required: true }
+      ],
+      confirmText: 'Reset Password'
+    });
+    if (!result || !result.newPassword) return;
+
+    if (result.newPassword.length < 8) {
+      rcToast('Password must be at least 8 characters.', 'error');
+      return;
+    }
+
+    try {
+      await rcApi('/api/users?action=reset-password', {
+        method: 'POST',
+        body: { userId: userId, newPassword: result.newPassword }
+      });
+      rcToast('Password reset successfully.', 'success');
+    } catch (e) {
+      rcToast('Failed to reset password: ' + e.message, 'error');
+    }
+  }
+
+  /* ── Auto-load users when navigating to users screen ──────────── */
+  var _origShowScreen = window.showScreen;
+  window.showScreen = function(route) {
+    _origShowScreen(route);
+    if (route === 'profile') rcProfileLoad();
+    if (route === 'users') rcUsersRefresh();
+    if (route === 'settings') rcSettingsLoad();
+  };
+
+  /* ============================================================
+     SETTINGS SCREEN
+     ============================================================ */
+
+  var __rcSettingsCache = null;
+
+  async function rcSettingsLoad() {
+    if (!rcIsSuperAdmin()) { showScreen('home'); return; }
+    try {
+      var data = await rcApi('/api/settings');
+      __rcSettingsCache = data.settings || {};
+      rcSettingsFillForm(__rcSettingsCache);
+    } catch (e) {
+      rcToast('Failed to load settings: ' + e.message, 'error');
+    }
+  }
+
+  function rcSettingsFillForm(s) {
+    var e = s.email || {};
+    var sy = s.system || {};
+    var b = s.branding || {};
+
+    var el = function(id) { return document.getElementById(id); };
+
+    if (el('settingsFromName')) el('settingsFromName').value = e.fromName || '';
+    if (el('settingsFromEmail')) el('settingsFromEmail').value = e.fromEmail || '';
+    if (el('settingsReplyTo')) el('settingsReplyTo').value = e.replyTo || '';
+    if (el('settingsResendKey')) el('settingsResendKey').value = e.resendApiKey || '';
+    if (el('settingsSessionDays')) el('settingsSessionDays').value = sy.sessionDurationDays || 7;
+    if (el('settingsResetExpiry')) el('settingsResetExpiry').value = sy.resetCodeExpiryMinutes || 15;
+    if (el('settingsMaxLogin')) el('settingsMaxLogin').value = sy.maxLoginAttempts || 5;
+    if (el('settingsMaxReset')) el('settingsMaxReset').value = sy.maxResetAttempts || 5;
+    if (el('settingsLockoutMins')) el('settingsLockoutMins').value = sy.loginLockoutMinutes || 15;
+    if (el('settingsPortalName')) el('settingsPortalName').value = b.portalName || '';
+    if (el('settingsCompanyName')) el('settingsCompanyName').value = b.companyName || '';
+    if (el('settingsMgmtCompany')) el('settingsMgmtCompany').value = b.managementCompany || '';
+  }
+
+  async function rcSettingsSave() {
+    var el = function(id) { return document.getElementById(id); };
+
+    var body = {
+      email: {
+        fromName: el('settingsFromName')?.value.trim() || '',
+        fromEmail: el('settingsFromEmail')?.value.trim() || '',
+        replyTo: el('settingsReplyTo')?.value.trim() || '',
+        resendApiKey: el('settingsResendKey')?.value || ''
+      },
+      system: {
+        sessionDurationDays: parseInt(el('settingsSessionDays')?.value || '7', 10),
+        resetCodeExpiryMinutes: parseInt(el('settingsResetExpiry')?.value || '15', 10),
+        maxLoginAttempts: parseInt(el('settingsMaxLogin')?.value || '5', 10),
+        maxResetAttempts: parseInt(el('settingsMaxReset')?.value || '5', 10),
+        loginLockoutMinutes: parseInt(el('settingsLockoutMins')?.value || '15', 10)
+      },
+      branding: {
+        portalName: el('settingsPortalName')?.value.trim() || '',
+        companyName: el('settingsCompanyName')?.value.trim() || '',
+        managementCompany: el('settingsMgmtCompany')?.value.trim() || ''
+      }
+    };
+
+    try {
+      await rcApi('/api/settings', { method: 'PUT', body: body });
+      rcToast('Settings saved successfully.', 'success');
+      rcSettingsLoad(); // reload to get masked API key
+    } catch (e) {
+      rcToast('Failed to save settings: ' + e.message, 'error');
+    }
+  }
+
+  async function rcSettingsVerifyEmail() {
+    try {
+      var data = await rcApi('/api/settings?action=verify-email');
+      if (data.configured) {
+        var domainList = (data.domains || []).map(function(d) { return d.name + ' (' + d.status + ')'; }).join(', ');
+        rcToast('Email configured! Domains: ' + (domainList || 'none found'), 'success');
+      } else {
+        rcToast('Email not configured: ' + (data.reason || 'Unknown'), 'error');
+      }
+    } catch (e) {
+      rcToast('Verification failed: ' + e.message, 'error');
+    }
+  }
+
+  async function rcSettingsTestEmail() {
+    var to = window.__rcCurrentUser ? window.__rcCurrentUser.email : '';
+    var result = await showModal({
+      title: 'Send Test Email',
+      sub: 'Verify your email configuration is working.',
+      fields: [
+        { name: 'to', label_en: 'Recipient Email', label_es: 'Correo Destinatario', required: true, value: to }
+      ],
+      confirmText: 'Send Test'
+    });
+    if (!result || !result.to) return;
+
+    try {
+      var data = await rcApi('/api/settings?action=test-email', {
+        method: 'POST',
+        body: { to: result.to }
+      });
+      if (data.ok) {
+        rcToast('Test email sent to ' + result.to, 'success');
+      } else {
+        rcToast('Failed: ' + (data.error || data.reason || 'Unknown error'), 'error');
+      }
+    } catch (e) {
+      rcToast('Failed to send test email: ' + e.message, 'error');
+    }
+  }
+
+  async function rcSettingsExport() {
+    try {
+      var data = await rcApi('/api/settings?action=export');
+      var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'rockcrete-export-' + new Date().toISOString().slice(0, 10) + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      rcToast('Data exported successfully.', 'success');
+    } catch (e) {
+      rcToast('Export failed: ' + e.message, 'error');
+    }
+  }
+
+  async function rcSettingsImport(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+
+    var confirmResult = await showModal({
+      title: 'Import Data',
+      sub: 'This will overwrite existing data. Are you sure?',
+      fields: [],
+      confirmText: 'Import'
+    });
+    if (!confirmResult) { event.target.value = ''; return; }
+
+    try {
+      var text = await file.text();
+      var importData = JSON.parse(text);
+      var dataPayload = importData.data || importData;
+
+      await rcApi('/api/settings?action=import', {
+        method: 'POST',
+        body: { data: dataPayload }
+      });
+      rcToast('Data imported successfully. Refreshing...', 'success');
+      setTimeout(function() { location.reload(); }, 1500);
+    } catch (e) {
+      rcToast('Import failed: ' + e.message, 'error');
+    }
+    event.target.value = '';
   }
 </script>
 </body>

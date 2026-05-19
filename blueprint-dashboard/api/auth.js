@@ -663,6 +663,13 @@ export default async function handler(req, res) {
       return setJson(res, 200, { ok: true, message: 'Password has been reset successfully.' });
     }
 
+    /* ── GET /api/auth?action=check-seed ──────────────────────────────── */
+    if (req.method === 'GET' && action === 'check-seed') {
+      // Public endpoint: check if Super Admin seeding is available
+      const existingUsers = await getUsers();
+      return setJson(res, 200, { canSeed: existingUsers.length === 0, userCount: existingUsers.length });
+    }
+
     /* ── POST /api/auth?action=seed ───────────────────────────────────── */
     if (req.method === 'POST' && action === 'seed') {
       // Seed the initial Super Admin account. Only works if no users exist yet.
@@ -716,7 +723,7 @@ export default async function handler(req, res) {
     res.setHeader('Allow', 'GET, POST');
     return setJson(res, 400, {
       error: 'Invalid or missing action parameter',
-      validActions: ['login', 'logout', 'me', 'register', 'change-password', 'forgot-password', 'verify-reset', 'seed'],
+      validActions: ['login', 'logout', 'me', 'register', 'change-password', 'forgot-password', 'verify-reset', 'seed', 'check-seed'],
     });
 
   } catch (error) {
