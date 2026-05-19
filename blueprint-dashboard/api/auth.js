@@ -72,7 +72,7 @@ async function writeBlob(path, data) {
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true,
-    access: 'private'
+    access: 'public'
   });
 }
 

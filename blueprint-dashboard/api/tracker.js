@@ -13,7 +13,7 @@ async function writeStateToBlob(state) {
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true,
-    access: 'private'
+    access: 'public'
   });
 }
 
