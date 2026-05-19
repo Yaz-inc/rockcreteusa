@@ -32,6 +32,7 @@
  */
 
 import { list, put, readJsonBlob } from './blob-helpers.js';
+import { createHmac } from 'crypto';
 
 const MILESTONES_PATH = 'rockcrete/milestones.json';
 
@@ -84,8 +85,47 @@ function normalizeMilestone(ms, existing) {
 
 /* ── Handler ────────────────────────────────────────────────────────────── */
 
+/* ── Session verification ───────────────────────────────────────────────── */
+
+function getSessionSecret() {
+  return process.env.SESSION_SECRET || 'rockcrete-default-secret-change-me-in-production';
+}
+
+function verifySessionCookie(req) {
+  const cookieHeader = req.headers?.cookie || '';
+  const match = cookieHeader.match(/rockcrete_session=([^;]+)/);
+  if (!match) return null;
+  try {
+    const decoded = JSON.parse(Buffer.from(match[1], 'base64url').toString('utf8'));
+    const { _sig, ...payload } = decoded;
+    const expected = createHmac('sha256', getSessionSecret()).update(JSON.stringify(payload)).digest('hex');
+    if (_sig.length !== expected.length) return null;
+    let mismatch = 0;
+    for (let i = 0; i < _sig.length; i++) {
+      mismatch |= _sig.charCodeAt(i) ^ expected.charCodeAt(i);
+    }
+    if (mismatch !== 0) return null;
+    if (payload.expiresAt && Date.now() > payload.expiresAt) return null;
+    return payload; // { userId, role, expiresAt }
+  } catch {
+    return null;
+  }
+}
+
+function requireAuth(req) {
+  const session = verifySessionCookie(req);
+  if (!session) return null;
+  return session; // { userId, role, expiresAt }
+}
+
 export default async function handler(req, res) {
   try {
+    // Auth check — require valid session for all operations
+    const session = requireAuth(req);
+    if (!session) {
+      return setJson(res, 401, { error: 'Authentication required' });
+    }
+
     const incomingRole = String(req.headers['x-rockcrete-role'] || '').toLowerCase();
 
     /* ── GET: Fetch milestones ─────────────────────────────────────────── */
