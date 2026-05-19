@@ -403,6 +403,8 @@
     font-weight: 600;
   }
   .nav-link i { width: 18px; height: 18px; flex-shrink: 0; }
+  .nav-new { display:inline-block; color:#fff; background:#10b981; font-weight:700; font-size:0.55rem; letter-spacing:0.06em; padding:0.12em 0.4em; border-radius:3px; text-transform:uppercase; line-height:1; margin-left:auto; flex-shrink:0; animation: nav-new-pulse 2s ease-in-out 3; }
+  @keyframes nav-new-pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
 
   .main { padding: 2rem; max-width: 100%; }
 
@@ -2166,9 +2168,9 @@
     <!-- ============================================================ -->
     <div class="nav-group nav-group--account" id="navGroupAccount" style="display:none;">
       <div class="eyebrow" data-es="Cuenta" data-en="Account">Account</div>
-      <a class="nav-link" data-route="profile" href="#profile" data-rc-auth="loggedin"><i data-lucide="user-circle" aria-hidden="true"></i><span data-es="Mi Perfil" data-en="My Profile">My Profile</span></a>
-      <a class="nav-link" data-route="users" href="#users" data-rc-auth="super_admin"><i data-lucide="users-cog" aria-hidden="true"></i><span data-es="Gestión de Usuarios" data-en="User Management">User Management</span></a>
-      <a class="nav-link" data-route="settings" href="#settings" data-rc-auth="super_admin"><i data-lucide="settings" aria-hidden="true"></i><span data-es="Configuración del Sistema" data-en="System Settings">System Settings</span></a>
+      <a class="nav-link" data-route="profile" href="#profile" data-rc-auth="loggedin"><i data-lucide="user-circle" aria-hidden="true"></i><span data-es="Mi Perfil" data-en="My Profile">My Profile</span><span class="nav-new">New</span></a>
+      <a class="nav-link" data-route="users" href="#users" data-rc-auth="super_admin"><i data-lucide="users-cog" aria-hidden="true"></i><span data-es="Gestión de Usuarios" data-en="User Management">User Management</span><span class="nav-new">New</span></a>
+      <a class="nav-link" data-route="settings" href="#settings" data-rc-auth="super_admin"><i data-lucide="settings" aria-hidden="true"></i><span data-es="Configuración del Sistema" data-en="System Settings">System Settings</span><span class="nav-new">New</span></a>
     </div>
 
     <!-- ============================================================ -->
