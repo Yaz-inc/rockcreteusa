@@ -1,5 +1,5 @@
 /**
- * Shared Blob Helpers — Resilient token resolution for Vercel Blob
+ * Shared Blob Helpers — Resilient token resolution for Vercel Blob (Private Store)
  * ============================================================================
  * When you create a Blob Store in the Vercel Dashboard, the token may be
  * stored under different env var names depending on how the store was created:
@@ -9,10 +9,14 @@
  * This module scans all env vars for a Vercel Blob read-write token and
  * passes it explicitly to list() and put() calls, bypassing the SDK's
  * simple BLOB_READ_WRITE_TOKEN-only check.
+ *
+ * IMPORTANT: The blob store is PRIVATE, so:
+ *   - put() uses access: 'private'
+ *   - readBlob() uses the downloadUrl (signed URL) from the blob listing
  * ============================================================================
  */
 
-import { list as _list, put as _put } from '@vercel/blob';
+import { list as _list, put as _put, head as _head } from '@vercel/blob';
 
 /**
  * Find a Vercel Blob read-write token from environment variables.
@@ -21,7 +25,6 @@ import { list as _list, put as _put } from '@vercel/blob';
 function getBlobToken() {
   // 1. Standard name
   if (process.env.BLOB_READ_WRITE_TOKEN) {
-    console.log('[blob-helpers] Found token via BLOB_READ_WRITE_TOKEN');
     return process.env.BLOB_READ_WRITE_TOKEN;
   }
 
@@ -33,7 +36,6 @@ function getBlobToken() {
       value.startsWith('vercel_blob_rw_') &&
       key.toUpperCase().includes('BLOB')
     ) {
-      console.log(`[blob-helpers] Found token via env var: ${key}`);
       return value;
     }
   }
@@ -45,20 +47,11 @@ function getBlobToken() {
       typeof value === 'string' &&
       value.startsWith('vercel_blob_rw_')
     ) {
-      console.log(`[blob-helpers] Found token via broad scan env var: ${key}`);
       return value;
     }
   }
 
-  // Debug: log all env var keys that might be blob-related
-  const blobKeys = Object.keys(process.env).filter(k =>
-    k.toLowerCase().includes('blob') ||
-    k.toLowerCase().includes('store') ||
-    k.toLowerCase().includes('vercel')
-  );
-  console.log('[blob-helpers] No blob token found. Env keys with blob/store/vercel:', blobKeys);
-
-  // No token found — return undefined (will cause SDK to throw its own error)
+  // No token found
   return undefined;
 }
 
@@ -86,12 +79,34 @@ export async function list(options = {}) {
 
 /**
  * Put blob with explicit token resolution.
+ * Uses access: 'private' since our store is private.
  * Same API as @vercel/blob put(), but auto-resolves the token.
  */
 export async function put(pathname, body, options = {}) {
   const token = getToken();
-  if (token) {
-    return _put(pathname, body, { ...options, token });
+  const mergedOptions = { ...options };
+  // Force private access since our store is private
+  if (!mergedOptions.access) {
+    mergedOptions.access = 'private';
   }
-  return _put(pathname, body, options);
+  if (token) {
+    return _put(pathname, body, { ...mergedOptions, token });
+  }
+  return _put(pathname, body, mergedOptions);
+}
+
+/**
+ * Read a JSON blob from private store by pathname.
+ * Uses list() to find the blob, then fetches via its downloadUrl (signed URL).
+ */
+export async function readJsonBlob(path) {
+  const result = await list({ prefix: path, limit: 10 });
+  const blob = result.blobs.find(b => b.pathname === path);
+  if (!blob) return null;
+
+  // For private blobs, use downloadUrl which is a signed URL
+  const url = blob.downloadUrl || blob.url;
+  const resp = await fetch(url, { cache: 'no-store' });
+  if (!resp.ok) return null;
+  return resp.json();
 }

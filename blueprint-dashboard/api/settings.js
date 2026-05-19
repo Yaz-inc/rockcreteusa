@@ -9,7 +9,7 @@
  * ============================================================================
  */
 
-import { list, put } from './blob-helpers.js';
+import { list, put, readJsonBlob } from './blob-helpers.js';
 
 const SETTINGS_PATH = 'rockcrete/settings.json';
 
@@ -52,18 +52,8 @@ function parseBody(req) {
   return {};
 }
 
-async function readBlob(path) {
-  const result = await list({ prefix: path, limit: 10 });
-  const blob = result.blobs.find(b => b.pathname === path);
-  if (!blob) return null;
-  const resp = await fetch(blob.url, { cache: 'no-store' });
-  if (!resp.ok) return null;
-  return resp.json();
-}
-
 async function writeBlob(path, data) {
   await put(path, JSON.stringify(data, null, 2), {
-    access: 'public',
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true
@@ -93,7 +83,7 @@ async function requireSuperAdmin(req) {
     if (mismatch !== 0) return null;
     if (payload.expiresAt && Date.now() > payload.expiresAt) return null;
     const USERS_PATH = 'rockcrete/users.json';
-    const data = await readBlob(USERS_PATH);
+    const data = await readJsonBlob(USERS_PATH);
     const users = data?.users || [];
     const user = users.find(u => u.id === payload.userId);
     if (!user || user.role !== 'super_admin' || user.status !== 'active') return null;
@@ -160,7 +150,7 @@ export default async function handler(req, res) {
 
     /* ── GET: Retrieve settings ────────────────────────────────────────── */
     if (req.method === 'GET') {
-      const stored = await readBlob(SETTINGS_PATH);
+      const stored = await readJsonBlob(SETTINGS_PATH);
       // Merge with defaults so any new fields are populated
       const settings = {
         email: { ...DEFAULT_SETTINGS.email, ...(stored?.email || {}) },
@@ -187,7 +177,7 @@ export default async function handler(req, res) {
     if (req.method === 'PUT') {
       const body = parseBody(req);
 
-      const stored = await readBlob(SETTINGS_PATH);
+      const stored = await readJsonBlob(SETTINGS_PATH);
       const current = {
         email: { ...DEFAULT_SETTINGS.email, ...(stored?.email || {}) },
         system: { ...DEFAULT_SETTINGS.system, ...(stored?.system || {}) },
@@ -254,7 +244,7 @@ export default async function handler(req, res) {
       }
 
       // Get current settings (with real API key, not masked)
-      const stored = await readBlob(SETTINGS_PATH);
+      const stored = await readJsonBlob(SETTINGS_PATH);
       const emailConfig = {
         ...DEFAULT_SETTINGS.email,
         ...(stored?.email || {}),
@@ -291,7 +281,7 @@ export default async function handler(req, res) {
 
     /* ── GET: Verify Resend API key ────────────────────────────────────── */
     if (req.method === 'GET' && action === 'verify-email') {
-      const stored = await readBlob(SETTINGS_PATH);
+      const stored = await readJsonBlob(SETTINGS_PATH);
       const emailConfig = { ...DEFAULT_SETTINGS.email, ...(stored?.email || {}) };
 
       if (!emailConfig.resendApiKey) {
@@ -337,7 +327,7 @@ export default async function handler(req, res) {
 
       for (const path of BLOB_PATHS) {
         try {
-          const data = await readBlob(path);
+          const data = await readJsonBlob(path);
           if (data) exportData.data[path] = data;
         } catch (e) {
           // Skip missing blobs silently
@@ -410,7 +400,7 @@ export default async function handler(req, res) {
 
       // Check which ones have data
       for (const store of stores) {
-        const data = await readBlob(store.path);
+        const data = await readJsonBlob(store.path);
         store.hasData = data !== null;
         store.size = data ? JSON.stringify(data).length : 0;
       }

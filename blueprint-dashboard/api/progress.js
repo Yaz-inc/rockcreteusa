@@ -27,7 +27,7 @@
  * ============================================================================
  */
 
-import { list, put } from './blob-helpers.js';
+import { list, put, readJsonBlob } from './blob-helpers.js';
 
 const PROGRESS_PATH = 'rockcrete/progress.json';
 const MAX_UPDATES = 500; // Keep last N updates to prevent unbounded growth
@@ -41,18 +41,8 @@ function setJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-async function readFromBlob() {
-  const result = await list({ prefix: PROGRESS_PATH, limit: 10 });
-  const blob = result.blobs.find((item) => item.pathname === PROGRESS_PATH);
-  if (!blob) return null;
-  const response = await fetch(blob.url, { cache: 'no-store' });
-  if (!response.ok) return null;
-  return response.json();
-}
-
 async function writeToBlob(data) {
   await put(PROGRESS_PATH, JSON.stringify(data, null, 2), {
-    access: 'public',
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true
@@ -98,7 +88,7 @@ export default async function handler(req, res) {
 
     /* ── GET: Fetch progress updates ───────────────────────────────────── */
     if (req.method === 'GET') {
-      const data = await readFromBlob();
+      const data = await readJsonBlob(PROGRESS_PATH);
       const updates = data?.updates || [];
 
       // Allow filtering by taskId
@@ -137,7 +127,7 @@ export default async function handler(req, res) {
         return setJson(res, 400, { error: 'Invalid progress update data' });
       }
 
-      const data = (await readFromBlob()) || { updates: [] };
+      const data = (await readJsonBlob(PROGRESS_PATH)) || { updates: [] };
       data.updates.push(update);
 
       // Trim to max size, keeping newest

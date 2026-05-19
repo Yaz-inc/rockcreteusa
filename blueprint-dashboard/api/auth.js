@@ -21,7 +21,7 @@
  * ============================================================================
  */
 
-import { list, put } from './blob-helpers.js';
+import { list, put, readJsonBlob } from './blob-helpers.js';
 import { createHash, createHmac, randomBytes } from 'crypto';
 
 /* ── Constants ─────────────────────────────────────────────────────────── */
@@ -67,18 +67,8 @@ function generateCode() {
 
 /* ── Blob helpers ───────────────────────────────────────────────────────── */
 
-async function readBlob(path) {
-  const result = await list({ prefix: path, limit: 10 });
-  const blob = result.blobs.find(b => b.pathname === path);
-  if (!blob) return null;
-  const resp = await fetch(blob.url, { cache: 'no-store' });
-  if (!resp.ok) return null;
-  return resp.json();
-}
-
 async function writeBlob(path, data) {
   await put(path, JSON.stringify(data, null, 2), {
-    access: 'public',
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true
@@ -193,7 +183,7 @@ function getSessionFromRequest(req) {
 /* ── Email sending (via Resend) ─────────────────────────────────────────── */
 
 async function getEmailConfig() {
-  const settings = await readBlob(SETTINGS_PATH);
+  const settings = await readJsonBlob(SETTINGS_PATH);
   if (settings?.email?.resendApiKey) return settings.email;
   // Fallback to env vars
   return {
@@ -241,7 +231,7 @@ async function sendEmail({ to, subject, html, text }) {
 /* ── User helpers ───────────────────────────────────────────────────────── */
 
 async function getUsers() {
-  const data = await readBlob(USERS_PATH);
+  const data = await readJsonBlob(USERS_PATH);
   return data?.users || [];
 }
 
@@ -525,7 +515,7 @@ export default async function handler(req, res) {
       }
 
       // Rate limit: check if there's a recent reset token for this email
-      const resetData = (await readBlob(RESET_PATH)) || { tokens: [] };
+      const resetData = (await readJsonBlob(RESET_PATH)) || { tokens: [] };
       const recent = resetData.tokens.find(t =>
         t.email.toLowerCase() === email &&
         !t.used &&
@@ -604,7 +594,7 @@ export default async function handler(req, res) {
         return setJson(res, 400, { error: 'New password must be at least 8 characters' });
       }
 
-      const resetData = (await readBlob(RESET_PATH)) || { tokens: [] };
+      const resetData = (await readJsonBlob(RESET_PATH)) || { tokens: [] };
       const token = resetData.tokens.find(t =>
         t.email.toLowerCase() === email &&
         !t.used &&

@@ -9,7 +9,7 @@
  * ============================================================================
  */
 
-import { list, put } from './blob-helpers.js';
+import { list, put, readJsonBlob } from './blob-helpers.js';
 import { randomBytes } from 'crypto';
 
 const USERS_PATH = 'rockcrete/users.json';
@@ -64,18 +64,8 @@ function generateId(prefix) {
   return prefix + '-' + randomBytes(4).toString('hex') + Date.now().toString(36).slice(-4);
 }
 
-async function readBlob(path) {
-  const result = await list({ prefix: path, limit: 10 });
-  const blob = result.blobs.find(b => b.pathname === path);
-  if (!blob) return null;
-  const resp = await fetch(blob.url, { cache: 'no-store' });
-  if (!resp.ok) return null;
-  return resp.json();
-}
-
 async function writeBlob(path, data) {
   await put(path, JSON.stringify(data, null, 2), {
-    access: 'public',
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true
@@ -83,7 +73,7 @@ async function writeBlob(path, data) {
 }
 
 async function getUsers() {
-  const data = await readBlob(USERS_PATH);
+  const data = await readJsonBlob(USERS_PATH);
   return data?.users || [];
 }
 
@@ -463,7 +453,7 @@ export default async function handler(req, res) {
       await saveUsers(users);
 
       // Send invitation email
-      const settingsData = await readBlob('rockcrete/settings.json');
+      const settingsData = await readJsonBlob('rockcrete/settings.json');
       const emailConfig = settingsData?.email || {};
       const apiKey = emailConfig.resendApiKey || process.env.RESEND_API_KEY || '';
       const fromEmail = emailConfig.fromEmail || process.env.RESEND_FROM_EMAIL || 'noreply@newmindsgroup.com';

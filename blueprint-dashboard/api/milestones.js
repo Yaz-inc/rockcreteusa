@@ -31,7 +31,7 @@
  * ============================================================================
  */
 
-import { list, put } from './blob-helpers.js';
+import { list, put, readJsonBlob } from './blob-helpers.js';
 
 const MILESTONES_PATH = 'rockcrete/milestones.json';
 
@@ -43,18 +43,8 @@ function setJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-async function readFromBlob() {
-  const result = await list({ prefix: MILESTONES_PATH, limit: 10 });
-  const blob = result.blobs.find((item) => item.pathname === MILESTONES_PATH);
-  if (!blob) return null;
-  const response = await fetch(blob.url, { cache: 'no-store' });
-  if (!response.ok) return null;
-  return response.json();
-}
-
 async function writeToBlob(data) {
   await put(MILESTONES_PATH, JSON.stringify(data, null, 2), {
-    access: 'public',
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true
@@ -99,7 +89,7 @@ export default async function handler(req, res) {
 
     /* ── GET: Fetch milestones ─────────────────────────────────────────── */
     if (req.method === 'GET') {
-      const data = await readFromBlob();
+      const data = await readJsonBlob(MILESTONES_PATH);
       return setJson(res, 200, {
         source: data ? 'blob' : 'empty',
         milestones: data || {}
@@ -123,7 +113,7 @@ export default async function handler(req, res) {
         return setJson(res, 400, { error: 'milestones array is required and must not be empty' });
       }
 
-      const data = (await readFromBlob()) || {};
+      const data = (await readJsonBlob(MILESTONES_PATH)) || {};
       const existing = data[taskId] || { taskId, milestones: [], createdAt: new Date().toISOString() };
 
       const newMilestones = rawMilestones.map((ms, i) => {
@@ -152,7 +142,7 @@ export default async function handler(req, res) {
       const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
       const { taskId, milestoneId, milestone: rawMs, milestones: bulkMs } = body;
 
-      const data = (await readFromBlob()) || {};
+      const data = (await readJsonBlob(MILESTONES_PATH)) || {};
 
       // Bulk update: update multiple milestones at once
       if (bulkMs && Array.isArray(bulkMs)) {
@@ -214,7 +204,7 @@ export default async function handler(req, res) {
         return setJson(res, 400, { error: 'taskId and milestoneId are required' });
       }
 
-      const data = (await readFromBlob()) || {};
+      const data = (await readJsonBlob(MILESTONES_PATH)) || {};
       const taskEntry = data[taskId];
       if (!taskEntry) {
         return setJson(res, 404, { error: 'Task milestones not found' });

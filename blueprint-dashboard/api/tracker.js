@@ -1,4 +1,4 @@
-import { list, put } from './blob-helpers.js';
+import { list, put, readJsonBlob } from './blob-helpers.js';
 
 const TRACKER_STATE_PATH = 'rockcrete/project-tracker-state.json';
 
@@ -8,18 +8,8 @@ function setJson(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-async function readStateFromBlob() {
-  const result = await list({ prefix: TRACKER_STATE_PATH, limit: 10 });
-  const blob = result.blobs.find((item) => item.pathname === TRACKER_STATE_PATH);
-  if (!blob) return null;
-  const response = await fetch(blob.url, { cache: 'no-store' });
-  if (!response.ok) return null;
-  return response.json();
-}
-
 async function writeStateToBlob(state) {
   await put(TRACKER_STATE_PATH, JSON.stringify(state, null, 2), {
-    access: 'public',
     contentType: 'application/json',
     addRandomSuffix: false,
     allowOverwrite: true
@@ -87,7 +77,7 @@ function normalizeTaskPatch(task) {
 export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
-      const state = await readStateFromBlob();
+      const state = await readJsonBlob(TRACKER_STATE_PATH);
       return setJson(res, 200, {
         source: state ? 'blob' : 'seed',
         state: state || { tasks: {}, accessRequests: {} }
@@ -110,7 +100,7 @@ export default async function handler(req, res) {
     }
 
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-    const existing = await readStateFromBlob();
+    const existing = await readJsonBlob(TRACKER_STATE_PATH);
     const state = existing || { tasks: {}, accessRequests: {} };
 
     if (Array.isArray(body.tasks)) {
