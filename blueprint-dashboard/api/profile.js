@@ -9,7 +9,7 @@
  * ============================================================================
  */
 
-import { list, put } from '@vercel/blob';
+import { list, put } from './blob-helpers.js';
 
 const USERS_PATH = 'rockcrete/users.json';
 

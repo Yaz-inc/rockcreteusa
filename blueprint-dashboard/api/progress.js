@@ -27,7 +27,7 @@
  * ============================================================================
  */
 
-import { list, put } from '@vercel/blob';
+import { list, put } from './blob-helpers.js';
 
 const PROGRESS_PATH = 'rockcrete/progress.json';
 const MAX_UPDATES = 500; // Keep last N updates to prevent unbounded growth

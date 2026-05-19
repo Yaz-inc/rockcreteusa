@@ -1,4 +1,4 @@
-import { list, put } from '@vercel/blob';
+import { list, put } from './blob-helpers.js';
 
 const TRACKER_STATE_PATH = 'rockcrete/project-tracker-state.json';
 

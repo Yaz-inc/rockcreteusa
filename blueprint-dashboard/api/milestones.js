@@ -31,7 +31,7 @@
  * ============================================================================
  */
 
-import { list, put } from '@vercel/blob';
+import { list, put } from './blob-helpers.js';
 
 const MILESTONES_PATH = 'rockcrete/milestones.json';
 

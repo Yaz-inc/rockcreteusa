@@ -21,7 +21,7 @@
  * ============================================================================
  */
 
-import { list, put } from '@vercel/blob';
+import { list, put } from './blob-helpers.js';
 import { createHash, createHmac, randomBytes } from 'crypto';
 
 /* ── Constants ─────────────────────────────────────────────────────────── */
@@ -730,3 +730,6 @@ export default async function handler(req, res) {
     });
   }
 }
+
+// Note: Vercel Blob now uses OIDC auth when BLOB_READ_WRITE_TOKEN is not set.
+// If BLOB_STORE_ID is available, it will be used with the OIDC token automatically.
