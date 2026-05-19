@@ -1,0 +1,76 @@
+{
+  "_meta": {
+    "schema_version": "1.0",
+    "generated_at": "2026-01-15T12:00:00Z",
+    "source": "Example data, replace by running extract-telemetry.py against your real session JSONL.",
+    "extraction_script": "telemetry/extract-telemetry.py",
+    "note": "This is example data. The first time you run a real Cowork session for your engagement, run the extraction script to overwrite this file with real numbers."
+  },
+  "project": {
+    "name": "[ENGAGEMENT NAME]",
+    "client": "[CLIENT ORGANIZATION]",
+    "funder": "[FUNDER ORGANIZATION OR 'Self-funded']",
+    "consultant_lead": "[INITIALS]"
+  },
+  "session": {
+    "id": "example-session-uuid",
+    "title": "Example session",
+    "first_activity": "2026-01-13T09:00:00Z",
+    "last_activity": "2026-01-15T16:30:00Z",
+    "wall_clock_hours": 55.5,
+    "active_hours": 4.25,
+    "distinct_working_days": ["2026-01-13", "2026-01-14", "2026-01-15"],
+    "daily_turn_counts": [
+      { "date": "2026-01-13", "turns": 42 },
+      { "date": "2026-01-14", "turns": 68 },
+      { "date": "2026-01-15", "turns": 51 }
+    ]
+  },
+  "interactions": {
+    "user_turns": 80,
+    "assistant_turns": 81,
+    "tool_use_count": 124,
+    "tool_use_breakdown": {
+      "Read": 28,
+      "Write": 18,
+      "Edit": 22,
+      "Grep": 14,
+      "TaskCreate": 12,
+      "TaskUpdate": 18,
+      "mcp__workspace__bash": 12
+    }
+  },
+  "tokens": {
+    "input": 24500,
+    "cache_create": 4200000,
+    "cache_read": 38000000,
+    "output": 1250000,
+    "total": 43474500
+  },
+  "ai_cost": {
+    "currency": "USD",
+    "amount": 49.92,
+    "pricing_model": "Claude Sonnet 4.x retail (input $3/M · output $15/M · cache_read $0.30/M · cache_create $3.75/M)"
+  },
+  "human_equivalent": {
+    "hours_estimate": 42.5,
+    "hourly_rate_usd": 125,
+    "cost_estimate_usd": 5312.50,
+    "multiplier_applied": 10,
+    "multiplier_rationale": "Industry estimate: a senior consultant performing equivalent analysis, writing, research, and document production typically takes 8–15× the active AI time. 10× used as midpoint."
+  },
+  "value_delivered": {
+    "savings_usd": 5262.58,
+    "roi_multiple": 106.4,
+    "savings_percent": 99.1
+  },
+  "deliverables_touched": [
+    "Project blueprint",
+    "Initial telemetry pipeline",
+    "Example seed tasks"
+  ],
+  "expenses": {
+    "_note": "Manual entry, consultants log non-AI expenses here as the project progresses",
+    "entries": []
+  }
+}
