@@ -21,20 +21,19 @@ import { list as _list, put as _put } from '@vercel/blob';
 function getBlobToken() {
   // 1. Standard name
   if (process.env.BLOB_READ_WRITE_TOKEN) {
+    console.log('[blob-helpers] Found token via BLOB_READ_WRITE_TOKEN');
     return process.env.BLOB_READ_WRITE_TOKEN;
   }
 
-  // 2. Scan for any env var matching the Vercel blob token pattern
-  //    Pattern: vercel_blob_rw_*_READ_WRITE_TOKEN or BLOB_*_READ_WRITE_TOKEN
+  // 2. Scan ALL env vars — any key containing "BLOB" with a vercel_blob_rw_ value
   for (const [key, value] of Object.entries(process.env)) {
     if (
       value &&
       typeof value === 'string' &&
       value.startsWith('vercel_blob_rw_') &&
-      (key === 'BLOB_READ_WRITE_TOKEN' ||
-        key.endsWith('_READ_WRITE_TOKEN') ||
-        key.includes('BLOB'))
+      key.toUpperCase().includes('BLOB')
     ) {
+      console.log(`[blob-helpers] Found token via env var: ${key}`);
       return value;
     }
   }
@@ -44,12 +43,20 @@ function getBlobToken() {
     if (
       value &&
       typeof value === 'string' &&
-      value.startsWith('vercel_blob_rw_') &&
-      key.toLowerCase().includes('blob')
+      value.startsWith('vercel_blob_rw_')
     ) {
+      console.log(`[blob-helpers] Found token via broad scan env var: ${key}`);
       return value;
     }
   }
+
+  // Debug: log all env var keys that might be blob-related
+  const blobKeys = Object.keys(process.env).filter(k =>
+    k.toLowerCase().includes('blob') ||
+    k.toLowerCase().includes('store') ||
+    k.toLowerCase().includes('vercel')
+  );
+  console.log('[blob-helpers] No blob token found. Env keys with blob/store/vercel:', blobKeys);
 
   // No token found — return undefined (will cause SDK to throw its own error)
   return undefined;
