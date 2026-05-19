@@ -49,3 +49,4 @@ blueprint-dashboard/telemetry/tasks.json
 # Generated / scratch
 tmp/
 .tmp/
+.vercel
