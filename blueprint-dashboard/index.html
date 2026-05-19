@@ -404,6 +404,7 @@
   }
   .nav-link i { width: 18px; height: 18px; flex-shrink: 0; }
   .nav-new { display:inline-block; color:#fff; background:#10b981; font-weight:700; font-size:0.55rem; letter-spacing:0.06em; padding:0.12em 0.4em; border-radius:3px; text-transform:uppercase; line-height:1; margin-left:auto; flex-shrink:0; animation: nav-new-pulse 2s ease-in-out 3; }
+  .nav-new--pink { background:#db2777; animation: nav-new-pulse 2s ease-in-out 3; }
   @keyframes nav-new-pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
 
   .main { padding: 2rem; max-width: 100%; }
@@ -2132,7 +2133,7 @@
       <a class="nav-link" data-route="home" aria-current="page" href="#home"><i data-lucide="home" aria-hidden="true"></i><span data-es="Inicio" data-en="Home">Home</span></a>
       <a class="nav-link" data-route="schedule" href="#schedule"><i data-lucide="calendar-days" aria-hidden="true"></i><span data-es="Calendario" data-en="Schedule">Schedule</span></a>
       <a class="nav-link" data-route="tracker" href="#tracker"><i data-lucide="kanban-square" aria-hidden="true"></i><span data-es="Tracker del Proyecto" data-en="Project Tracker">Project Tracker</span></a>
-      <a class="nav-link" data-route="progress" href="#progress"><i data-lucide="trending-up" aria-hidden="true"></i><span data-es="Progreso del Equipo" data-en="Team Progress">Team Progress</span></a>
+      <a class="nav-link" data-route="progress" href="#progress"><i data-lucide="trending-up" aria-hidden="true"></i><span data-es="Progreso del Equipo" data-en="Team Progress">Team Progress</span><span class="nav-new nav-new--pink">New</span></a>
       <a class="nav-link" data-route="scope" href="#scope"><i data-lucide="list-checks" aria-hidden="true"></i><span data-es="Alcance" data-en="Scope">Scope</span></a>
       <a class="nav-link" data-route="risks" href="#risks"><i data-lucide="alert-triangle" aria-hidden="true"></i><span data-es="Riesgos y Pendientes" data-en="Risks &amp; Open Items">Risks &amp; Open Items</span></a>
     </div>
@@ -2166,41 +2167,29 @@
     <!-- Profile always visible when logged in; Users/Settings only   -->
     <!-- for super_admin. Visibility controlled by JS.                -->
     <!-- ============================================================ -->
-    <div class="nav-group nav-group--account" id="navGroupAccount" style="display:none;">
-      <div class="eyebrow" data-es="Cuenta" data-en="Account">Account</div>
-      <a class="nav-link" data-route="profile" href="#profile" data-rc-auth="loggedin"><i data-lucide="user-circle" aria-hidden="true"></i><span data-es="Mi Perfil" data-en="My Profile">My Profile</span><span class="nav-new">New</span></a>
-      <a class="nav-link" data-route="users" href="#users" data-rc-auth="super_admin"><i data-lucide="users-cog" aria-hidden="true"></i><span data-es="Gestión de Usuarios" data-en="User Management">User Management</span><span class="nav-new">New</span></a>
-      <a class="nav-link" data-route="settings" href="#settings" data-rc-auth="super_admin"><i data-lucide="settings" aria-hidden="true"></i><span data-es="Configuración del Sistema" data-en="System Settings">System Settings</span><span class="nav-new">New</span></a>
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- AUTH NAV GROUP                                               -->
-    <!-- Login shown when guest; Profile + Logout shown when signed in -->
-    <!-- ============================================================ -->
-    <div class="nav-group nav-group--auth" id="navGroupAuth" style="margin-top:auto; padding-top: 1rem; border-top: 1px solid var(--color-border);">
-      <div class="eyebrow">Auth</div>
-
-      <!-- Login — visible only when NOT signed in (guest) -->
+    <!-- LOGIN for guests — shown when NOT signed in -->
+    <div class="nav-group" id="navGroupGuest" style="margin-top:auto; padding-top: 1rem; border-top: 1px solid var(--color-border);">
       <button id="navAuthLogin" class="nav-link nav-auth-btn nav-auth--guest" style="width:100%; text-align:left; background:none; border:none; cursor:pointer;"
         aria-label="Sign in to the blueprint">
         <i data-lucide="log-in" aria-hidden="true"></i>
         <span>Login</span>
       </button>
+    </div>
 
-      <!-- Profile — visible only when signed in -->
-      <button id="navAuthProfile" class="nav-link nav-auth-btn nav-auth--loggedin" style="width:100%; text-align:left; background:none; border:none; cursor:pointer;" hidden
-        aria-label="View your profile">
-        <i data-lucide="user-circle" aria-hidden="true"></i>
-        <span id="navAuthProfileLabel">Profile</span>
-      </button>
-
-      <!-- Logout — visible only when signed in -->
-      <button id="navAuthLogout" class="nav-link nav-auth-btn nav-auth--loggedin" style="width:100%; text-align:left; background:none; border:none; cursor:pointer; color: var(--color-error, #ef4444);" hidden
+    <!-- ACCOUNT NAV GROUP — shown when logged in -->
+    <div class="nav-group nav-group--account" id="navGroupAccount" style="display:none; margin-top:auto; padding-top: 1rem; border-top: 1px solid var(--color-border);">
+      <div class="eyebrow" data-es="Cuenta" data-en="Account">Account <span class="nav-new nav-new--pink" style="vertical-align:middle;">New</span></div>
+      <a class="nav-link" data-route="profile" href="#profile" data-rc-auth="loggedin"><i data-lucide="user-circle" aria-hidden="true"></i><span data-es="Mi Perfil" data-en="My Profile">My Profile</span><span class="nav-new">New</span></a>
+      <a class="nav-link" data-route="users" href="#users" data-rc-auth="super_admin"><i data-lucide="users-cog" aria-hidden="true"></i><span data-es="Gestión de Usuarios" data-en="User Management">User Management</span><span class="nav-new">New</span></a>
+      <a class="nav-link" data-route="settings" href="#settings" data-rc-auth="super_admin"><i data-lucide="settings" aria-hidden="true"></i><span data-es="Configuración del Sistema" data-en="System Settings">System Settings</span><span class="nav-new">New</span></a>
+      <button id="navAuthLogout" class="nav-link nav-auth-btn nav-auth--loggedin" style="width:100%; text-align:left; background:none; border:none; cursor:pointer; color: var(--color-error, #ef4444);"
         aria-label="Sign out">
         <i data-lucide="log-out" aria-hidden="true"></i>
         <span>Logout</span>
       </button>
     </div>
+
+    <!-- Auth nav group removed — Login/Logout handled by Account group + auth dialog -->
   </aside>
 
   <!-- ============================================================ -->
@@ -4301,60 +4290,44 @@
   });
 
   // ============================================================
-  // AUTH SIDEBAR: Login / Profile / Logout nav buttons
-  // Syncs with the existing __role system.
+  // AUTH SIDEBAR: Login button (guest) / Account group (logged in)
+  // Toggle between navGroupGuest and navGroupAccount
   // ============================================================
   document.addEventListener('DOMContentLoaded', () => {
     const loginBtn   = document.getElementById('navAuthLogin');
-    const profileBtn = document.getElementById('navAuthProfile');
-    const profileLbl = document.getElementById('navAuthProfileLabel');
     const logoutBtn  = document.getElementById('navAuthLogout');
-
-    const roleLabels = {
-      admin: 'Admin',
-      webdev: 'Web Dev',
-      client_admin: 'Client Admin',
-      client: 'Client',
-      guest: 'Guest'
-    };
+    const guestGroup = document.getElementById('navGroupGuest');
+    const accountGroup = document.getElementById('navGroupAccount');
 
     function syncAuthNav() {
       const role = (window.__role && window.__role.current()) || 'guest';
       const isLoggedIn = role !== 'guest';
 
-      // Login: show only when guest
-      if (loginBtn) loginBtn.hidden = isLoggedIn;
-
-      // Profile + Logout: show only when signed in
-      if (profileBtn) {
-        profileBtn.hidden = !isLoggedIn;
-        if (profileLbl) profileLbl.textContent = roleLabels[role] || role;
-      }
-      if (logoutBtn) logoutBtn.hidden = !isLoggedIn;
+      // Toggle guest vs account group visibility
+      if (guestGroup) guestGroup.style.display = isLoggedIn ? 'none' : '';
+      if (accountGroup) accountGroup.style.display = isLoggedIn ? '' : 'none';
     }
 
-    // Wire Login → open the existing sign-in dialog
+    // Wire Login → open the auth dialog
     loginBtn?.addEventListener('click', () => {
-      const signInBtn = document.getElementById('roleSignInBtn');
-      if (signInBtn) signInBtn.click();
+      if (window.rcAuthOpen) { rcAuthOpen(); }
+      else {
+        const signInBtn = document.getElementById('roleSignInBtn');
+        if (signInBtn) signInBtn.click();
+      }
     });
 
-    // Wire Logout → existing sign-out
+    // Wire Logout
     logoutBtn?.addEventListener('click', () => {
-      if (window.__role && window.__role.signOut) window.__role.signOut();
+      if (window.rcAuthLogout) { rcAuthLogout(); }
+      else if (window.__role && window.__role.signOut) { window.__role.signOut(); }
       setTimeout(syncAuthNav, 50);
-    });
-
-    // Profile → shows current role info (opens sign-in dialog to switch)
-    profileBtn?.addEventListener('click', () => {
-      const signInBtn = document.getElementById('roleSignInBtn');
-      if (signInBtn) signInBtn.click();
     });
 
     // Initial sync
     syncAuthNav();
 
-    // Re-sync whenever role changes (listens to custom event if dispatched)
+    // Re-sync whenever role changes
     document.addEventListener('rc:rolechange', syncAuthNav);
     // Fallback: poll once after short delay to catch async role init
     setTimeout(syncAuthNav, 300);
@@ -6863,18 +6836,15 @@
   function rcUpdateAuthUI() {
     var user = window.__rcCurrentUser;
     var loginBtn = document.getElementById('navAuthLogin');
-    var profileBtn = document.getElementById('navAuthProfile');
     var logoutBtn = document.getElementById('navAuthLogout');
-    var profileLabel = document.getElementById('navAuthProfileLabel');
+    var guestGroup = document.getElementById('navGroupGuest');
     var accountGroup = document.getElementById('navGroupAccount');
 
     if (user) {
-      // Logged in
-      if (loginBtn) loginBtn.hidden = true;
-      if (profileBtn) profileBtn.hidden = false;
-      if (logoutBtn) logoutBtn.hidden = false;
-      if (profileLabel) profileLabel.textContent = user.displayName || user.name || 'Profile';
+      // Logged in — show Account group, hide Guest group
+      if (guestGroup) guestGroup.style.display = 'none';
       if (accountGroup) accountGroup.style.display = '';
+      if (logoutBtn) logoutBtn.hidden = false;
 
       // Show/hide nav links based on auth level
       var links = accountGroup ? accountGroup.querySelectorAll('[data-rc-auth]') : [];
@@ -6892,10 +6862,8 @@
       // Filter sidebar nav-links based on moduleAccess
       rcFilterSidebarModules();
     } else {
-      // Not logged in
-      if (loginBtn) loginBtn.hidden = false;
-      if (profileBtn) profileBtn.hidden = true;
-      if (logoutBtn) logoutBtn.hidden = true;
+      // Not logged in — show Guest group, hide Account group
+      if (guestGroup) guestGroup.style.display = '';
       if (accountGroup) accountGroup.style.display = 'none';
 
       // Show all nav links (no filtering when not logged in)
@@ -7133,7 +7101,6 @@
 
   /* ── Wire up auth buttons ─────────────────────────────────────── */
   document.getElementById('navAuthLogin')?.addEventListener('click', function() { rcAuthOpen(); });
-  document.getElementById('navAuthProfile')?.addEventListener('click', function() { showScreen('profile'); rcProfileLoad(); });
   document.getElementById('navAuthLogout')?.addEventListener('click', function() { rcAuthLogout(); });
 
   // Close dialog on escape/backdrop click
