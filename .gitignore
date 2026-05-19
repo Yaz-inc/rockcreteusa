@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.turbo/
+.cache/
+
+# Environment + secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+*.pfx
+.cloudflare-token
+
+# Deploy logs
+.watch.log
+*.deploy.log
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Telemetry working copies (keep .example files; ignore the live ones)
+blueprint-dashboard/telemetry/panel-interno-telemetry.json
+blueprint-dashboard/telemetry/tasks.json
+
+# Init artifacts
+.init-state
+.init-backup/
+
+# Generated / scratch
+tmp/
+.tmp/

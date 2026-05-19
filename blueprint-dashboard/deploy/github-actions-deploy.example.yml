@@ -1,0 +1,51 @@
+# Example GitHub Actions workflow for deploying the dashboard.
+# Copy this file to .github/workflows/deploy-blueprint.yml in your repo to enable.
+# Requires repo secrets: VPS_SSH_PRIVATE_KEY, VPS_HOST, VPS_USER
+
+name: Deploy Rockcrete USA Website Rebuild Blueprint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "blueprint-dashboard/index.html"
+      - "blueprint-dashboard/deploy/deploy.sh"
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-blueprint
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Run deploy
+        env:
+          DEPLOY_USER: ${{ secrets.VPS_USER }}
+          DEPLOY_HOST: ${{ secrets.VPS_HOST }}
+          DEPLOY_PATH: /var/www/rockcreteusa-website-rebuild/
+          DEPLOY_SSH_KEY: /home/runner/.ssh/deploy_key
+          URL: https://rockcreteusa.projectizer.ai/
+        run: |
+          chmod +x blueprint-dashboard/deploy/deploy.sh
+          blueprint-dashboard/deploy/deploy.sh
+
+      - name: Notify
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "Deployed to https://rockcreteusa.projectizer.ai/"
+          else
+            echo "Deploy failed, check logs"
+          fi

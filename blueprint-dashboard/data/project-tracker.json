@@ -1,0 +1,383 @@
+{
+  "schemaVersion": "1.0",
+  "updatedAt": "2026-05-15T12:00:00-04:00",
+  "project": {
+    "name": "Rockcrete USA Website Rebuild",
+    "startDate": "2026-05-14",
+    "targetGoLive": "2026-09-29",
+    "closeOutDate": "2026-10-26"
+  },
+  "statuses": [
+    { "id": "not_started", "label": "Not Started" },
+    { "id": "in_progress", "label": "In Progress" },
+    { "id": "waiting_client", "label": "Waiting on Client" },
+    { "id": "ready_review", "label": "Ready for Review" },
+    { "id": "done", "label": "Done" }
+  ],
+  "accessStatuses": [
+    { "id": "not_requested", "label": "Not Requested" },
+    { "id": "requested", "label": "Requested" },
+    { "id": "received", "label": "Received" },
+    { "id": "blocked", "label": "Blocked" }
+  ],
+  "roles": [
+    { "id": "pm", "label": "Project Management" },
+    { "id": "design", "label": "Design Team" },
+    { "id": "development", "label": "Development Team" },
+    { "id": "client", "label": "Client" }
+  ],
+  "teamMembers": [
+    { "id": "", "label": "Unassigned" },
+    { "id": "daniel", "label": "Daniel" },
+    { "id": "lorena", "label": "Lorena" },
+    { "id": "yasir", "label": "Yasir" },
+    { "id": "angel", "label": "Angel" },
+    { "id": "web-dev-team", "label": "Web Dev Team" }
+  ],
+  "phases": [
+    {
+      "id": "phase-1",
+      "label": "Phase 1",
+      "title": "Discovery, Architecture & UX Planning",
+      "startDate": "2026-05-14",
+      "endDate": "2026-06-16",
+      "summary": "Kickoff, current-site audit, site structure, UX wireframes, staging setup, plugin shortlist, and migration plan."
+    },
+    {
+      "id": "phase-2",
+      "label": "Phase 2",
+      "title": "Visual Design & Design Approval",
+      "startDate": "2026-06-22",
+      "endDate": "2026-07-07",
+      "summary": "Homepage concept, page templates, visual system, shopping flow screens, one revision round, and design approval."
+    },
+    {
+      "id": "phase-3",
+      "label": "Phase 3",
+      "title": "Development, QA & Go-Live",
+      "startDate": "2026-07-13",
+      "endDate": "2026-09-29",
+      "summary": "Build, integrations, migration, QA, pre-launch review, DNS cutover, and go-live."
+    },
+    {
+      "id": "phase-4",
+      "label": "Phase 4",
+      "title": "Post-Launch & Optimization",
+      "startDate": "2026-10-05",
+      "endDate": "2026-10-26",
+      "summary": "Post-launch monitoring, warranty fixes, GA4 checks, training, handoff, and final sign-off."
+    }
+  ],
+  "calendarEvents": [
+    { "id": "evt-kickoff", "date": "2026-05-14", "type": "meeting", "phase": "phase-1", "title": "Project Kickoff & Discovery Review" },
+    { "id": "evt-access-request", "date": "2026-05-14", "type": "access", "phase": "phase-1", "title": "Send Phase 1 access request email" },
+    { "id": "evt-tech-discovery", "date": "2026-05-26", "type": "meeting", "phase": "phase-1", "title": "Technical Discovery Meeting" },
+    { "id": "evt-phase-1-signoff", "date": "2026-06-16", "type": "gate", "phase": "phase-1", "title": "Phase 1 Deliverables Review & Sign-Off" },
+    { "id": "evt-phase-2-kickoff", "date": "2026-06-22", "type": "meeting", "phase": "phase-2", "title": "Phase 2 Kickoff & Design Direction Review" },
+    { "id": "evt-homepage-concept", "date": "2026-06-29", "type": "meeting", "phase": "phase-2", "title": "Homepage Concept Presentation" },
+    { "id": "evt-design-approval", "date": "2026-07-07", "type": "gate", "phase": "phase-2", "title": "Full Template Review & Design Approval" },
+    { "id": "evt-phase-3-kickoff", "date": "2026-07-13", "type": "meeting", "phase": "phase-3", "title": "Phase 3 Kickoff & Development Sprint Planning" },
+    { "id": "evt-mid-dev", "date": "2026-08-10", "type": "meeting", "phase": "phase-3", "title": "Mid-Development Check-In" },
+    { "id": "evt-prelaunch", "date": "2026-09-22", "type": "gate", "phase": "phase-3", "title": "Pre-Launch Review and Go/No-Go" },
+    { "id": "evt-golive", "date": "2026-09-29", "type": "launch", "phase": "phase-3", "title": "Go-Live & Phase 3 Sign-Off" },
+    { "id": "evt-post-launch", "date": "2026-10-06", "type": "meeting", "phase": "phase-4", "title": "48-Hour Post-Launch Review" },
+    { "id": "evt-training", "date": "2026-10-13", "type": "meeting", "phase": "phase-4", "title": "Training & Knowledge Transfer" },
+    { "id": "evt-final-signoff", "date": "2026-10-26", "type": "gate", "phase": "phase-4", "title": "Phase 4 Final Sign-Off & Handoff" }
+  ],
+  "accessRequests": [
+    {
+      "id": "access-ga4",
+      "phase": "phase-1",
+      "system": "Google Analytics",
+      "title": "Provide Google Analytics access",
+      "description": "Add New Minds Group to the existing GA4 property so we can review current tracking, confirm Enhanced eCommerce events, and plan the migration.",
+      "dueDate": "2026-05-16",
+      "status": "requested"
+    },
+    {
+      "id": "access-gtm",
+      "phase": "phase-1",
+      "system": "Google Tag Manager",
+      "title": "Provide Google Tag Manager access if managed separately",
+      "description": "If Google Tag Manager is managed outside the GA4 account, add New Minds Group to the current GTM container used on rockcreteusa.com.",
+      "dueDate": "2026-05-16",
+      "status": "requested"
+    },
+    {
+      "id": "access-hotjar",
+      "phase": "phase-1",
+      "system": "Hotjar",
+      "title": "Provide Hotjar access",
+      "description": "Add New Minds Group to the existing Hotjar account so we can confirm the current setup and decide what should carry over to the rebuild.",
+      "dueDate": "2026-05-16",
+      "status": "requested"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "p1-pm-kickoff",
+      "phase": "phase-1",
+      "role": "pm",
+      "title": "Run kickoff and capture decisions",
+      "description": "Lead the kickoff, confirm how we will work together, capture decisions, and publish the recap.",
+      "startDate": "2026-05-14",
+      "dueDate": "2026-05-14",
+      "status": "done",
+      "clientVisible": true
+    },
+    {
+      "id": "p1-pm-access",
+      "phase": "phase-1",
+      "role": "pm",
+      "title": "Send access request email",
+      "description": "Ask Hank for Google Analytics, Google Tag Manager if separate, and Hotjar access after kickoff.",
+      "startDate": "2026-05-14",
+      "dueDate": "2026-05-16",
+      "status": "done",
+      "clientVisible": true,
+      "accessRequestIds": ["access-ga4", "access-gtm", "access-hotjar"]
+    },
+    {
+      "id": "p1-pm-competitors",
+      "phase": "phase-1",
+      "role": "pm",
+      "title": "Capture competitor and reference-site notes",
+      "description": "Ask Hank which competitors he sees as strongest and what he wants to match or beat.",
+      "startDate": "2026-05-15",
+      "dueDate": "2026-05-20",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p1-design-wireframes",
+      "phase": "phase-1",
+      "role": "design",
+      "title": "Create UX wireframes for core shopping pages",
+      "description": "Wireframe homepage, category, product, cart, checkout, and account flows before visual design.",
+      "startDate": "2026-05-22",
+      "dueDate": "2026-06-10",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p1-design-sitemap",
+      "phase": "phase-1",
+      "role": "design",
+      "title": "Define sitemap and navigation flows",
+      "description": "Turn the current-site audit and product structure into the new site map and navigation plan.",
+      "startDate": "2026-05-20",
+      "dueDate": "2026-06-06",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p1-dev-current-site-audit",
+      "phase": "phase-1",
+      "role": "development",
+      "title": "Audit current WordPress, WooCommerce, plugins, SEO, and performance",
+      "description": "Review the current setup and document what should be carried over, rebuilt, retired, or replaced.",
+      "startDate": "2026-05-14",
+      "dueDate": "2026-05-29",
+      "status": "in_progress",
+      "clientVisible": true
+    },
+    {
+      "id": "p1-dev-staging",
+      "phase": "phase-1",
+      "role": "development",
+      "title": "Set up staging and baseline WooCommerce install",
+      "description": "Create the working staging environment with WordPress, WooCommerce, Elementor Pro, and the base stack.",
+      "startDate": "2026-05-22",
+      "dueDate": "2026-06-05",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p1-dev-migration-plan",
+      "phase": "phase-1",
+      "role": "development",
+      "title": "Prepare migration plan for products, customers, orders, pages, and images",
+      "description": "Map the 600+ products, 1,246 customers, 7,975 orders, and content assets into the migration plan.",
+      "startDate": "2026-05-29",
+      "dueDate": "2026-06-13",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p1-client-access",
+      "phase": "phase-1",
+      "role": "client",
+      "title": "Provide analytics and Hotjar access",
+      "description": "Grant access to GA4, GTM if separate, and Hotjar so the team can inspect current tracking.",
+      "startDate": "2026-05-14",
+      "dueDate": "2026-05-16",
+      "status": "waiting_client",
+      "clientVisible": true
+    },
+    {
+      "id": "p1-client-content",
+      "phase": "phase-1",
+      "role": "client",
+      "title": "Confirm what content stays, changes, or goes away",
+      "description": "Identify must-keep pages, outdated pages, discontinued products, and any content that needs special handling.",
+      "startDate": "2026-05-14",
+      "dueDate": "2026-06-03",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p1-signoff",
+      "phase": "phase-1",
+      "role": "pm",
+      "title": "Complete Phase 1 sign-off meeting",
+      "description": "Review the Phase 1 outputs and confirm the project can move into visual design.",
+      "startDate": "2026-06-16",
+      "dueDate": "2026-06-16",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p2-design-homepage",
+      "phase": "phase-2",
+      "role": "design",
+      "title": "Design homepage concept",
+      "description": "Create the homepage concept for desktop and mobile presentation.",
+      "startDate": "2026-06-22",
+      "dueDate": "2026-06-29",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p2-design-templates",
+      "phase": "phase-2",
+      "role": "design",
+      "title": "Design core page templates",
+      "description": "Design category, product, content, cart, checkout, order confirmation, and account templates.",
+      "startDate": "2026-06-29",
+      "dueDate": "2026-07-05",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p2-client-feedback",
+      "phase": "phase-2",
+      "role": "client",
+      "title": "Review designs and provide consolidated feedback",
+      "description": "Review the design presentation and provide one consolidated round of feedback.",
+      "startDate": "2026-06-29",
+      "dueDate": "2026-07-03",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p2-design-approval",
+      "phase": "phase-2",
+      "role": "pm",
+      "title": "Complete Design Approval Meeting",
+      "description": "Record approval in the July 7 face-to-face meeting before development starts.",
+      "startDate": "2026-07-07",
+      "dueDate": "2026-07-07",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p3-dev-theme",
+      "phase": "phase-3",
+      "role": "development",
+      "title": "Build approved WordPress and WooCommerce templates",
+      "description": "Build the approved page templates, shopping pages, header, footer, and responsive behavior.",
+      "startDate": "2026-07-13",
+      "dueDate": "2026-08-21",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p3-dev-integrations",
+      "phase": "phase-3",
+      "role": "development",
+      "title": "Configure core integrations",
+      "description": "Configure Stripe, PayPal, Avalara, shipping, GA4 Enhanced eCommerce, and Hotjar carry-over decisions.",
+      "startDate": "2026-07-21",
+      "dueDate": "2026-08-28",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p3-dev-migration",
+      "phase": "phase-3",
+      "role": "development",
+      "title": "Run product, customer, order, and content migration",
+      "description": "Migrate active and discontinued products, customers, orders, pages, images, redirects, and validation records.",
+      "startDate": "2026-08-17",
+      "dueDate": "2026-09-14",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p3-qa",
+      "phase": "phase-3",
+      "role": "development",
+      "title": "Complete QA and pre-launch checks",
+      "description": "Validate checkout, subscriptions, search, forms, migration records, responsive behavior, analytics, and launch readiness.",
+      "startDate": "2026-09-08",
+      "dueDate": "2026-09-22",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p3-client-prelaunch",
+      "phase": "phase-3",
+      "role": "client",
+      "title": "Attend Pre-Launch Review and give go/no-go",
+      "description": "Review staging, QA report, migration validation, and DNS cutover plan in the September 22 meeting.",
+      "startDate": "2026-09-22",
+      "dueDate": "2026-09-22",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p3-golive",
+      "phase": "phase-3",
+      "role": "pm",
+      "title": "Coordinate go-live and Phase 3 sign-off",
+      "description": "Coordinate launch, confirm DNS cutover, run smoke tests, and record Phase 3 sign-off.",
+      "startDate": "2026-09-29",
+      "dueDate": "2026-09-29",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p4-dev-monitor",
+      "phase": "phase-4",
+      "role": "development",
+      "title": "Monitor launch and resolve warranty issues",
+      "description": "Watch analytics, checkout, site health, forms, search, and critical errors during the post-launch window.",
+      "startDate": "2026-10-05",
+      "dueDate": "2026-10-26",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p4-pm-training",
+      "phase": "phase-4",
+      "role": "pm",
+      "title": "Run training and knowledge transfer",
+      "description": "Train Hank on the new site, document recurring tasks, and answer handoff questions.",
+      "startDate": "2026-10-13",
+      "dueDate": "2026-10-13",
+      "status": "not_started",
+      "clientVisible": true
+    },
+    {
+      "id": "p4-final-signoff",
+      "phase": "phase-4",
+      "role": "client",
+      "title": "Attend final sign-off and handoff",
+      "description": "Review final handoff materials and close the project in the October 26 meeting.",
+      "startDate": "2026-10-26",
+      "dueDate": "2026-10-26",
+      "status": "not_started",
+      "clientVisible": true
+    }
+  ]
+}

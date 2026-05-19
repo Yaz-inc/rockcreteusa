@@ -1,0 +1,31 @@
+# CODEOWNERS for Rockcrete USA Website Rebuild
+#
+# Each line is a path pattern followed by one or more owners.
+# Order matters: the LAST matching pattern takes precedence.
+# See: https://docs.github.com/en/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global default: project lead reviews everything not otherwise claimed
+*                                       @newmindsgroup
+
+# Project memory and decisions: high signal, route to project lead
+/docs/project-memory/                   @newmindsgroup
+/docs/decision-records/                 @newmindsgroup
+
+# Architecture diagrams
+/docs/architecture/                     @newmindsgroup
+
+# Blueprint dashboard
+/blueprint-dashboard/                   @newmindsgroup
+
+# CI / GitHub config
+/.github/                               @newmindsgroup
+
+# Scripts
+/scripts/                               @newmindsgroup
+
+# Per-area examples (uncomment and assign as the team grows):
+# /apps/backend/                        @{{BACKEND_OWNER_GH}}
+# /apps/frontend/                       @{{FRONTEND_OWNER_GH}}
+# /apps/mobile/                         @{{MOBILE_OWNER_GH}}
+# /infra/                               @{{INFRA_OWNER_GH}}
+# /brand/                               @{{BRAND_OWNER_GH}}

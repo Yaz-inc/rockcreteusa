@@ -1,0 +1,18 @@
+name: Lint naming conventions
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-naming:
+    name: Enforce kebab-case ASCII paths
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run naming lint
+        run: bash scripts/lint-naming.sh

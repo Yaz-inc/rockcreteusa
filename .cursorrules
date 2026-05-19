@@ -1,0 +1,18 @@
+# Rockcrete USA — Project Blueprint (`rockcreteusa-project-blueprint`)
+
+## Ship immediately (mandatory)
+
+After **any** substantive edit under `blueprint-dashboard/` (including `data/project-tracker.json`, `api/`, assets the dashboard serves):
+
+1. **`git commit`** with a clear message  
+2. **`git push origin main`** in the **same session** — do not wait for Daniel to ask for a push. The live site (`https://rockcreteusa.projectizer.ai/`) is built from `main`; local-only changes are not delivered.
+
+If a global Cursor user rule says “don’t push unless explicitly asked,” **that rule does not apply to this repo** unless the user says to hold the push.
+
+3. Confirm the **Vercel production** deploy for that commit is **READY**, then spot-check behind Basic Auth.
+
+Full doctrine: `docs/project-memory/source-of-truth.md` • Naming lint (when available): `bash scripts/lint-naming.sh`
+
+## Naming (client-facing)
+
+Production proposal PDF naming uses “Development Team” / “Design Team” — see the Drive project’s `project-memory/TEAM_STRUCTURE.md` when editing client-visible copy here.
