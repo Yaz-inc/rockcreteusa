@@ -39,7 +39,7 @@ const MAX_RESET_ATTEMPTS  = 5;
 const MAX_LOGIN_ATTEMPTS  = 5;
 const LOGIN_LOCKOUT_MINS  = 15;
 
-const VALID_ROLES = ['super_admin', 'admin', 'pm', 'webdev', 'team', 'client_admin', 'client'];
+const VALID_ROLES = ['super_admin', 'admin', 'pm', 'webdev', 'devops', 'seo', 'ui_ux', 'team', 'client_admin', 'client'];
 
 /* ── Helpers ────────────────────────────────────────────────────────────── */
 
@@ -273,14 +273,22 @@ function getDefaultModuleAccess(role) {
     'team', 'documents', 'panel', 'pricing', 'profile', 'users', 'settings'
   ];
 
+  const noAdmin = ['users', 'settings'];
+  const noStaff = ['users', 'settings', 'pricing', 'panel'];
+  const noClient = ['users', 'settings', 'pricing', 'panel', 'risks'];
+  const noClientRead = ['users', 'settings', 'pricing', 'panel', 'risks', 'tracker', 'progress'];
+
   const defaults = {
-    super_admin: Object.fromEntries(allModules.map(m => [m, 'admin'])),
-    admin: Object.fromEntries(allModules.map(m => [m, m === 'users' || m === 'settings' ? 'none' : 'admin'])),
-    pm: Object.fromEntries(allModules.map(m => [m, ['users', 'settings', 'pricing'].includes(m) ? 'none' : 'write'])),
-    webdev: Object.fromEntries(allModules.map(m => [m, ['users', 'settings', 'pricing', 'panel'].includes(m) ? 'none' : 'write'])),
-    team: Object.fromEntries(allModules.map(m => [m, ['users', 'settings', 'pricing', 'panel'].includes(m) ? 'none' : 'write'])),
-    client_admin: Object.fromEntries(allModules.map(m => [m, ['users', 'settings', 'pricing', 'panel', 'risks'].includes(m) ? 'none' : 'read'])),
-    client: Object.fromEntries(allModules.map(m => [m, ['users', 'settings', 'pricing', 'panel', 'risks', 'tracker', 'progress'].includes(m) ? 'none' : 'read'])),
+    super_admin:   Object.fromEntries(allModules.map(m => [m, 'admin'])),
+    admin:         Object.fromEntries(allModules.map(m => [m, noAdmin.includes(m) ? 'none' : 'admin'])),
+    pm:            Object.fromEntries(allModules.map(m => [m, [...noAdmin, 'pricing'].includes(m) ? 'none' : 'write'])),
+    webdev:        Object.fromEntries(allModules.map(m => [m, noStaff.includes(m) ? 'none' : 'write'])),
+    devops:        Object.fromEntries(allModules.map(m => [m, [...noStaff, 'scope', 'risks', 'deliverables'].includes(m) ? 'none' : 'write'])),
+    seo:           Object.fromEntries(allModules.map(m => [m, [...noStaff, 'migration', 'performance'].includes(m) ? 'none' : 'read'])),
+    ui_ux:         Object.fromEntries(allModules.map(m => [m, [...noStaff, 'migration'].includes(m) ? 'none' : 'write'])),
+    team:          Object.fromEntries(allModules.map(m => [m, noStaff.includes(m) ? 'none' : 'write'])),
+    client_admin:  Object.fromEntries(allModules.map(m => [m, noClient.includes(m) ? 'none' : 'read'])),
+    client:        Object.fromEntries(allModules.map(m => [m, noClientRead.includes(m) ? 'none' : 'read'])),
   };
 
   return defaults[role] || defaults.client;

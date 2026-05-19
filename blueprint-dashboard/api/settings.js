@@ -320,6 +320,108 @@ export default async function handler(req, res) {
       }
     }
 
+    /* ── GET: Export all application data ──────────────────────────────── */
+    if (req.method === 'GET' && action === 'export') {
+      const BLOB_PATHS = [
+        'rockcrete/users.json',
+        'rockcrete/settings.json',
+        'rockcrete/milestones.json',
+        'rockcrete/progress.json',
+        'rockcrete/reset-tokens.json',
+      ];
+
+      const exportData = {
+        _meta: {
+          exportedAt: new Date().toISOString(),
+          version: 'V17_A',
+          source: 'Rockcrete USA Blueprint Portal',
+        },
+        data: {},
+      };
+
+      for (const path of BLOB_PATHS) {
+        try {
+          const data = await readBlob(path);
+          if (data) exportData.data[path] = data;
+        } catch (e) {
+          // Skip missing blobs silently
+        }
+      }
+
+      // Also include the tracker data from the static file
+      // (it's in data/project-tracker.json, not blob)
+      // Users can export that separately if needed
+
+      return setJson(res, 200, exportData);
+    }
+
+    /* ── POST: Import application data ────────────────────────────────── */
+    if (req.method === 'POST' && action === 'import') {
+      const body = parseBody(req);
+      const importData = body.data;
+
+      if (!importData || typeof importData !== 'object') {
+        return setJson(res, 400, { error: 'Import data object is required in { data: { ... } } format' });
+      }
+
+      const allowedPaths = [
+        'rockcrete/users.json',
+        'rockcrete/settings.json',
+        'rockcrete/milestones.json',
+        'rockcrete/progress.json',
+        'rockcrete/reset-tokens.json',
+      ];
+
+      const results = {};
+      let imported = 0;
+      let skipped = 0;
+
+      for (const [path, data] of Object.entries(importData)) {
+        if (!allowedPaths.includes(path)) {
+          results[path] = { status: 'skipped', reason: 'Path not allowed' };
+          skipped++;
+          continue;
+        }
+
+        try {
+          await writeBlob(path, data);
+          results[path] = { status: 'imported' };
+          imported++;
+        } catch (e) {
+          results[path] = { status: 'error', reason: e.message };
+          skipped++;
+        }
+      }
+
+      return setJson(res, 200, {
+        ok: true,
+        message: `Imported ${imported} data store(s), skipped ${skipped}`,
+        imported,
+        skipped,
+        results,
+      });
+    }
+
+    /* ── GET: Get list of all blob stores (for export overview) ────────── */
+    if (req.method === 'GET' && action === 'stores') {
+      const stores = [
+        { path: 'rockcrete/users.json', description: 'User accounts and permissions', required: true },
+        { path: 'rockcrete/settings.json', description: 'System settings and email config', required: true },
+        { path: 'rockcrete/milestones.json', description: 'Task milestones', required: false },
+        { path: 'rockcrete/progress.json', description: 'Progress updates and activity', required: false },
+        { path: 'rockcrete/reset-tokens.json', description: 'Password reset tokens (temporary)', required: false },
+      ];
+
+      // Check which ones have data
+      for (const store of stores) {
+        const data = await readBlob(store.path);
+        store.hasData = data !== null;
+        store.size = data ? JSON.stringify(data).length : 0;
+      }
+
+      return setJson(res, 200, { stores });
+    }
+
     /* ── Method not allowed ────────────────────────────────────────────── */
     res.setHeader('Allow', 'GET, POST, PUT');
     return setJson(res, 405, { error: 'Method not allowed' });

@@ -16,7 +16,7 @@ const USERS_PATH = 'rockcrete/users.json';
 
 /* ── Constants ─────────────────────────────────────────────────────────── */
 
-const VALID_ROLES = ['super_admin', 'admin', 'pm', 'webdev', 'team', 'client_admin', 'client'];
+const VALID_ROLES = ['super_admin', 'admin', 'pm', 'webdev', 'devops', 'seo', 'ui_ux', 'team', 'client_admin', 'client'];
 
 const MODULE_REGISTRY = [
   { id: 'home',         name: 'Home Dashboard',      category: 'Navigation' },
@@ -139,14 +139,22 @@ async function requireSuperAdmin(req) {
 
 function getDefaultModuleAccess(role) {
   const allModules = MODULE_REGISTRY.map(m => m.id);
+  const noAdmin = ['users', 'settings'];
+  const noStaff = ['users', 'settings', 'pricing', 'panel'];
+  const noClient = ['users', 'settings', 'pricing', 'panel', 'risks'];
+  const noClientRead = ['users', 'settings', 'pricing', 'panel', 'risks', 'tracker', 'progress'];
+
   const defaults = {
-    super_admin: Object.fromEntries(allModules.map(m => [m, 'admin'])),
-    admin: Object.fromEntries(allModules.map(m => [m, ['users', 'settings'].includes(m) ? 'none' : 'admin'])),
-    pm: Object.fromEntries(allModules.map(m => [m, ['users', 'settings', 'pricing'].includes(m) ? 'none' : 'write'])),
-    webdev: Object.fromEntries(allModules.map(m => [m, ['users', 'settings', 'pricing', 'panel'].includes(m) ? 'none' : 'write'])),
-    team: Object.fromEntries(allModules.map(m => [m, ['users', 'settings', 'pricing', 'panel'].includes(m) ? 'none' : 'write'])),
-    client_admin: Object.fromEntries(allModules.map(m => [m, ['users', 'settings', 'pricing', 'panel', 'risks'].includes(m) ? 'none' : 'read'])),
-    client: Object.fromEntries(allModules.map(m => [m, ['users', 'settings', 'pricing', 'panel', 'risks', 'tracker', 'progress'].includes(m) ? 'none' : 'read'])),
+    super_admin:   Object.fromEntries(allModules.map(m => [m, 'admin'])),
+    admin:         Object.fromEntries(allModules.map(m => [m, noAdmin.includes(m) ? 'none' : 'admin'])),
+    pm:            Object.fromEntries(allModules.map(m => [m, [...noAdmin, 'pricing'].includes(m) ? 'none' : 'write'])),
+    webdev:        Object.fromEntries(allModules.map(m => [m, noStaff.includes(m) ? 'none' : 'write'])),
+    devops:        Object.fromEntries(allModules.map(m => [m, [...noStaff, 'scope', 'risks', 'deliverables'].includes(m) ? 'none' : 'write'])),
+    seo:           Object.fromEntries(allModules.map(m => [m, [...noStaff, 'migration', 'performance'].includes(m) ? 'none' : 'read'])),
+    ui_ux:         Object.fromEntries(allModules.map(m => [m, [...noStaff, 'migration'].includes(m) ? 'none' : 'write'])),
+    team:          Object.fromEntries(allModules.map(m => [m, noStaff.includes(m) ? 'none' : 'write'])),
+    client_admin:  Object.fromEntries(allModules.map(m => [m, noClient.includes(m) ? 'none' : 'read'])),
+    client:        Object.fromEntries(allModules.map(m => [m, noClientRead.includes(m) ? 'none' : 'read'])),
   };
   return defaults[role] || defaults.client;
 }
@@ -391,6 +399,158 @@ export default async function handler(req, res) {
       await saveUsers(users);
 
       return setJson(res, 200, { ok: true, message: 'Password reset successfully' });
+    }
+
+    /* ── POST: Invite user via email (Admin/Client_Admin/Super_Admin) ─── */
+    if (req.method === 'POST' && req.query?.action === 'invite') {
+      // Allow super_admin, admin, and client_admin to invite
+      const cookieHeader = req.headers?.cookie || '';
+      const match = cookieHeader.match(/rockcrete_session=([^;]+)/);
+      if (!match) return setJson(res, 401, { error: 'Not authenticated' });
+      const session = verifySession(match[1]);
+      if (!session) return setJson(res, 401, { error: 'Invalid session' });
+      const users = await getUsers();
+      const inviter = users.find(u => u.id === session.userId);
+      if (!inviter || inviter.status !== 'active') return setJson(res, 401, { error: 'Not authenticated' });
+      if (!['super_admin', 'admin', 'client_admin'].includes(inviter.role)) {
+        return setJson(res, 403, { error: 'Only Admin or Client Admin can invite users' });
+      }
+
+      const body = parseBody(req);
+      const email = String(body.email || '').trim().toLowerCase();
+      const name = String(body.name || '').trim();
+      const role = String(body.role || 'team').toLowerCase();
+      const assignedTasks = body.assignedTasks || [];
+
+      if (!email || !name) {
+        return setJson(res, 400, { error: 'Email and name are required' });
+      }
+
+      // Client admin can only invite with limited roles
+      if (inviter.role === 'client_admin' && !['client', 'client_admin', 'team'].includes(role)) {
+        return setJson(res, 403, { error: 'Client Admin can only invite Client or Team roles' });
+      }
+
+      const existing = users.find(u => u.email.toLowerCase() === email);
+      if (existing) {
+        return setJson(res, 409, { error: 'A user with this email already exists' });
+      }
+
+      // Generate temporary password
+      const tempPassword = randomBytes(6).toString('base64url').slice(0, 12);
+      const passwordHash = await hashPassword(tempPassword);
+
+      const newUser = {
+        id: generateId('usr'),
+        email,
+        passwordHash,
+        name,
+        displayName: name.split(' ')[0] || name,
+        role,
+        avatar: null,
+        phone: '',
+        title: String(body.title || '').trim(),
+        organization: String(body.organization || '').trim(),
+        preferences: { language: 'en', theme: 'auto' },
+        assignedTasks,
+        moduleAccess: body.moduleAccess || getDefaultModuleAccess(role),
+        lastLoginAt: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        createdBy: inviter.id,
+        status: 'invited',
+        invitedBy: inviter.id,
+        tempPassword: true, // Force password change on first login
+      };
+
+      users.push(newUser);
+      await saveUsers(users);
+
+      // Send invitation email
+      const settingsData = await readBlob('rockcrete/settings.json');
+      const emailConfig = settingsData?.email || {};
+      const apiKey = emailConfig.resendApiKey || process.env.RESEND_API_KEY || '';
+      const fromEmail = emailConfig.fromEmail || process.env.RESEND_FROM_EMAIL || 'noreply@newmindsgroup.com';
+      const fromName = emailConfig.fromName || process.env.RESEND_FROM_NAME || 'Rockcrete USA Blueprint';
+
+      if (apiKey) {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: fromName ? `${fromName} <${fromEmail}>` : fromEmail,
+            to: [email],
+            subject: `You're Invited — Rockcrete USA Blueprint Portal`,
+            html: `
+              <div style="font-family:'Inter',system-ui,sans-serif;max-width:480px;margin:0 auto;padding:2rem;background:#fafaf7;border-radius:12px;">
+                <h2 style="color:#1e3a5f;margin:0 0 1rem;">You're Invited!</h2>
+                <p style="color:#3a3f44;font-size:0.95rem;">Hello ${name},</p>
+                <p style="color:#3a3f44;font-size:0.95rem;"><strong>${inviter.displayName || inviter.name}</strong> has invited you to join the Rockcrete USA Blueprint Portal as <strong>${role.replace('_', ' ').toUpperCase()}</strong>.</p>
+                <div style="background:#1e3a5f;color:#fff;padding:1.25rem;border-radius:8px;margin:1.5rem 0;">
+                  <p style="margin:0 0 0.5rem;font-size:0.85rem;opacity:0.8;">Your temporary credentials:</p>
+                  <p style="margin:0;font-size:0.95rem;"><strong>Email:</strong> ${email}</p>
+                  <p style="margin:0;font-size:0.95rem;"><strong>Password:</strong> ${tempPassword}</p>
+                </div>
+                <p style="color:#6b7177;font-size:0.85rem;">Please log in and change your password immediately. This temporary password will expire for security.</p>
+                <a href="${process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'https://blueprint-dashboard-chi.vercel.app'}" style="display:inline-block;background:#1e3a5f;color:#fff;padding:0.75rem 1.5rem;border-radius:6px;text-decoration:none;font-weight:600;margin-top:0.5rem;">Open Portal</a>
+              </div>
+            `,
+          }),
+        });
+      }
+
+      return setJson(res, 201, {
+        ok: true,
+        user: stripSensitive(newUser),
+        tempPassword: apiKey ? '(sent via email)' : tempPassword,
+        message: apiKey ? 'Invitation sent via email' : 'User created. Share the temporary password manually.',
+      });
+    }
+
+    /* ── POST: Assign tasks to a user ─────────────────────────────────── */
+    if (req.method === 'POST' && req.query?.action === 'assign-tasks') {
+      const body = parseBody(req);
+      const userId = body.userId;
+      const taskIds = body.taskIds; // Array of task IDs
+
+      if (!userId || !Array.isArray(taskIds)) {
+        return setJson(res, 400, { error: 'userId and taskIds array are required' });
+      }
+
+      const users = await getUsers();
+      const idx = users.findIndex(u => u.id === userId);
+      if (idx < 0) return setJson(res, 404, { error: 'User not found' });
+
+      // Merge with existing assignments (no duplicates)
+      const existing = new Set(users[idx].assignedTasks || []);
+      taskIds.forEach(t => existing.add(t));
+      users[idx].assignedTasks = [...existing];
+      users[idx].updatedAt = new Date().toISOString();
+      await saveUsers(users);
+
+      return setJson(res, 200, { ok: true, assignedTasks: users[idx].assignedTasks });
+    }
+
+    /* ── POST: Remove task from a user ────────────────────────────────── */
+    if (req.method === 'POST' && req.query?.action === 'unassign-tasks') {
+      const body = parseBody(req);
+      const userId = body.userId;
+      const taskIds = body.taskIds; // Array of task IDs to remove
+
+      if (!userId || !Array.isArray(taskIds)) {
+        return setJson(res, 400, { error: 'userId and taskIds array are required' });
+      }
+
+      const users = await getUsers();
+      const idx = users.findIndex(u => u.id === userId);
+      if (idx < 0) return setJson(res, 404, { error: 'User not found' });
+
+      const removeSet = new Set(taskIds);
+      users[idx].assignedTasks = (users[idx].assignedTasks || []).filter(t => !removeSet.has(t));
+      users[idx].updatedAt = new Date().toISOString();
+      await saveUsers(users);
+
+      return setJson(res, 200, { ok: true, assignedTasks: users[idx].assignedTasks });
     }
 
     /* ── Method not allowed ────────────────────────────────────────────── */
