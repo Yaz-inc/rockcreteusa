@@ -12,7 +12,8 @@ async function writeStateToBlob(state) {
   await put(TRACKER_STATE_PATH, JSON.stringify(state, null, 2), {
     contentType: 'application/json',
     addRandomSuffix: false,
-    allowOverwrite: true
+    allowOverwrite: true,
+    access: 'private'
   });
 }
 

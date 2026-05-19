@@ -33,7 +33,8 @@ async function writeBlob(path, data) {
   await put(path, JSON.stringify(data, null, 2), {
     contentType: 'application/json',
     addRandomSuffix: false,
-    allowOverwrite: true
+    allowOverwrite: true,
+    access: 'private'
   });
 }
 

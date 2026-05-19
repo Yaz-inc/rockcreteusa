@@ -47,7 +47,8 @@ async function writeToBlob(data) {
   await put(MILESTONES_PATH, JSON.stringify(data, null, 2), {
     contentType: 'application/json',
     addRandomSuffix: false,
-    allowOverwrite: true
+    allowOverwrite: true,
+    access: 'private'
   });
 }
 
