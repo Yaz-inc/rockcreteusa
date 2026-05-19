@@ -53,7 +53,6 @@ function parseBody(req) {
 }
 
 async function readBlob(path) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
   const result = await list({ prefix: path, limit: 10 });
   const blob = result.blobs.find(b => b.pathname === path);
   if (!blob) return null;
@@ -63,9 +62,6 @@ async function readBlob(path) {
 }
 
 async function writeBlob(path, data) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error('BLOB_READ_WRITE_TOKEN not configured');
-  }
   await put(path, JSON.stringify(data, null, 2), {
     access: 'public',
     contentType: 'application/json',

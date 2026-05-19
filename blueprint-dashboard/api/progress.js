@@ -42,7 +42,6 @@ function setJson(res, status, payload) {
 }
 
 async function readFromBlob() {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
   const result = await list({ prefix: PROGRESS_PATH, limit: 10 });
   const blob = result.blobs.find((item) => item.pathname === PROGRESS_PATH);
   if (!blob) return null;
@@ -52,9 +51,6 @@ async function readFromBlob() {
 }
 
 async function writeToBlob(data) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error('BLOB_READ_WRITE_TOKEN is not configured');
-  }
   await put(PROGRESS_PATH, JSON.stringify(data, null, 2), {
     access: 'public',
     contentType: 'application/json',

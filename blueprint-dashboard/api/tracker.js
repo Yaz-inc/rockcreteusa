@@ -9,7 +9,6 @@ function setJson(res, status, payload) {
 }
 
 async function readStateFromBlob() {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
   const result = await list({ prefix: TRACKER_STATE_PATH, limit: 10 });
   const blob = result.blobs.find((item) => item.pathname === TRACKER_STATE_PATH);
   if (!blob) return null;
@@ -19,10 +18,6 @@ async function readStateFromBlob() {
 }
 
 async function writeStateToBlob(state) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error('BLOB_READ_WRITE_TOKEN is not configured');
-  }
-
   await put(TRACKER_STATE_PATH, JSON.stringify(state, null, 2), {
     access: 'public',
     contentType: 'application/json',
