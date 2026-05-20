@@ -6772,7 +6772,7 @@
 
     // Filter tasks based on view
     let visibleTasks = tasks;
-    if (PROGRESS_VIEW === 'mine' && !isAdminOrPM) {
+    if (PROGRESS_VIEW === 'mine') {
       visibleTasks = tasks.filter(t => {
         const state = TRACKER_STATE.tasks?.[t.id] || {};
         const assigneeId = t.assigneeId || state.assigneeId || '';
@@ -7193,14 +7193,36 @@
   };
 
   /* ── View toggle (All / Mine) ───────────────────────────────────────── */
+  function progressCanSeeAllView() {
+    const role = window.__rcCurrentUser?.role || '';
+    return ['super_admin', 'admin', 'pm'].includes(role);
+  }
+
+  function progressApplyViewToggle() {
+    const toggle = document.getElementById('progress-view-toggle');
+    if (!toggle) return;
+    const canSeeAll = progressCanSeeAllView();
+    const btns = toggle.querySelectorAll('button');
+    btns.forEach(b => {
+      if (b.dataset.progressView === 'all') {
+        b.style.display = canSeeAll ? '' : 'none';
+      }
+    });
+    // If user can't see "All" view, force "Mine"
+    if (!canSeeAll && PROGRESS_VIEW === 'all') {
+      PROGRESS_VIEW = 'mine';
+    }
+    // Update toggle UI
+    btns.forEach(b => {
+      b.setAttribute('aria-pressed', b.dataset.progressView === PROGRESS_VIEW ? 'true' : 'false');
+    });
+  }
+
   document.getElementById('progress-view-toggle')?.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-progress-view]');
     if (!btn) return;
     PROGRESS_VIEW = btn.dataset.progressView;
-    // Update toggle UI
-    document.querySelectorAll('#progress-view-toggle button').forEach(b => {
-      b.setAttribute('aria-pressed', b.dataset.progressView === PROGRESS_VIEW ? 'true' : 'false');
-    });
+    progressApplyViewToggle();
     renderProgressTasks();
   });
 
@@ -7209,6 +7231,7 @@
     progressSetStatus('Loading...');
     await Promise.all([fetchMilestones(), fetchProgress()]);
     progressSetStatus('Ready');
+    progressApplyViewToggle();
     renderProgressDashboard();
   }
 
