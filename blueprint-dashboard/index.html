@@ -430,8 +430,8 @@
   @media (max-width: 640px) {
     .topbar { padding: 0 1rem; }
     .brand-text .sub { display: none; }
-    /* Hide cramped top-actions controls on small screens — but NEVER hide blueprint role (Sign in / Sign out); those use .btn--role */
-    .top-actions .btn:not(.nav-toggle):not(.lang-toggle):not(.btn--role):not(:last-child) { display: none; }
+    /* Hide cramped top-actions controls on small screens */
+    .top-actions .theme-toggle { display: none; }
   }
 
   /* ============================================================
@@ -1494,10 +1494,9 @@
   body.presentation-mode .layout { grid-template-columns: 1fr; }
   body.presentation-mode .sidebar,
   body.presentation-mode .sidebar-backdrop,
-  body.presentation-mode .role-badge,
-  body.presentation-mode .role-auth-actions,
   body.presentation-mode .theme-toggle,
-  body.presentation-mode #searchButton {
+  body.presentation-mode #searchButton,
+  body.presentation-mode .rc-user-dropdown {
     display: none !important;
   }
   body.presentation-mode .main {
@@ -1592,29 +1591,7 @@
     border-color: var(--color-text-muted);
     color: var(--color-text);
   }
-  #roleLoginDialog {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    padding: 1.25rem 1.35rem;
-    max-width: min(400px, 94vw);
-    background: var(--color-surface);
-    color: var(--color-text);
-    box-shadow: var(--shadow-2, 0 12px 40px rgba(0,0,0,.18));
-  }
-  #roleLoginDialog::backdrop {
-    background: rgba(0, 0, 0, 0.48);
-  }
-  #roleLoginDialog h2 {
-    margin: 0 0 .5rem;
-    font-size: 1.05rem;
-    color: var(--color-text);
-  }
-  #roleLoginDialog p {
-    margin: 0 0 1rem;
-    font-size: .82rem;
-    line-height: 1.45;
-    color: var(--color-text-muted);
-  }
+  /* Role gating dialog CSS removed — now using full-screen login gate */
   .role-login-label {
     display: block;
     font-size: .72rem;
@@ -2011,54 +1988,302 @@
   .rc-toast--success { background: var(--color-success); color: #fff; }
   .rc-toast--error { background: var(--color-danger); color: #fff; }
   .rc-toast--info { background: var(--color-brand); color: #fff; }
+
+  /* ============================================================
+     FULL-SCREEN LOGIN GATE
+     ============================================================ */
+  .rc-login-gate {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--color-bg);
+    padding: 1.5rem;
+  }
+  .rc-login-gate[data-hidden] { display: none; }
+  .rc-login-card {
+    width: 100%; max-width: 420px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-3);
+    padding: 2.5rem 2rem;
+  }
+  .rc-login-logo {
+    display: flex; align-items: center; gap: 0.65rem;
+    margin-bottom: 1.75rem;
+  }
+  .rc-login-logo img { width: clamp(100px, 12vw, 140px); height: auto; max-height: 32px; }
+  .rc-login-logo--dark { display: none; }
+  :root[data-theme="dark"] .rc-login-logo--light { display: none; }
+  :root[data-theme="dark"] .rc-login-logo--dark { display: block; }
+  @media (prefers-color-scheme: dark) {
+    :root[data-theme="auto"] .rc-login-logo--light { display: none; }
+    :root[data-theme="auto"] .rc-login-logo--dark { display: block; }
+  }
+  .rc-login-title {
+    font-size: 1.25rem; font-weight: 700; margin-bottom: 0.35rem;
+    letter-spacing: -0.015em;
+  }
+  .rc-login-sub {
+    font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1.5rem; line-height: 1.45;
+  }
+  .rc-login-field { margin-bottom: 1rem; }
+  .rc-login-field label {
+    display: block; font-size: 0.75rem; font-weight: 600;
+    color: var(--color-text-2); margin-bottom: 0.3rem;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .rc-login-field input {
+    width: 100%; font-family: inherit; font-size: 0.9rem;
+    padding: 0.6rem 0.75rem; border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm); background: var(--color-surface);
+    color: var(--color-text); transition: border-color var(--duration-1) var(--ease);
+  }
+  .rc-login-field input:focus {
+    outline: 2px solid var(--color-brand); outline-offset: 1px; border-color: var(--color-brand);
+  }
+  .rc-login-btn {
+    width: 100%; padding: 0.65rem; font-size: 0.9rem; font-weight: 600;
+    background: var(--color-brand); color: #fff; border: none;
+    border-radius: var(--radius-sm); cursor: pointer;
+    transition: background var(--duration-1) var(--ease);
+    margin-top: 0.5rem;
+  }
+  .rc-login-btn:hover { background: var(--color-brand-2); }
+  .rc-login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .rc-login-forgot {
+    display: block; margin-top: 0.75rem; font-size: 0.82rem;
+    color: var(--color-brand); cursor: pointer; text-align: center;
+    text-decoration: underline; text-underline-offset: 2px;
+    background: none; border: none; font-family: inherit; width: 100%;
+  }
+  .rc-login-forgot:hover { color: var(--color-brand-2); }
+  .rc-login-seed-banner {
+    background: var(--color-accent-soft); border: 1px solid var(--color-accent);
+    border-radius: var(--radius-sm); padding: 0.65rem 0.85rem;
+    font-size: 0.82rem; margin-bottom: 1rem;
+  }
+  .rc-login-seed-banner strong { color: var(--color-accent); }
+  .rc-login-error {
+    color: var(--color-danger); font-size: 0.82rem;
+    margin-top: 0.5rem; display: none;
+  }
+  .rc-login-error[data-visible] { display: block; }
+  .rc-login-divider {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin: 1.25rem 0; color: var(--color-text-muted); font-size: 0.78rem;
+  }
+  .rc-login-divider::before, .rc-login-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--color-border);
+  }
+  /* Forgot / Verify modes */
+  .rc-login-gate[data-mode="login"] .rc-login-mode-forgot,
+  .rc-login-gate[data-mode="login"] .rc-login-mode-verify { display: none; }
+  .rc-login-gate[data-mode="forgot"] .rc-login-mode-login,
+  .rc-login-gate[data-mode="forgot"] .rc-login-mode-verify { display: none; }
+  .rc-login-gate[data-mode="verify"] .rc-login-mode-login,
+  .rc-login-gate[data-mode="verify"] .rc-login-mode-forgot { display: none; }
+  .rc-login-back {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.82rem; color: var(--color-brand); cursor: pointer;
+    background: none; border: none; font-family: inherit;
+    text-decoration: underline; text-underline-offset: 2px; margin-bottom: 1rem;
+  }
+  .rc-login-back:hover { color: var(--color-brand-2); }
+
+  /* ============================================================
+     USER DROPDOWN MENU
+     ============================================================ */
+  .rc-user-dropdown {
+    position: relative; display: inline-flex;
+  }
+  .rc-user-dropdown-trigger {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.3rem 0.6rem 0.3rem 0.4rem;
+    border: 1px solid var(--color-border); border-radius: 999px;
+    background: var(--color-surface); cursor: pointer;
+    transition: all var(--duration-1) var(--ease);
+    font-family: inherit; color: var(--color-text);
+  }
+  .rc-user-dropdown-trigger:hover { border-color: var(--color-border-2); background: var(--color-surface-2); }
+  .rc-user-dropdown-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--color-brand-soft); color: var(--color-brand);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700; flex-shrink: 0;
+  }
+  .rc-user-dropdown-name {
+    font-size: 0.8rem; font-weight: 500; max-width: 140px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .rc-user-dropdown-chevron {
+    width: 14px; height: 14px; color: var(--color-text-muted);
+    transition: transform var(--duration-1) var(--ease);
+  }
+  .rc-user-dropdown[data-open] .rc-user-dropdown-chevron { transform: rotate(180deg); }
+  .rc-user-dropdown-menu {
+    position: absolute; top: calc(100% + 6px); right: 0;
+    min-width: 220px; background: var(--color-surface);
+    border: 1px solid var(--color-border-2); border-radius: var(--radius);
+    box-shadow: var(--shadow-3); z-index: 60;
+    padding: 0.35rem 0; display: none;
+  }
+  .rc-user-dropdown[data-open] .rc-user-dropdown-menu { display: block; }
+  .rc-user-dropdown-header {
+    padding: 0.65rem 0.85rem; border-bottom: 1px solid var(--color-border);
+  }
+  .rc-user-dropdown-header .name { font-weight: 600; font-size: 0.88rem; }
+  .rc-user-dropdown-header .email { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 1px; }
+  .rc-user-dropdown-item {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.55rem 0.85rem; font-size: 0.84rem;
+    color: var(--color-text-2); cursor: pointer;
+    transition: background var(--duration-1) var(--ease);
+    border: none; background: none; width: 100%; text-align: left;
+    font-family: inherit;
+  }
+  .rc-user-dropdown-item:hover { background: var(--color-surface-2); color: var(--color-text); }
+  .rc-user-dropdown-item i { width: 16px; height: 16px; flex-shrink: 0; }
+  .rc-user-dropdown-sep {
+    height: 1px; background: var(--color-border); margin: 0.3rem 0;
+  }
+  .rc-user-dropdown-item--danger { color: var(--color-danger); }
+  .rc-user-dropdown-item--danger:hover { background: var(--color-danger-soft); color: var(--color-danger); }
+  .rc-user-dropdown-badge {
+    display: inline-flex; padding: 2px 8px; border-radius: 999px;
+    font-size: 0.68rem; font-weight: 600;
+    background: var(--color-brand-soft); color: var(--color-brand);
+    border: 1px solid transparent; margin-left: 0.35rem;
+  }
+
+  /* ============================================================
+     MY DASHBOARD SECTION
+     ============================================================ */
+  .rc-my-dashboard {
+    margin-bottom: 2.5rem;
+  }
+  .rc-my-dashboard[data-hidden] { display: none; }
+  .rc-my-dashboard-welcome {
+    font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem;
+  }
+  .rc-my-dashboard-welcome span { color: var(--color-brand); }
+  .rc-my-dashboard-cards {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+  }
+  @media (max-width: 640px) { .rc-my-dashboard-cards { grid-template-columns: 1fr; } }
+  .rc-my-dashboard-card {
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: var(--radius); padding: 1rem 1.25rem;
+    transition: border-color var(--duration-1) var(--ease);
+  }
+  .rc-my-dashboard-card:hover { border-color: var(--color-border-2); }
+  .rc-my-dashboard-card .label {
+    font-size: 0.7rem; color: var(--color-text-muted);
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  .rc-my-dashboard-card .value {
+    font-size: 1.6rem; font-weight: 700; margin-top: 0.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .rc-my-dashboard-card .link {
+    display: inline-block; margin-top: 0.35rem; font-size: 0.78rem;
+    color: var(--color-brand); cursor: pointer;
+  }
+  .rc-my-dashboard-card .link:hover { text-decoration: underline; }
+
+  /* ============================================================
+     ACTION PERMISSIONS TOGGLES
+     ============================================================ */
+  .rc-action-perms-grid {
+    display: grid; gap: 0.55rem; margin-top: 0.75rem;
+  }
+  .rc-action-perm-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.75rem; padding: 0.5rem 0.65rem;
+    border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+    background: var(--color-surface-2);
+  }
+  .rc-action-perm-label { font-size: 0.84rem; font-weight: 500; }
+  .rc-toggle-switch {
+    position: relative; width: 40px; height: 22px;
+    background: var(--color-surface-3); border-radius: 999px;
+    cursor: pointer; transition: background var(--duration-1) var(--ease);
+    border: 1px solid var(--color-border);
+  }
+  .rc-toggle-switch[data-on] { background: var(--color-brand); border-color: var(--color-brand); }
+  .rc-toggle-switch::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; transition: transform var(--duration-1) var(--ease);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .rc-toggle-switch[data-on]::after { transform: translateX(18px); }
 </style>
 </head>
 
 <body>
-<script>
-  // ============================================================
-  // ROLE GATING (layer 2 — cosmetic, behind layer-1 HTTP Basic Auth)
-  // Admin / Web dev / Client admin / Client are chosen in the Sign in dialog after the
-  // visitor enters the SAME password as Vercel's BLUEPRINT_PASSWORD
-  // (validated server-side via POST /api/session). Role persists in
-  // localStorage.rockcrete_role. Sign out clears the key.
-  // Layer 1 is middleware.js Basic Auth — username is ignored; password
-  // must match BLUEPRINT_PASSWORD.
-  // ============================================================
-  (function initRole() {
-    var VALID_ROLES = ['admin', 'webdev', 'client_admin', 'client', 'guest'];
-    var role = 'guest';
-    try { role = localStorage.getItem('rockcrete_role') || 'guest'; } catch (_) {}
-    if (role === 'team') {
-      role = 'webdev';
-      try { localStorage.setItem('rockcrete_role', 'webdev'); } catch (_) {}
-    }
-    if (VALID_ROLES.indexOf(role) === -1) role = 'guest';
-    document.body.classList.add('role-' + role);
-    window.__role = {
-      current: function () { return role; },
-      isAdmin:  function () { return role === 'admin'; },
-      isWebDev: function () { return role === 'webdev'; },
-      isClientAdmin: function () { return role === 'client_admin'; },
-      isStaffEditor: function () {
-        return role === 'webdev' || role === 'client_admin' || role === 'admin';
-      },
-      isTeam: function () {
-        return role === 'webdev' || role === 'client_admin';
-      },
-      isClient: function () { return role === 'client' || role === 'guest'; },
-      setRole: function (r) {
-        if (VALID_ROLES.indexOf(r) === -1 || r === 'guest') return;
-        try { localStorage.setItem('rockcrete_role', r); } catch (_) {}
-        location.reload();
-      },
-      signOut: function () {
-        try { localStorage.removeItem('rockcrete_role'); } catch (_) {}
-        location.reload();
-      }
-    };
-  })();
-</script>
+
+<!-- ================================================================ -->
+<!-- FULL-SCREEN LOGIN GATE                                          -->
+<!-- Shown when NOT logged in; hides the entire dashboard behind it.  -->
+<!-- ================================================================ -->
+<div class="rc-login-gate" id="rcLoginGate" data-mode="login">
+  <div class="rc-login-card">
+    <div class="rc-login-logo">
+      <img class="brand-logo brand-logo--light" src="rockcrete-logo-horizontal.svg" alt="Rockcrete USA" />
+      <img class="brand-logo brand-logo--dark" src="rockcrete-logo-horizontal-dark.svg" alt="Rockcrete USA" />
+    </div>
+
+    <!-- LOGIN MODE -->
+    <div class="rc-login-mode-login">
+      <div class="rc-login-title">Rockcrete USA Blueprint</div>
+      <div class="rc-login-sub">Sign in to access the project dashboard.</div>
+      <div class="rc-login-seed-banner" id="rcLoginSeedBanner" style="display:none;">
+        <strong>First time:</strong> No users registered. Create a Super Admin account to get started.
+      </div>
+      <div class="rc-login-field">
+        <label for="rcLoginEmail">Email</label>
+        <input type="email" id="rcLoginEmail" autocomplete="email" placeholder="you@company.com" />
+      </div>
+      <div class="rc-login-field">
+        <label for="rcLoginPassword">Password</label>
+        <input type="password" id="rcLoginPassword" autocomplete="current-password" placeholder="Enter your password" />
+      </div>
+      <button class="rc-login-btn" id="rcLoginBtn" onclick="rcGateLogin()">Sign In</button>
+      <button class="rc-login-btn" id="rcSeedBtn" style="display:none; background: var(--color-accent);" onclick="rcGateSeed()">Create Super Admin</button>
+      <button type="button" class="rc-login-forgot" onclick="rcGateSwitchToForgot()">Forgot Password?</button>
+    </div>
+
+    <!-- FORGOT PASSWORD MODE -->
+    <div class="rc-login-mode-forgot">
+      <button type="button" class="rc-login-back" onclick="rcGateSwitchToLogin()"><i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back to Sign In</button>
+      <div class="rc-login-title">Reset Password</div>
+      <div class="rc-login-sub">Enter your email and we'll send a verification code.</div>
+      <div class="rc-login-field">
+        <label for="rcLoginForgotEmail">Email</label>
+        <input type="email" id="rcLoginForgotEmail" autocomplete="email" placeholder="you@company.com" />
+      </div>
+      <button class="rc-login-btn" onclick="rcGateForgotPassword()">Send Code</button>
+    </div>
+
+    <!-- VERIFY CODE MODE -->
+    <div class="rc-login-mode-verify">
+      <button type="button" class="rc-login-back" onclick="rcGateSwitchToForgot()"><i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Resend code</button>
+      <div class="rc-login-title">Verify &amp; Reset</div>
+      <div class="rc-login-sub">Enter the code from your email and set a new password.</div>
+      <div class="rc-login-field">
+        <label for="rcLoginVerifyCode">Verification Code</label>
+        <input type="text" id="rcLoginVerifyCode" autocomplete="one-time-code" placeholder="Enter code" />
+      </div>
+      <div class="rc-login-field">
+        <label for="rcLoginNewPassword">New Password</label>
+        <input type="password" id="rcLoginNewPassword" autocomplete="new-password" placeholder="Min 8 characters" />
+      </div>
+      <button class="rc-login-btn" onclick="rcGateVerifyReset()">Reset Password</button>
+    </div>
+
+    <div class="rc-login-error" id="rcLoginError"></div>
+  </div>
+</div>
 <div class="app">
 
 <!-- ================================================================ -->
@@ -2080,14 +2305,6 @@
   </div>
 
   <div class="top-actions">
-    <div class="role-auth-actions" id="roleAuthActions">
-      <div class="role-badge" id="roleBadge" role="status" aria-live="polite">
-        <span class="dot" aria-hidden="true"></span>
-        <span class="label">Viewing as: <span id="roleBadgeName">Client</span></span>
-      </div>
-      <button type="button" class="btn btn--ghost btn--role" id="roleSignInBtn" aria-haspopup="dialog" aria-controls="roleLoginDialog">Sign in</button>
-      <button type="button" class="btn btn--ghost btn--role" id="roleLogoutBtn" hidden>Sign out</button>
-    </div>
     <div class="theme-toggle" role="group" aria-label="Change theme">
       <button data-theme="light" aria-pressed="false" aria-label="Light mode" title="Light mode"><i data-lucide="sun"></i></button>
       <button data-theme="dark" aria-pressed="true" aria-label="Dark mode" title="Dark mode"><i data-lucide="moon"></i></button>
@@ -2096,29 +2313,33 @@
     <button class="btn btn--ghost btn--icon" id="searchButton" aria-label="Search dashboard">
       <i data-lucide="search" aria-hidden="true"></i>
     </button>
-    <button class="btn btn--primary" id="presentButton">
-      <i data-lucide="presentation" aria-hidden="true"></i>
-      <span data-es="Presentar" data-en="Present">Presentar</span>
-    </button>
+    <!-- User dropdown (shown when logged in) -->
+    <div class="rc-user-dropdown" id="rcUserDropdown" style="display:none;">
+      <button class="rc-user-dropdown-trigger" id="rcUserDropdownTrigger" aria-label="User menu" aria-haspopup="true">
+        <div class="rc-user-dropdown-avatar" id="rcUserDropdownAvatar">?</div>
+        <span class="rc-user-dropdown-name" id="rcUserDropdownName">User</span>
+        <i data-lucide="chevron-down" class="rc-user-dropdown-chevron"></i>
+      </button>
+      <div class="rc-user-dropdown-menu" id="rcUserDropdownMenu" role="menu">
+        <div class="rc-user-dropdown-header">
+          <div class="name" id="rcDropdownName">—</div>
+          <div class="email" id="rcDropdownEmail">—</div>
+          <span class="rc-user-dropdown-badge" id="rcDropdownRole">—</span>
+        </div>
+        <button class="rc-user-dropdown-item" onclick="showScreen('profile'); rcDropdownClose();" role="menuitem">
+          <i data-lucide="user-circle"></i> My Profile
+        </button>
+        <button class="rc-user-dropdown-item" onclick="rcShowChangePassword();" role="menuitem">
+          <i data-lucide="key-round"></i> Change Password
+        </button>
+        <div class="rc-user-dropdown-sep"></div>
+        <button class="rc-user-dropdown-item rc-user-dropdown-item--danger" onclick="rcAuthLogout(); rcDropdownClose();" role="menuitem">
+          <i data-lucide="log-out"></i> Sign Out
+        </button>
+      </div>
+    </div>
   </div>
 </header>
-
-<dialog id="roleLoginDialog" aria-labelledby="roleLoginDialogTitle">
-  <h2 id="roleLoginDialogTitle">Blueprint sign-in</h2>
-  <p>Enter the same <strong>password</strong> the site already asks for when you load this blueprint (browser Basic Auth gate). Then pick a role — your choice is saved on this device. Use <strong>Web dev</strong>, <strong>Client admin</strong>, or <strong>Admin</strong> to edit the project tracker.</p>
-  <label for="roleLoginPassword" class="role-login-label">Password</label>
-  <input type="password" id="roleLoginPassword" class="role-login-password" autocomplete="current-password" placeholder="Blueprint password">
-  <p id="roleLoginErr" class="role-login-err" hidden role="alert"></p>
-  <div class="role-login-grid">
-    <button type="button" class="btn btn--primary" data-role-login="client">Continue as Client</button>
-    <button type="button" class="btn btn--secondary" data-role-login="client_admin">Continue as Client admin</button>
-    <button type="button" class="btn btn--secondary" data-role-login="webdev">Continue as Web dev</button>
-    <button type="button" class="btn btn--secondary" data-role-login="admin">Continue as Admin</button>
-  </div>
-  <div class="role-login-footer">
-    <button type="button" class="btn btn--ghost" id="roleLoginDialogClose">Cancel</button>
-  </div>
-</dialog>
 
 <!-- Backdrop intentionally lives OUTSIDE the .layout grid so it never claims a grid column. -->
 <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
@@ -2202,6 +2423,28 @@
   <!-- SCREEN: HOME (project pulse)                                -->
   <!-- ============================================================ -->
   <div class="screen" id="screen-home" data-active="true">
+
+    <!-- MY DASHBOARD — shown only when logged in -->
+    <div class="rc-my-dashboard" id="rcMyDashboard" data-hidden>
+      <div class="rc-my-dashboard-welcome">Welcome back, <span id="rcDashboardUserName">—</span></div>
+      <div class="rc-my-dashboard-cards">
+        <div class="rc-my-dashboard-card">
+          <div class="label">Assigned Tasks</div>
+          <div class="value" id="rcDashAssignedCount">—</div>
+          <a class="link" onclick="showScreen('team-mgmt')">View my tasks →</a>
+        </div>
+        <div class="rc-my-dashboard-card">
+          <div class="label">In Progress</div>
+          <div class="value" id="rcDashInProgressCount">—</div>
+          <a class="link" onclick="showScreen('team-mgmt')">View →</a>
+        </div>
+        <div class="rc-my-dashboard-card">
+          <div class="label">Completed</div>
+          <div class="value" id="rcDashCompletedCount">—</div>
+          <a class="link" onclick="showScreen('team-mgmt')">View →</a>
+        </div>
+      </div>
+    </div>
 
     <section aria-labelledby="hero-h">
       <div class="card card--accent stack" style="padding: 2rem;">
@@ -3797,6 +4040,17 @@
       </div>
     </div>
 
+    <!-- Temp password warning banner -->
+    <div class="card" id="profileTempPasswordBanner" style="display:none; background: var(--color-accent-soft, #fef3c7); border: 1px solid var(--color-accent, #f59e0b); padding: 0.85rem 1rem; border-radius: var(--radius-sm, 6px); margin-bottom: 1rem;">
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <i data-lucide="alert-triangle" style="width:18px;height:18px;color:var(--color-accent);flex-shrink:0;"></i>
+        <div>
+          <strong style="color:var(--color-accent);">Action Required:</strong>
+          <span>You're using a temporary password. Please change your password below to secure your account.</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Edit profile form -->
     <div class="card profile-section">
       <div class="profile-section-title" data-es="Información Personal" data-en="Personal Information">Personal Information</div>
@@ -4259,102 +4513,7 @@
 <!-- ============================================================ -->
 <!-- LOGIN DIALOG (modal, NOT a screen)                           -->
 <!-- ============================================================ -->
-<dialog class="modal modal--auth" id="authLoginDialog" data-mode="login">
-  <form method="dialog" class="modal-form" onsubmit="return false;">
-    <div class="modal-header">
-      <h3 class="modal-title" id="authDialogTitle">
-        <span data-es="Iniciar Sesión" data-en="Sign In">Sign In</span>
-      </h3>
-      <div class="modal-sub" id="authDialogSub">
-        <span data-es="Accede al portal del proyecto" data-en="Access the project portal">Access the project portal</span>
-      </div>
-    </div>
-    <div class="modal-body">
-      <!-- Seed banner (shown when no users exist) -->
-      <div class="auth-seed-banner" id="authSeedBanner" style="display:none;">
-        <strong data-es="Primera vez:" data-en="First time:">First time:</strong>
-        <span data-es="No hay usuarios registrados. Crea una cuenta de Super Admin para comenzar." data-en="No users registered. Create a Super Admin account to get started.">No users registered. Create a Super Admin account to get started.</span>
-      </div>
-
-      <!-- LOGIN MODE -->
-      <div class="auth-mode-login">
-        <div class="modal-fields">
-          <div>
-            <label for="authEmail" data-es="Correo Electrónico" data-en="Email">Email</label>
-            <input type="email" id="authEmail" name="email" autocomplete="email" required />
-          </div>
-          <div>
-            <label for="authPassword" data-es="Contraseña" data-en="Password">Password</label>
-            <input type="password" id="authPassword" name="password" autocomplete="current-password" required />
-          </div>
-        </div>
-        <div style="margin-top: 0.5rem;">
-          <button type="button" class="auth-link" onclick="rcAuthSwitchToForgot()">
-            <span data-es="¿Olvidaste tu contraseña?" data-en="Forgot Password?">Forgot Password?</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- FORGOT PASSWORD MODE -->
-      <div class="auth-mode-forgot">
-        <div class="modal-fields">
-          <div>
-            <label for="authForgotEmail" data-es="Correo Electrónico" data-en="Email">Email</label>
-            <input type="email" id="authForgotEmail" name="forgotEmail" autocomplete="email" required />
-          </div>
-        </div>
-        <div style="margin-top: 0.5rem;">
-          <button type="button" class="auth-link" onclick="rcAuthSwitchToLogin()">
-            <span data-es="Volver a Iniciar Sesión" data-en="Back to Sign In">Back to Sign In</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- VERIFY CODE MODE -->
-      <div class="auth-mode-verify">
-        <div class="modal-fields">
-          <div>
-            <label for="authVerifyCode" data-es="Código de Verificación" data-en="Verification Code">Verification Code</label>
-            <input type="text" id="authVerifyCode" name="code" autocomplete="one-time-code" required />
-          </div>
-          <div>
-            <label for="authNewPassword" data-es="Nueva Contraseña" data-en="New Password">New Password</label>
-            <input type="password" id="authNewPassword" name="newPassword" autocomplete="new-password" required minlength="8" />
-          </div>
-        </div>
-        <div style="margin-top: 0.5rem;">
-          <button type="button" class="auth-link" onclick="rcAuthSwitchToForgot()">
-            <span data-es="Reenviar código" data-en="Resend code">Resend code</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Error message -->
-      <div class="auth-error" id="authError"></div>
-    </div>
-    <div class="modal-actions">
-      <button type="button" class="btn" data-action="cancel" onclick="rcAuthClose()">
-        <span data-es="Cancelar" data-en="Cancel">Cancel</span>
-      </button>
-      <!-- Login mode buttons -->
-      <button type="button" class="btn btn--primary auth-mode-login" id="authLoginBtn" onclick="rcAuthLogin()">
-        <span data-es="Iniciar Sesión" data-en="Sign In">Sign In</span>
-      </button>
-      <button type="button" class="btn btn--primary auth-mode-login" id="authSeedBtn" style="display:none;" onclick="rcAuthSeed()">
-        <span data-es="Crear Super Admin" data-en="Seed Super Admin">Seed Super Admin</span>
-      </button>
-      <!-- Forgot mode button -->
-      <button type="button" class="btn btn--primary auth-mode-forgot" onclick="rcAuthForgotPassword()">
-        <span data-es="Enviar Código" data-en="Send Code">Send Code</span>
-      </button>
-      <!-- Verify mode button -->
-      <button type="button" class="btn btn--primary auth-mode-verify" onclick="rcAuthVerifyReset()">
-        <span data-es="Restablecer Contraseña" data-en="Reset Password">Reset Password</span>
-      </button>
-    </div>
-  </form>
-</dialog>
-
+<!-- Old auth dialog removed — full-screen login gate is now used -->
 <!-- Toast notification -->
 <div class="rc-toast" id="rcToast"></div>
 
@@ -4367,104 +4526,13 @@
   });
 
   // ============================================================
-  // ROLE UI — badge label, Sign in (dialog), Sign out (clear saved role)
+  // ROLE UI — DEPRECATED. Role gating is now via individual login.
+  // The old shared-password flow has been removed.
   // ============================================================
-  document.addEventListener('DOMContentLoaded', () => {
-    const role = (window.__role && window.__role.current()) || 'guest';
-    const labelEl = document.getElementById('roleBadgeName');
-    const signInBtn = document.getElementById('roleSignInBtn');
-    const logoutBtn = document.getElementById('roleLogoutBtn');
-    const dialog = document.getElementById('roleLoginDialog');
-    const dialogClose = document.getElementById('roleLoginDialogClose');
-    if (!labelEl || !signInBtn || !logoutBtn) return;
-    const labels = {
-      admin: 'Admin',
-      webdev: 'Web dev',
-      client_admin: 'Client admin',
-      client: 'Client',
-      guest: 'Client'
-    };
-    labelEl.textContent = labels[role] || 'Client';
-    signInBtn.textContent = role === 'guest' ? 'Sign in' : 'Switch role';
-    signInBtn.setAttribute('aria-label', role === 'guest' ? 'Sign in to the blueprint' : 'Switch blueprint role');
-    if (role === 'admin' || role === 'webdev' || role === 'client_admin' || role === 'client') {
-      logoutBtn.hidden = false;
-    }
-    logoutBtn.addEventListener('click', () => {
-      if (window.__role && window.__role.signOut) window.__role.signOut();
-    });
-    const pwInput = document.getElementById('roleLoginPassword');
-    const errEl = document.getElementById('roleLoginErr');
-    function showRoleLoginErr(msg) {
-      if (!errEl) return;
-      errEl.textContent = msg || '';
-      errEl.hidden = !msg;
-    }
-    dialog?.addEventListener('close', () => {
-      showRoleLoginErr('');
-      if (pwInput) pwInput.value = '';
-    });
-    signInBtn.addEventListener('click', () => {
-      if (dialog && typeof dialog.showModal === 'function') {
-        dialog.showModal();
-        setTimeout(() => pwInput?.focus(), 50);
-      }
-    });
-    dialogClose?.addEventListener('click', () => dialog?.close());
-    document.querySelectorAll('[data-role-login]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const r = btn.getAttribute('data-role-login');
-        const password = (pwInput && pwInput.value) ? pwInput.value.trim() : '';
-        if (!password) {
-          showRoleLoginErr('Enter the blueprint password first.');
-          pwInput?.focus();
-          return;
-        }
-        showRoleLoginErr('');
-        btn.disabled = true;
-        try {
-          const res = await fetch('/api/session', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({ password, role: r })
-          });
-          let data = {};
-          try {
-            data = await res.json();
-          } catch (_) {}
-          if (!res.ok) {
-            if (data.error === 'Invalid password') {
-              showRoleLoginErr('Incorrect password.');
-            } else if (data.error) {
-              // Guard against Vercel wrapping errors as objects (e.g. { message: '...' })
-              // which would render as '[object Object]' via naive String() coercion.
-              const errMsg = typeof data.error === 'string'
-                ? data.error
-                : (data.error?.message || data.message || 'Sign-in failed.');
-              showRoleLoginErr(errMsg);
-            } else {
-              showRoleLoginErr('Sign-in failed. Make sure you are on the deployed blueprint.');
-            }
-            return;
-          }
-          if (window.__role && typeof window.__role.setRole === 'function') {
-            window.__role.setRole(data.role || r);
-          }
-        } catch (_) {
-          showRoleLoginErr('Cannot reach sign-in API. Use the live blueprint URL (not a local file).');
-        } finally {
-          btn.disabled = false;
-        }
-      });
-    });
-  });
 
   // ============================================================
   // AUTH SIDEBAR: Login button (guest) / Account group (logged in)
-  // Toggle between navGroupGuest and navGroupAccount
+  // The sidebar Login button shows the full-screen login gate.
   // ============================================================
   document.addEventListener('DOMContentLoaded', () => {
     const loginBtn   = document.getElementById('navAuthLogin');
@@ -4473,36 +4541,23 @@
     const accountGroup = document.getElementById('navGroupAccount');
 
     function syncAuthNav() {
-      const role = (window.__role && window.__role.current()) || 'guest';
-      const isLoggedIn = role !== 'guest';
-
-      // Toggle guest vs account group visibility
+      var user = window.__rcCurrentUser;
+      var isLoggedIn = !!user;
       if (guestGroup) guestGroup.style.display = isLoggedIn ? 'none' : '';
       if (accountGroup) accountGroup.style.display = isLoggedIn ? '' : 'none';
     }
 
-    // Wire Login → open the auth dialog
     loginBtn?.addEventListener('click', () => {
-      if (window.rcAuthOpen) { rcAuthOpen(); }
-      else {
-        const signInBtn = document.getElementById('roleSignInBtn');
-        if (signInBtn) signInBtn.click();
-      }
+      rcGateShow();
     });
 
-    // Wire Logout
     logoutBtn?.addEventListener('click', () => {
-      if (window.rcAuthLogout) { rcAuthLogout(); }
-      else if (window.__role && window.__role.signOut) { window.__role.signOut(); }
+      rcAuthLogout();
       setTimeout(syncAuthNav, 50);
     });
 
-    // Initial sync
     syncAuthNav();
-
-    // Re-sync whenever role changes
-    document.addEventListener('rc:rolechange', syncAuthNav);
-    // Fallback: poll once after short delay to catch async role init
+    document.addEventListener('rc:authchange', syncAuthNav);
     setTimeout(syncAuthNav, 300);
   });
 
@@ -7012,12 +7067,33 @@
     var logoutBtn = document.getElementById('navAuthLogout');
     var guestGroup = document.getElementById('navGroupGuest');
     var accountGroup = document.getElementById('navGroupAccount');
+    var loginGate = document.getElementById('rcLoginGate');
+    var appEl = document.querySelector('.app');
+    var dropdown = document.getElementById('rcUserDropdown');
 
     if (user) {
-      // Logged in — show Account group, hide Guest group
+      // Logged in — show dashboard, hide login gate
+      if (loginGate) loginGate.setAttribute('data-hidden', '');
+      if (appEl) appEl.style.display = '';
       if (guestGroup) guestGroup.style.display = 'none';
       if (accountGroup) accountGroup.style.display = '';
       if (logoutBtn) logoutBtn.hidden = false;
+
+      // Show user dropdown in topbar
+      if (dropdown) {
+        dropdown.style.display = '';
+        var initials = (user.displayName || user.name || '?').split(' ').map(function(w) { return w[0]; }).join('').toUpperCase().slice(0, 2);
+        var avatarEl = document.getElementById('rcUserDropdownAvatar');
+        var nameEl = document.getElementById('rcUserDropdownName');
+        var dNameEl = document.getElementById('rcDropdownName');
+        var dEmailEl = document.getElementById('rcDropdownEmail');
+        var dRoleEl = document.getElementById('rcDropdownRole');
+        if (avatarEl) avatarEl.textContent = initials;
+        if (nameEl) nameEl.textContent = user.displayName || user.name || 'User';
+        if (dNameEl) dNameEl.textContent = user.displayName || user.name || 'User';
+        if (dEmailEl) dEmailEl.textContent = user.email || '';
+        if (dRoleEl) dRoleEl.textContent = (user.role || '').replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+      }
 
       // Show/hide nav links based on auth level
       var links = accountGroup ? accountGroup.querySelectorAll('[data-rc-auth]') : [];
@@ -7034,16 +7110,31 @@
 
       // Filter sidebar nav-links based on moduleAccess
       rcFilterSidebarModules();
+
+      // Show My Dashboard section on home screen
+      var dash = document.getElementById('rcMyDashboard');
+      if (dash) dash.removeAttribute('data-hidden');
+      rcDashboardLoad();
     } else {
-      // Not logged in — show Guest group, hide Account group
+      // Not logged in — show login gate, hide dashboard
+      if (loginGate) loginGate.removeAttribute('data-hidden');
+      if (appEl) appEl.style.display = 'none';
       if (guestGroup) guestGroup.style.display = '';
       if (accountGroup) accountGroup.style.display = 'none';
+      if (dropdown) dropdown.style.display = 'none';
 
       // Show all nav links (no filtering when not logged in)
       document.querySelectorAll('.sidebar .nav-link[data-route]').forEach(function(link) {
         link.style.display = '';
       });
+
+      // Hide My Dashboard
+      var dash = document.getElementById('rcMyDashboard');
+      if (dash) dash.setAttribute('data-hidden', '');
     }
+
+    // Dispatch event for other listeners
+    document.dispatchEvent(new CustomEvent('rc:authchange'));
   }
 
   /* ── Filter sidebar nav-links based on user's moduleAccess ──── */
@@ -7074,73 +7165,68 @@
       if (data.user) {
         window.__rcCurrentUser = data.user;
         rcUpdateAuthUI();
+      } else {
+        window.__rcCurrentUser = null;
+        rcUpdateAuthUI();
+        rcGateShow();
       }
     } catch (e) {
-      // Not logged in — that's fine
       window.__rcCurrentUser = null;
       rcUpdateAuthUI();
+      rcGateShow();
     }
   }
 
-  /* ── Login Dialog: open/close/mode switching ─────────────────── */
-  function rcAuthOpen() {
-    var dlg = document.getElementById('authLoginDialog');
-    if (!dlg) return;
-    dlg.setAttribute('data-mode', 'login');
-    rcAuthClearError();
-    // Clear fields
-    var emailField = document.getElementById('authEmail');
-    var pwField = document.getElementById('authPassword');
-    if (emailField) emailField.value = '';
-    if (pwField) pwField.value = '';
-    // Check if any users exist (to show seed option)
-    rcAuthCheckSeed();
-    dlg.showModal();
-    setTimeout(function() { if (emailField) emailField.focus(); }, 100);
-  }
-
-  function rcAuthClose() {
-    var dlg = document.getElementById('authLoginDialog');
-    if (dlg && dlg.open) dlg.close();
-    rcAuthClearError();
-  }
-
-  function rcAuthSwitchToForgot() {
-    var dlg = document.getElementById('authLoginDialog');
-    if (dlg) dlg.setAttribute('data-mode', 'forgot');
-    rcAuthClearError();
-    // Pre-fill email if available
-    var loginEmail = document.getElementById('authEmail');
-    var forgotEmail = document.getElementById('authForgotEmail');
-    if (loginEmail && forgotEmail && !forgotEmail.value) {
-      forgotEmail.value = loginEmail.value;
+  /* ── Full-Screen Login Gate Functions ───────────────────────── */
+  function rcGateShow() {
+    var gate = document.getElementById('rcLoginGate');
+    if (gate) {
+      gate.removeAttribute('data-hidden');
+      gate.setAttribute('data-mode', 'login');
+      rcGateClearError();
+      rcGateCheckSeed();
+      if (window.lucide) setTimeout(function() { lucide.createIcons(); }, 50);
     }
-    setTimeout(function() { if (forgotEmail) forgotEmail.focus(); }, 100);
   }
 
-  function rcAuthSwitchToLogin() {
-    var dlg = document.getElementById('authLoginDialog');
-    if (dlg) dlg.setAttribute('data-mode', 'login');
-    rcAuthClearError();
-    setTimeout(function() { var e = document.getElementById('authEmail'); if (e) e.focus(); }, 100);
+  function rcGateHide() {
+    var gate = document.getElementById('rcLoginGate');
+    if (gate) gate.setAttribute('data-hidden', '');
   }
 
-  function rcAuthShowError(msg) {
-    var el = document.getElementById('authError');
+  function rcGateShowError(msg) {
+    var el = document.getElementById('rcLoginError');
     if (el) { el.textContent = msg; el.setAttribute('data-visible', ''); }
   }
 
-  function rcAuthClearError() {
-    var el = document.getElementById('authError');
+  function rcGateClearError() {
+    var el = document.getElementById('rcLoginError');
     if (el) { el.textContent = ''; el.removeAttribute('data-visible'); }
   }
 
-  async function rcAuthCheckSeed() {
+  function rcGateSwitchToForgot() {
+    var gate = document.getElementById('rcLoginGate');
+    if (gate) gate.setAttribute('data-mode', 'forgot');
+    rcGateClearError();
+    var forgotEmail = document.getElementById('rcLoginForgotEmail');
+    var loginEmail = document.getElementById('rcLoginEmail');
+    if (forgotEmail && loginEmail && !forgotEmail.value) forgotEmail.value = loginEmail.value;
+    setTimeout(function() { if (forgotEmail) forgotEmail.focus(); }, 100);
+  }
+
+  function rcGateSwitchToLogin() {
+    var gate = document.getElementById('rcLoginGate');
+    if (gate) gate.setAttribute('data-mode', 'login');
+    rcGateClearError();
+    setTimeout(function() { var e = document.getElementById('rcLoginEmail'); if (e) e.focus(); }, 100);
+  }
+
+  async function rcGateCheckSeed() {
     try {
       var data = await rcApi('/api/auth?action=check-seed');
-      var seedBtn = document.getElementById('authSeedBtn');
-      var loginBtn = document.getElementById('authLoginBtn');
-      var seedBanner = document.getElementById('authSeedBanner');
+      var seedBtn = document.getElementById('rcSeedBtn');
+      var loginBtn = document.getElementById('rcLoginBtn');
+      var seedBanner = document.getElementById('rcLoginSeedBanner');
       if (data.canSeed) {
         if (seedBtn) seedBtn.style.display = '';
         if (seedBanner) seedBanner.style.display = '';
@@ -7151,23 +7237,23 @@
         if (loginBtn) loginBtn.style.display = '';
       }
     } catch (e) {
-      // API failed — default to showing login, hiding seed
-      var seedBtn = document.getElementById('authSeedBtn');
-      var seedBanner = document.getElementById('authSeedBanner');
-      var loginBtn = document.getElementById('authLoginBtn');
+      var seedBtn = document.getElementById('rcSeedBtn');
+      var seedBanner = document.getElementById('rcLoginSeedBanner');
+      var loginBtn = document.getElementById('rcLoginBtn');
       if (seedBtn) seedBtn.style.display = 'none';
       if (seedBanner) seedBanner.style.display = 'none';
       if (loginBtn) loginBtn.style.display = '';
     }
   }
 
-  /* ── Login ────────────────────────────────────────────────────── */
-  async function rcAuthLogin() {
-    rcAuthClearError();
-    var email = document.getElementById('authEmail').value.trim();
-    var password = document.getElementById('authPassword').value;
-    if (!email || !password) { rcAuthShowError('Email and password are required.'); return; }
+  async function rcGateLogin() {
+    rcGateClearError();
+    var email = document.getElementById('rcLoginEmail').value.trim();
+    var password = document.getElementById('rcLoginPassword').value;
+    if (!email || !password) { rcGateShowError('Email and password are required.'); return; }
 
+    var btn = document.getElementById('rcLoginBtn');
+    if (btn) btn.disabled = true;
     try {
       var data = await rcApi('/api/auth?action=login', {
         method: 'POST',
@@ -7176,24 +7262,39 @@
       if (data.ok && data.user) {
         window.__rcCurrentUser = data.user;
         rcUpdateAuthUI();
-        rcAuthClose();
-        rcToast('Welcome back, ' + (data.user.displayName || data.user.name) + '!', 'success');
+        rcGateHide();
+        // First-login enforcement: if temp_password, force password change
+        if (data.user.tempPassword) {
+          rcToast('Welcome! Please set your new password to continue.', 'info');
+          showScreen('profile');
+          // Auto-scroll to the Change Password section
+          setTimeout(function() {
+            var pwSection = document.getElementById('profileCurrentPw');
+            if (pwSection) pwSection.focus();
+          }, 300);
+        } else {
+          rcToast('Welcome back, ' + (data.user.displayName || data.user.name) + '!', 'success');
+          showScreen('profile');
+        }
       } else {
-        rcAuthShowError(data.error || 'Login failed.');
+        rcGateShowError(data.error || 'Login failed.');
       }
     } catch (e) {
-      rcAuthShowError(e.message);
+      rcGateShowError(e.message);
+    } finally {
+      if (btn) btn.disabled = false;
     }
   }
 
-  /* ── Seed Super Admin ─────────────────────────────────────────── */
-  async function rcAuthSeed() {
-    rcAuthClearError();
-    var email = document.getElementById('authEmail').value.trim();
-    var password = document.getElementById('authPassword').value;
-    if (!email || !password) { rcAuthShowError('Email and password are required.'); return; }
-    if (password.length < 8) { rcAuthShowError('Password must be at least 8 characters.'); return; }
+  async function rcGateSeed() {
+    rcGateClearError();
+    var email = document.getElementById('rcLoginEmail').value.trim();
+    var password = document.getElementById('rcLoginPassword').value;
+    if (!email || !password) { rcGateShowError('Email and password are required.'); return; }
+    if (password.length < 8) { rcGateShowError('Password must be at least 8 characters.'); return; }
 
+    var btn = document.getElementById('rcSeedBtn');
+    if (btn) btn.disabled = true;
     try {
       var name = email.split('@')[0];
       var data = await rcApi('/api/auth?action=seed', {
@@ -7201,24 +7302,25 @@
         body: { email: email, password: password, name: name }
       });
       if (data.ok && data.user) {
-        rcAuthClose();
-        // Auto-login after seed
         window.__rcCurrentUser = data.user;
         rcUpdateAuthUI();
+        rcGateHide();
         rcToast('Super Admin account created! You are now logged in.', 'success');
+        showScreen('profile');
       } else {
-        rcAuthShowError(data.error || 'Seed failed.');
+        rcGateShowError(data.error || 'Seed failed.');
       }
     } catch (e) {
-      rcAuthShowError(e.message);
+      rcGateShowError(e.message);
+    } finally {
+      if (btn) btn.disabled = false;
     }
   }
 
-  /* ── Forgot Password ──────────────────────────────────────────── */
-  async function rcAuthForgotPassword() {
-    rcAuthClearError();
-    var email = document.getElementById('authForgotEmail').value.trim();
-    if (!email) { rcAuthShowError('Email is required.'); return; }
+  async function rcGateForgotPassword() {
+    rcGateClearError();
+    var email = document.getElementById('rcLoginForgotEmail').value.trim();
+    if (!email) { rcGateShowError('Email is required.'); return; }
 
     try {
       var data = await rcApi('/api/auth?action=forgot-password', {
@@ -7226,23 +7328,21 @@
         body: { email: email }
       });
       rcToast(data.message || 'If an account exists, a code has been sent.', 'info');
-      // Switch to verify mode
-      var dlg = document.getElementById('authLoginDialog');
-      if (dlg) dlg.setAttribute('data-mode', 'verify');
-      rcAuthClearError();
+      var gate = document.getElementById('rcLoginGate');
+      if (gate) gate.setAttribute('data-mode', 'verify');
+      rcGateClearError();
     } catch (e) {
-      rcAuthShowError(e.message);
+      rcGateShowError(e.message);
     }
   }
 
-  /* ── Verify Reset Code ────────────────────────────────────────── */
-  async function rcAuthVerifyReset() {
-    rcAuthClearError();
-    var email = document.getElementById('authForgotEmail').value.trim();
-    var code = document.getElementById('authVerifyCode').value.trim();
-    var newPassword = document.getElementById('authNewPassword').value;
-    if (!email || !code || !newPassword) { rcAuthShowError('All fields are required.'); return; }
-    if (newPassword.length < 8) { rcAuthShowError('Password must be at least 8 characters.'); return; }
+  async function rcGateVerifyReset() {
+    rcGateClearError();
+    var email = document.getElementById('rcLoginForgotEmail').value.trim();
+    var code = document.getElementById('rcLoginVerifyCode').value.trim();
+    var newPassword = document.getElementById('rcLoginNewPassword').value;
+    if (!email || !code || !newPassword) { rcGateShowError('All fields are required.'); return; }
+    if (newPassword.length < 8) { rcGateShowError('Password must be at least 8 characters.'); return; }
 
     try {
       var data = await rcApi('/api/auth?action=verify-reset', {
@@ -7250,14 +7350,13 @@
         body: { email: email, code: code, newPassword: newPassword }
       });
       if (data.ok) {
-        rcAuthClose();
         rcToast('Password reset successful. You can now sign in.', 'success');
-        rcAuthSwitchToLogin();
+        rcGateSwitchToLogin();
       } else {
-        rcAuthShowError(data.error || 'Reset failed.');
+        rcGateShowError(data.error || 'Reset failed.');
       }
     } catch (e) {
-      rcAuthShowError(e.message);
+      rcGateShowError(e.message);
     }
   }
 
@@ -7269,26 +7368,92 @@
     window.__rcCurrentUser = null;
     rcUpdateAuthUI();
     showScreen('home');
+    rcGateShow();
     rcToast('You have been signed out.', 'info');
   }
 
-  /* ── Wire up auth buttons ─────────────────────────────────────── */
-  document.getElementById('navAuthLogin')?.addEventListener('click', function() { rcAuthOpen(); });
-  document.getElementById('navAuthLogout')?.addEventListener('click', function() { rcAuthLogout(); });
+  /* ── Change Password shortcut from dropdown ────────────────── */
+  function rcShowChangePassword() {
+    showScreen('profile');
+    setTimeout(function() {
+      var pwField = document.getElementById('profileCurrentPw');
+      if (pwField) pwField.focus();
+    }, 200);
+  }
 
-  // Close dialog on escape/backdrop click
-  document.getElementById('authLoginDialog')?.addEventListener('cancel', function(e) {
-    e.preventDefault();
-    rcAuthClose();
-  });
+  /* ── User Dropdown Toggle ────────────────────────────────────── */
+  function rcDropdownClose() {
+    var dd = document.getElementById('rcUserDropdown');
+    if (dd) dd.removeAttribute('data-open');
+  }
 
-  // Enter key in password field triggers login
-  document.getElementById('authPassword')?.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { e.preventDefault(); rcAuthLogin(); }
+  document.addEventListener('DOMContentLoaded', function() {
+    var trigger = document.getElementById('rcUserDropdownTrigger');
+    var dd = document.getElementById('rcUserDropdown');
+    if (trigger && dd) {
+      trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var isOpen = dd.hasAttribute('data-open');
+        if (isOpen) dd.removeAttribute('data-open');
+        else dd.setAttribute('data-open', '');
+        if (window.lucide) lucide.createIcons();
+      });
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function(e) {
+        if (!dd.contains(e.target)) dd.removeAttribute('data-open');
+      });
+    }
+
+    // Enter key in login gate password field triggers login
+    var rcLoginPw = document.getElementById('rcLoginPassword');
+    if (rcLoginPw) {
+      rcLoginPw.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); rcGateLogin(); }
+      });
+    }
+    var rcLoginEmail = document.getElementById('rcLoginEmail');
+    if (rcLoginEmail) {
+      rcLoginEmail.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); rcGateLogin(); }
+      });
+    }
   });
 
   /* ── Initialize auth on load ──────────────────────────────────── */
   rcAuthInit();
+
+  /* ============================================================
+     MY DASHBOARD — load task metrics for current user
+     ============================================================ */
+  async function rcDashboardLoad() {
+    var user = window.__rcCurrentUser;
+    if (!user) return;
+    var nameEl = document.getElementById('rcDashboardUserName');
+    if (nameEl) nameEl.textContent = user.displayName || user.name || 'User';
+
+    try {
+      var data = await rcApi('/api/teams?action=tasks');
+      var tasks = data.tasks || [];
+      var myTasks = tasks.filter(function(t) { return t.assigneeId === user.id; });
+      var inProgress = myTasks.filter(function(t) { return t.status === 'in_progress' || t.status === 'in-progress'; });
+      var completed = myTasks.filter(function(t) { return t.status === 'completed' || t.status === 'done'; });
+
+      var assignedEl = document.getElementById('rcDashAssignedCount');
+      var progressEl = document.getElementById('rcDashInProgressCount');
+      var completedEl = document.getElementById('rcDashCompletedCount');
+      if (assignedEl) assignedEl.textContent = myTasks.length;
+      if (progressEl) progressEl.textContent = inProgress.length;
+      if (completedEl) completedEl.textContent = completed.length;
+    } catch (e) {
+      // Silently fail — dashboard metrics are nice-to-have
+      var assignedEl = document.getElementById('rcDashAssignedCount');
+      var progressEl = document.getElementById('rcDashInProgressCount');
+      var completedEl = document.getElementById('rcDashCompletedCount');
+      if (assignedEl) assignedEl.textContent = '0';
+      if (progressEl) progressEl.textContent = '0';
+      if (completedEl) completedEl.textContent = '0';
+    }
+  }
 
   /* ============================================================
      PROFILE SCREEN
@@ -7311,6 +7476,10 @@
       if (roleEl) roleEl.textContent = u.role ? u.role.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); }) : '—';
       var emailEl = document.getElementById('profileEmail');
       if (emailEl) emailEl.textContent = u.email || '—';
+
+      // Show temp password banner if user hasn't changed their password yet
+      var tempBanner = document.getElementById('profileTempPasswordBanner');
+      if (tempBanner) tempBanner.style.display = u.tempPassword ? '' : 'none';
 
       // Fill form fields
       var dnField = document.getElementById('profileDisplayName');
@@ -7372,6 +7541,10 @@
         document.getElementById('profileCurrentPw').value = '';
         document.getElementById('profileNewPw').value = '';
         rcToast('Password changed successfully.', 'success');
+        // Hide temp password banner and update user
+        var tempBanner = document.getElementById('profileTempPasswordBanner');
+        if (tempBanner) tempBanner.style.display = 'none';
+        if (window.__rcCurrentUser) window.__rcCurrentUser.tempPassword = false;
       }
     } catch (e) {
       rcToast('Failed to change password: ' + e.message, 'error');
@@ -7444,7 +7617,7 @@
       return '<span class="badge ' + cls + '">' + escapeHTML(role.replace(/_/g, ' ')) + '</span>';
     };
     var statusBadge = function(status) {
-      var cls = status === 'active' ? 'badge--success' : status === 'suspended' ? 'badge--warn' : '';
+      var cls = status === 'active' ? 'badge--success' : status === 'suspended' || status === 'inactive' ? 'badge--warn' : '';
       return '<span class="badge ' + cls + '">' + escapeHTML(status || 'active') + '</span>';
     };
     var lastLogin = function(d) {
@@ -7458,6 +7631,9 @@
 
     // Table rows
     tbody.innerHTML = users.map(function(u) {
+      var isActive = u.status === 'active';
+      var statusToggleLabel = isActive ? 'Deactivate' : 'Activate';
+      var statusToggleColor = isActive ? 'var(--color-warn)' : 'var(--color-success)';
       return '<tr>' +
         '<td><div style="display:flex;align-items:center;gap:.5rem;"><div class="user-card-avatar">' + escapeHTML(initials(u.name)) + '</div><span>' + escapeHTML(u.name) + '</span></div></td>' +
         '<td style="font-size:0.82rem; color: var(--color-text-muted);">' + escapeHTML(u.email) + '</td>' +
@@ -7465,16 +7641,20 @@
         '<td>' + statusBadge(u.status) + '</td>' +
         '<td>' + lastLogin(u.lastLoginAt) + '</td>' +
         '<td><div class="user-actions">' +
-          '<button class="btn btn--ghost" onclick="rcUserEdit(\'' + escapeHTML(u.id) + '\')"><i data-lucide="pencil" style="width:14px;height:14px;"></i></button>' +
-          '<button class="btn btn--ghost" onclick="rcUserModuleAccess(\'' + escapeHTML(u.id) + '\')"><i data-lucide="shield" style="width:14px;height:14px;"></i></button>' +
-          '<button class="btn btn--ghost" onclick="rcUserResetPassword(\'' + escapeHTML(u.id) + '\')"><i data-lucide="key-round" style="width:14px;height:14px;"></i></button>' +
-          (u.role !== 'super_admin' ? '<button class="btn btn--ghost" style="color:var(--color-danger);" onclick="rcUserDelete(\'' + escapeHTML(u.id) + '\')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>' : '') +
+          '<button class="btn btn--ghost" onclick="rcUserEdit(\'' + escapeHTML(u.id) + '\')" title="Edit user"><i data-lucide="pencil" style="width:14px;height:14px;"></i></button>' +
+          '<button class="btn btn--ghost" onclick="rcUserModuleAccess(\'' + escapeHTML(u.id) + '\')" title="Module access"><i data-lucide="shield" style="width:14px;height:14px;"></i></button>' +
+          '<button class="btn btn--ghost" onclick="rcUserResetPassword(\'' + escapeHTML(u.id) + '\')" title="Reset password"><i data-lucide="key-round" style="width:14px;height:14px;"></i></button>' +
+          '<button class="btn btn--ghost" style="color:' + statusToggleColor + ';" onclick="rcUserToggleStatus(\'' + escapeHTML(u.id) + '\')" title="' + statusToggleLabel + '"><i data-lucide="' + (isActive ? 'user-x' : 'user-check') + '" style="width:14px;height:14px;"></i></button>' +
+          (u.role !== 'super_admin' ? '<button class="btn btn--ghost" style="color:var(--color-danger);" onclick="rcUserDelete(\'' + escapeHTML(u.id) + '\')" title="Delete user"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>' : '') +
         '</div></td>' +
       '</tr>';
     }).join('');
 
     // Mobile cards
     cards.innerHTML = users.map(function(u) {
+      var isActive = u.status === 'active';
+      var statusToggleLabel = isActive ? 'Deactivate' : 'Activate';
+      var statusToggleColor = isActive ? 'var(--color-warn)' : 'var(--color-success)';
       return '<div class="user-card">' +
         '<div class="user-card-header">' +
           '<div class="user-card-avatar">' + escapeHTML(initials(u.name)) + '</div>' +
@@ -7484,7 +7664,7 @@
         '<div class="user-card-actions">' +
           '<button class="btn btn--ghost" onclick="rcUserEdit(\'' + escapeHTML(u.id) + '\')"><i data-lucide="pencil" style="width:14px;height:14px;"></i> <span>Edit</span></button>' +
           '<button class="btn btn--ghost" onclick="rcUserModuleAccess(\'' + escapeHTML(u.id) + '\')"><i data-lucide="shield" style="width:14px;height:14px;"></i> <span>Access</span></button>' +
-          '<button class="btn btn--ghost" onclick="rcUserResetPassword(\'' + escapeHTML(u.id) + '\')"><i data-lucide="key-round" style="width:14px;height:14px;"></i></button>' +
+          '<button class="btn btn--ghost" style="color:' + statusToggleColor + ';" onclick="rcUserToggleStatus(\'' + escapeHTML(u.id) + '\')">' + statusToggleLabel + '</button>' +
           (u.role !== 'super_admin' ? '<button class="btn btn--ghost" style="color:var(--color-danger);" onclick="rcUserDelete(\'' + escapeHTML(u.id) + '\')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>' : '') +
         '</div>' +
       '</div>';
@@ -7617,7 +7797,7 @@
 
     var result = await showModal({
       title: 'Delete User',
-      sub: 'Are you sure you want to remove ' + user.name + '? This action cannot be undone.',
+      sub: 'Are you sure you want to permanently remove ' + user.name + '? This action cannot be undone.',
       fields: [],
       confirmText: 'Delete',
       cancelText: 'Cancel'
@@ -7636,7 +7816,37 @@
     }
   }
 
-  /* ── Module Access ────────────────────────────────────────────── */
+  /* ── Toggle User Status (activate/deactivate) ────────────────── */
+  async function rcUserToggleStatus(userId) {
+    var user = __rcUsersCache.find(function(u) { return u.id === userId; });
+    if (!user) return;
+
+    var currentStatus = user.status || 'active';
+    var newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    var action = newStatus === 'active' ? 'activate' : 'deactivate';
+
+    var result = await showModal({
+      title: action.charAt(0).toUpperCase() + action.slice(1) + ' User',
+      sub: 'Are you sure you want to ' + action + ' ' + user.name + '?',
+      fields: [],
+      confirmText: action.charAt(0).toUpperCase() + action.slice(1),
+      cancelText: 'Cancel'
+    });
+    if (!result) return;
+
+    try {
+      await rcApi('/api/users', {
+        method: 'PUT',
+        body: { userId: userId, status: newStatus }
+      });
+      rcToast('User ' + action + 'd successfully.', 'success');
+      rcUsersRefresh();
+    } catch (e) {
+      rcToast('Failed to ' + action + ' user: ' + e.message, 'error');
+    }
+  }
+
+  /* ── Module Access + Action Permissions ──────────────────────── */
   async function rcUserModuleAccess(userId) {
     var user = __rcUsersCache.find(function(u) { return u.id === userId; });
     if (!user) return;
@@ -7654,8 +7864,9 @@
     }
 
     var currentAccess = user.moduleAccess || {};
+    var currentActions = (user.moduleAccess && user.moduleAccess.actionPermissions) || {};
 
-    // Build modal with module grid
+    // Build modal with module grid + action permissions
     var isES = (typeof lang === 'function' && lang() === 'es');
     var dlg = document.createElement('dialog');
     dlg.className = 'modal';
@@ -7674,17 +7885,37 @@
       '</div>';
     }).join('');
 
+    var actionPerms = [
+      { key: 'canAssignTasks', label: 'Can assign tasks' },
+      { key: 'canDoTasks', label: 'Can do tasks' },
+      { key: 'canViewOnly', label: 'Can view only' },
+      { key: 'canCommentOnly', label: 'Can comment only' },
+      { key: 'canEdit', label: 'Can edit' }
+    ];
+
+    var actionPermsHTML = actionPerms.map(function(p) {
+      var isOn = currentActions[p.key] ? true : false;
+      return '<div class="rc-action-perm-row">' +
+        '<span class="rc-action-perm-label">' + escapeHTML(p.label) + '</span>' +
+        '<div class="rc-toggle-switch' + (isOn ? '" data-on' : '"') + ' data-perm="' + escapeHTML(p.key) + '"></div>' +
+      '</div>';
+    }).join('');
+
     dlg.innerHTML =
       '<form method="dialog" class="modal-form">' +
         '<div class="modal-header">' +
           '<h3 class="modal-title">Module Access — ' + escapeHTML(user.name) + '</h3>' +
-          '<div class="modal-sub">Role: ' + escapeHTML(user.role) + ' · Set access level per module.</div>' +
+          '<div class="modal-sub">Role: ' + escapeHTML(user.role) + ' · Set access level per module and action permissions.</div>' +
         '</div>' +
         '<div class="modal-body">' +
           '<div style="margin-bottom: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">' +
             '<button type="button" class="btn btn--secondary" id="rcApplyRoleDefaults">Apply Role Defaults</button>' +
           '</div>' +
           '<div class="module-grid" id="rcModuleGrid">' + moduleHTML + '</div>' +
+          '<div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--color-border);">' +
+            '<div style="font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-muted); margin-bottom: 0.5rem;">Action Permissions</div>' +
+            '<div class="rc-action-perms-grid" id="rcActionPermsGrid">' + actionPermsHTML + '</div>' +
+          '</div>' +
         '</div>' +
         '<div class="modal-actions">' +
           '<button type="button" class="btn" data-action="cancel">' + (isES ? 'Cancelar' : 'Cancel') + '</button>' +
@@ -7695,6 +7926,14 @@
     document.body.appendChild(dlg);
     if (window.lucide) lucide.createIcons();
     dlg.showModal();
+
+    // Toggle switch click handler
+    dlg.querySelectorAll('.rc-toggle-switch').forEach(function(sw) {
+      sw.addEventListener('click', function() {
+        if (sw.hasAttribute('data-on')) sw.removeAttribute('data-on');
+        else sw.setAttribute('data-on', '');
+      });
+    });
 
     // Apply role defaults button
     dlg.querySelector('#rcApplyRoleDefaults')?.addEventListener('click', function() {
@@ -7718,11 +7957,18 @@
         newAccess[sel.getAttribute('data-module')] = sel.value;
       });
 
+      // Collect action permissions
+      var actionPerms = {};
+      dlg.querySelectorAll('[data-perm]').forEach(function(sw) {
+        actionPerms[sw.getAttribute('data-perm')] = sw.hasAttribute('data-on');
+      });
+      newAccess.actionPermissions = actionPerms;
+
       rcApi('/api/users', {
         method: 'PUT',
         body: { userId: userId, moduleAccess: newAccess }
       }).then(function() {
-        rcToast('Module access updated.', 'success');
+        rcToast('Module access and permissions updated.', 'success');
         rcUsersRefresh();
       }).catch(function(err) {
         rcToast('Failed: ' + err.message, 'error');
@@ -7738,12 +7984,13 @@
   async function rcUserInvite() {
     var result = await showModal({
       title: 'Invite User',
-      sub: 'Send an invitation to join the portal.',
+      sub: 'Send an invitation to join the portal. The user will set their own password on first login.',
       fields: [
-        { name: 'name', label_en: 'Full Name', label_es: 'Nombre Completo', required: true },
         { name: 'email', label_en: 'Email', label_es: 'Correo Electrónico', required: true },
-        { name: 'role', label_en: 'Role', label_es: 'Rol', type: 'select', value: 'team',
+        { name: 'name', label_en: 'Full Name', label_es: 'Nombre Completo', required: true },
+        { name: 'role', label_en: '⚠️ Select Role (important)', label_es: '⚠️ Seleccionar Rol (importante)', type: 'select', required: true, value: 'team',
           options: [
+            { value: '', label_en: '— Select a role —' },
             { value: 'admin', label_en: 'Admin' },
             { value: 'pm', label_en: 'Project Manager' },
             { value: 'webdev', label_en: 'Web Developer' },
@@ -7759,13 +8006,14 @@
       confirmText: 'Send Invitation'
     });
     if (!result) return;
+    if (!result.role) { rcToast('Please select a role for the invited user.', 'error'); return; }
 
     try {
       var data = await rcApi('/api/users?action=invite', {
         method: 'POST',
-        body: { name: result.name, email: result.email, role: result.role }
+        body: { name: result.name, email: result.email, role: result.role, temp_password: true }
       });
-      rcToast(data.message || 'Invitation sent.', 'success');
+      rcToast(data.message || 'Invitation sent. The user will set their password on first login.', 'success');
       rcUsersRefresh();
     } catch (e) {
       rcToast('Failed to invite user: ' + e.message, 'error');

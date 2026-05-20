@@ -277,7 +277,7 @@ export default async function handler(req, res) {
       }
 
       const passwordHash = await hashPassword(newPassword);
-      await updateUser(user.id, { passwordHash });
+      await updateUser(user.id, { passwordHash, tempPassword: false });
 
       return setJson(res, 200, { ok: true });
     }
@@ -392,7 +392,7 @@ export default async function handler(req, res) {
       }
 
       const passwordHash = await hashPassword(newPassword);
-      await updateUser(user.id, { passwordHash });
+      await updateUser(user.id, { passwordHash, tempPassword: false });
 
       // Mark token as used
       await updateResetToken(token.id, { used: true });
