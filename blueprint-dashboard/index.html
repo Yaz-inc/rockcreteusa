@@ -2094,7 +2094,7 @@
   }
   .rc-login-back:hover { color: var(--color-brand-2); }
 
-  /* Right column — Project Insights */
+  /* Right column — Project Information */
   .rc-login-right {
     display: flex; align-items: center; justify-content: center;
     padding: 3rem 2.5rem;
@@ -2119,61 +2119,37 @@
     letter-spacing: -0.02em;
   }
   .rc-login-right .insight-sub {
-    font-size: 0.95rem; opacity: 0.8; margin-bottom: 2rem; line-height: 1.5;
+    font-size: 0.95rem; opacity: 0.8; margin-bottom: 1.75rem; line-height: 1.5;
   }
-  .rc-login-right .insight-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  .rc-login-right .insight-card {
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.18);
+  .rc-login-right .info-card {
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.15);
     border-radius: var(--radius);
-    padding: 1.25rem;
+    padding: 1.15rem 1.25rem;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    margin-bottom: 0.85rem;
   }
-  :root[data-theme="dark"] .rc-login-right .insight-card {
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.1);
+  :root[data-theme="dark"] .rc-login-right .info-card {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.08);
   }
-  .rc-login-right .insight-card .ic-label {
-    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
-    font-weight: 600; opacity: 0.75; margin-bottom: 0.4rem;
+  .rc-login-right .info-card .info-icon {
+    width: 28px; height: 28px; border-radius: 999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.18); font-size: 0.85rem;
+    margin-bottom: 0.5rem; flex-shrink: 0;
   }
-  .rc-login-right .insight-card .ic-value {
-    font-size: 1.75rem; font-weight: 700; font-variant-numeric: tabular-nums;
-    line-height: 1.1;
+  .rc-login-right .info-card h4 {
+    font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem;
+    letter-spacing: -0.01em;
   }
-  .rc-login-right .insight-card .ic-delta {
-    font-size: 0.75rem; margin-top: 0.3rem; opacity: 0.7;
-  }
-  .rc-login-right .insight-progress-section {
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-  :root[data-theme="dark"] .rc-login-right .insight-progress-section {
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.1);
-  }
-  .rc-login-right .insight-progress-label {
-    font-size: 0.8rem; font-weight: 600; margin-bottom: 0.6rem;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .rc-login-right .insight-progress-bar {
-    height: 10px; background: rgba(255,255,255,0.2);
-    border-radius: 999px; overflow: hidden;
-  }
-  .rc-login-right .insight-progress-fill {
-    display: block; height: 100%; background: #fff;
-    border-radius: inherit; transition: width 1s var(--ease);
+  .rc-login-right .info-card p {
+    font-size: 0.82rem; line-height: 1.55; opacity: 0.85; margin: 0;
   }
   .rc-login-right .insight-footer {
-    margin-top: 1.5rem; font-size: 0.8rem; opacity: 0.6; text-align: center;
+    margin-top: 1.25rem; font-size: 0.78rem; opacity: 0.55; text-align: center;
+    line-height: 1.45;
   }
   .rc-login-right .insight-footer a {
     color: #fff; opacity: 0.8; text-decoration: underline;
@@ -2192,8 +2168,7 @@
     }
     .rc-login-right { padding: 2rem 1.5rem; }
     .rc-login-right .insight-title { font-size: 1.35rem; }
-    .rc-login-right .insight-grid { gap: 0.75rem; }
-    .rc-login-right .insight-card .ic-value { font-size: 1.4rem; }
+    .rc-login-right .info-card { padding: 1rem; }
   }
   @media (max-width: 640px) {
     .rc-login-left { padding: 1.25rem; }
@@ -2400,44 +2375,35 @@
   <!-- RIGHT COLUMN: Project Insights -->
   <div class="rc-login-right">
     <div class="rc-login-right-inner">
-      <div class="insight-title">Project Insights</div>
-      <div class="insight-sub">Real-time overview of the Rockcrete USA website rebuild project progress and team activity.</div>
+      <div class="insight-title">Rockcrete USA</div>
+      <div class="insight-sub">Complete website rebuild and digital transformation for one of Florida's premier concrete contractors.</div>
 
-      <div class="insight-grid">
-        <div class="insight-card">
-          <div class="ic-label">Team Members</div>
-          <div class="ic-value" id="insightTeamMembers">—</div>
-          <div class="ic-delta">Active contributors</div>
-        </div>
-        <div class="insight-card">
-          <div class="ic-label">Total Tasks</div>
-          <div class="ic-value" id="insightTotalTasks">—</div>
-          <div class="ic-delta">Project tasks</div>
-        </div>
-        <div class="insight-card">
-          <div class="ic-label">In Progress</div>
-          <div class="ic-value" id="insightInProgress">—</div>
-          <div class="ic-delta">Currently active</div>
-        </div>
-        <div class="insight-card">
-          <div class="ic-label">Completed</div>
-          <div class="ic-value" id="insightCompleted">—</div>
-          <div class="ic-delta">Tasks delivered</div>
-        </div>
+      <div class="info-card">
+        <div class="info-icon"><i data-lucide="target" style="width:15px;height:15px;"></i></div>
+        <h4>Project Mission</h4>
+        <p>Redesign and rebuild the Rockcrete USA website from the ground up with a modern tech stack, improved user experience, and a powerful content management system that positions Rockcrete as an industry leader in the Southeast Florida construction market.</p>
       </div>
 
-      <div class="insight-progress-section">
-        <div class="insight-progress-label">
-          <span>Overall Progress</span>
-          <span id="insightProgressPct">0%</span>
-        </div>
-        <div class="insight-progress-bar">
-          <span class="insight-progress-fill" id="insightProgressFill" style="width: 0%;"></span>
-        </div>
+      <div class="info-card">
+        <div class="info-icon"><i data-lucide="layers" style="width:15px;height:15px;"></i></div>
+        <h4>Four-Phase Approach</h4>
+        <p>Discovery &amp; Architecture, Visual Design, Build &amp; Migration, and Post-Launch Optimization. Each phase has defined milestones, deliverables, and quality gates to ensure every stage meets the highest standards before advancing.</p>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon"><i data-lucide="zap" style="width:15px;height:15px;"></i></div>
+        <h4>Modern Technology Stack</h4>
+        <p>Built with Next.js, headless CMS integration, and optimized for Core Web Vitals performance targets. The new platform delivers lightning-fast page loads, seamless mobile experience, and enterprise-grade SEO foundations.</p>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon"><i data-lucide="shield-check" style="width:15px;height:15px;"></i></div>
+        <h4>Secure Collaboration Portal</h4>
+        <p>This dashboard serves as the central hub for the entire project team. Track milestones, review deliverables, manage tasks, and communicate in real time — all within a role-based access-controlled environment.</p>
       </div>
 
       <div class="insight-footer">
-        <span id="insightPortalName">Rockcrete USA Blueprint</span> — Managed by <span id="insightCompanyName">New Minds Group</span>
+        Managed by New Minds Group &middot; Confidential Project Portal
       </div>
     </div>
   </div>
@@ -7392,7 +7358,6 @@
       gate.setAttribute('data-mode', 'login');
       rcGateClearError();
       rcGateCheckSeed();
-      rcLoadProjectInsights();
       if (window.lucide) setTimeout(function() { lucide.createIcons(); }, 50);
     }
   }
