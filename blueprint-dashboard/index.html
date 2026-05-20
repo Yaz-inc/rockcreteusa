@@ -673,22 +673,36 @@
 
   .milestone-actions { display: flex; gap: .35rem; align-items: start; flex-shrink: 0; }
 
-  .milestone-status-btn {
-    font-size: .68rem; font-weight: 600; padding: .2rem .55rem;
+  .milestone-status-select {
+    font-size: .72rem; font-weight: 600; padding: .2rem .4rem;
     border-radius: 999px; border: 1px solid; cursor: pointer;
     transition: all var(--duration-1) var(--ease); white-space: nowrap;
+    background: var(--color-surface); color: var(--color-text);
+    appearance: auto;
   }
-  .milestone-status-btn.is-not-started {
-    background: var(--color-surface-2); border-color: var(--color-border); color: var(--color-text-muted);
+  .milestone-status-select.is-not-started {
+    border-color: var(--color-border); color: var(--color-text-muted);
   }
-  .milestone-status-btn.is-in-progress {
-    background: var(--color-info-soft); border-color: transparent; color: var(--color-info);
+  .milestone-status-select.is-in-progress {
+    border-color: var(--color-info); color: var(--color-info);
   }
-  .milestone-status-btn.is-complete {
-    background: var(--color-success-soft); border-color: transparent; color: var(--color-success);
+  .milestone-status-select.is-complete {
+    border-color: var(--color-success); color: var(--color-success);
   }
-  .milestone-status-btn.is-blocked {
-    background: var(--color-danger-soft); border-color: transparent; color: var(--color-danger);
+  .milestone-status-select.is-blocked {
+    border-color: var(--color-danger); color: var(--color-danger);
+  }
+
+  .task-status-row {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .5rem 1rem; background: var(--color-surface-2);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .task-status-select {
+    font-size: .78rem; font-weight: 600; padding: .25rem .5rem;
+    border-radius: var(--radius-sm); border: 1px solid var(--color-border);
+    cursor: pointer; background: var(--color-surface); color: var(--color-text);
+    appearance: auto;
   }
 
   /* Add milestone form */
@@ -6806,8 +6820,8 @@
       const assigneeName = progressResolveAssignee(assigneeId);
       const taskName = task.title || task.label || task.id;
       const fillClass = pct >= 100 ? 'is-complete' : milestones.some(m => m.status === 'blocked') ? 'is-blocked' : '';
-      // Permission: only assigned user or admin/PM can edit milestones & submit progress
       const canEditTask = isAdminOrPM || assigneeId === currentUserId;
+      const taskStatus = state.status || task.status || 'not_started';
 
       return `<div class="progress-task-card" data-task-id="${progressEscape(task.id)}">
         <div class="progress-task-header" onclick="toggleProgressTask('${progressEscape(task.id)}')">
@@ -6827,6 +6841,7 @@
             <span class="progress-pct">${pct}%</span>
           </div>
         </div>
+        ${canEditTask ? renderTaskStatusSelect(task.id, taskStatus) : ''}
         <div class="progress-task-body">
           ${milestones.length > 0 ? renderMilestoneList(task.id, milestones, canEditTask) : renderNoMilestones(task.id, canEditTask)}
           ${canEditTask ? renderAddMilestoneForm(task.id) : ''}
@@ -6836,13 +6851,24 @@
     }).join('');
   }
 
+  function milestoneStatusOptions(currentStatus) {
+    const statuses = [
+      { value: 'not-started', label: 'Not Started' },
+      { value: 'in-progress', label: 'In Progress' },
+      { value: 'complete', label: 'Complete' },
+      { value: 'blocked', label: 'Blocked' },
+    ];
+    return statuses.map(s =>
+      `<option value="${s.value}" ${s.value === currentStatus ? 'selected' : ''}>${s.label}</option>`
+    ).join('');
+  }
+
   function renderMilestoneList(taskId, milestones, canEditTask) {
     const isES = lang() === 'es';
     const canChange = canEditTask !== false && progressCanEdit();
     return `<div class="milestone-list">
       ${milestones.map(ms => {
         const iconChar = milestoneIconChar(ms.status);
-        const statusLabel = ms.status.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         return `<div class="milestone-item" data-milestone-id="${progressEscape(ms.id)}">
           <div class="milestone-icon is-${ms.status}">${iconChar}</div>
           <div class="milestone-info">
@@ -6851,9 +6877,10 @@
             ${ms.completedAt ? `<div class="milestone-completed">${isES ? 'Completado' : 'Completed'} ${relativeTime(ms.completedAt)}${ms.completedBy ? ' by ' + progressEscape(ms.completedBy) : ''}</div>` : ''}
           </div>
           <div class="milestone-actions">
-            <button class="milestone-status-btn is-${ms.status}"
-              ${canChange ? `onclick="cycleMilestoneStatus('${progressEscape(taskId)}','${progressEscape(ms.id)}')"` : 'disabled'}
-              title="${statusLabel}">${statusLabel}</button>
+            ${canChange
+              ? `<select class="milestone-status-select is-${ms.status}" data-ms-status-select="${progressEscape(taskId)}:${progressEscape(ms.id)}" onchange="changeMilestoneStatus(this)">${milestoneStatusOptions(ms.status)}</select>`
+              : `<span class="milestone-status-select is-${ms.status}" style="cursor:default;">${ms.status.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>`
+            }
             ${canChange ? `<button class="btn btn--ghost btn--icon" style="padding:.2rem;min-width:28px;" onclick="deleteMilestone('${progressEscape(taskId)}','${progressEscape(ms.id)}')" title="${isES ? 'Eliminar' : 'Delete'}" aria-label="Delete milestone"><i data-lucide="x" style="width:14px;height:14px;"></i></button>` : ''}
           </div>
         </div>`;
@@ -6869,6 +6896,132 @@
       ${canEdit ? `<p style="margin-top:.35rem;">${isES ? 'Agrega milestones abajo para desglosar el trabajo.' : 'Add milestones below to break down the work.'}</p>` : ''}
     </div>`;
   }
+
+  function taskStatusOptions(currentStatus) {
+    const statuses = [
+      { value: 'not_started', label: 'Not Started' },
+      { value: 'in_progress', label: 'In Progress' },
+      { value: 'waiting_client', label: 'Waiting on Client' },
+      { value: 'ready_review', label: 'Ready for Review' },
+      { value: 'done', label: 'Done' },
+    ];
+    return statuses.map(s =>
+      `<option value="${s.value}" ${s.value === currentStatus ? 'selected' : ''}>${s.label}</option>`
+    ).join('');
+  }
+
+  function renderTaskStatusSelect(taskId, currentStatus) {
+    return `<div class="task-status-row">
+      <label style="font-size:.75rem; color:var(--color-text-muted); font-weight:600;">Status:</label>
+      <select class="task-status-select" data-task-status-select="${progressEscape(taskId)}" onchange="changeTaskStatus(this)">${taskStatusOptions(currentStatus)}</select>
+    </div>`;
+  }
+
+  window.changeTaskStatus = async function(selectEl) {
+    const taskId = selectEl.dataset.taskStatusSelect;
+    const newStatus = selectEl.value;
+    if (!progressCanEditTask(taskId)) return;
+
+    const state = TRACKER_STATE.tasks?.[taskId] || {};
+    const prevStatus = state.status || 'not_started';
+    if (prevStatus === newStatus) return;
+
+    progressSetStatus('Updating...');
+
+    try {
+      const res = await fetch('/api/tracker', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-rockcrete-role': trackerPersistedRole() },
+        body: JSON.stringify({
+          tasks: [{ id: taskId, status: newStatus, updatedAt: new Date().toISOString(), updatedBy: progressUserName() }]
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.state?.tasks?.[taskId]) {
+          TRACKER_STATE.tasks[taskId] = data.state.tasks[taskId];
+        }
+      }
+    } catch (e) {
+      console.warn('Tracker API failed, updating locally:', e.message);
+    }
+
+    TRACKER_STATE.tasks[taskId] = TRACKER_STATE.tasks[taskId] || {};
+    TRACKER_STATE.tasks[taskId].status = newStatus;
+    TRACKER_STATE.tasks[taskId].updatedAt = new Date().toISOString();
+    TRACKER_STATE.tasks[taskId].updatedBy = progressUserName();
+
+    try { localStorage.setItem(TRACKER_LOCAL_KEY, JSON.stringify(TRACKER_STATE)); } catch (_) {}
+
+    await submitProgressUpdate({
+      taskId,
+      type: 'status-change',
+      message: `Task status changed from "${prevStatus.replace(/_/g, ' ')}" to "${newStatus.replace(/_/g, ' ')}"`,
+      previousStatus: prevStatus,
+      newStatus: newStatus
+    });
+
+    progressSetStatus('Updated');
+    renderProgressDashboard();
+  };
+
+  window.changeMilestoneStatus = async function(selectEl) {
+    const parts = selectEl.dataset.msStatusSelect.split(':');
+    const taskId = parts[0];
+    const milestoneId = parts[1];
+    const newStatus = selectEl.value;
+    if (!progressCanEditTask(taskId)) return;
+
+    const taskEntry = MILESTONES_DATA[taskId];
+    if (!taskEntry) return;
+    const ms = taskEntry.milestones.find(m => m.id === milestoneId);
+    if (!ms) return;
+
+    const prevStatus = ms.status;
+    if (prevStatus === newStatus) return;
+
+    progressSetStatus('Updating...');
+
+    try {
+      const res = await fetch('/api/milestones', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-rockcrete-role': trackerPersistedRole() },
+        body: JSON.stringify({
+          taskId, milestoneId,
+          milestone: { status: newStatus }
+        })
+      });
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      MILESTONES_DATA = data.milestones || MILESTONES_DATA;
+    } catch (e) {
+      console.warn('Milestones API failed, updating locally:', e.message);
+      ms.status = newStatus;
+      ms.updatedAt = new Date().toISOString();
+      if (newStatus === 'complete') {
+        ms.completedAt = new Date().toISOString();
+        ms.completedBy = progressUserName();
+      } else {
+        ms.completedAt = null;
+        ms.completedBy = null;
+      }
+    }
+
+    try { localStorage.setItem(MILESTONES_LOCAL_KEY, JSON.stringify(MILESTONES_DATA)); } catch (_) {}
+
+    const activityType = newStatus === 'complete' ? 'milestone-completed' : 'status-change';
+    await submitProgressUpdate({
+      taskId,
+      milestoneId,
+      type: activityType,
+      message: `"${ms.title}" changed from ${prevStatus.replace(/-/g, ' ')} to ${newStatus.replace(/-/g, ' ')}`,
+      previousStatus: prevStatus,
+      newStatus: newStatus
+    });
+
+    progressSetStatus('Updated');
+    renderProgressDashboard();
+  };
 
   function renderAddMilestoneForm(taskId) {
     const isES = lang() === 'es';
@@ -7069,65 +7222,6 @@
     if (notesInput) notesInput.value = '';
 
     progressSetStatus(isES ? 'Guardado' : 'Saved');
-    renderProgressDashboard();
-  };
-
-  /* ── Cycle milestone status ─────────────────────────────────────────── */
-  window.cycleMilestoneStatus = async function(taskId, milestoneId) {
-    if (!progressCanEditTask(taskId)) return;
-
-    const taskEntry = MILESTONES_DATA[taskId];
-    if (!taskEntry) return;
-    const ms = taskEntry.milestones.find(m => m.id === milestoneId);
-    if (!ms) return;
-
-    const cycle = ['not-started', 'in-progress', 'complete', 'blocked'];
-    const currentIdx = cycle.indexOf(ms.status);
-    const nextStatus = cycle[(currentIdx + 1) % cycle.length];
-    const prevStatus = ms.status;
-
-    progressSetStatus('Updating...');
-
-    // Update via API
-    try {
-      const res = await fetch('/api/milestones', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'x-rockcrete-role': trackerPersistedRole() },
-        body: JSON.stringify({
-          taskId, milestoneId,
-          milestone: { status: nextStatus }
-        })
-      });
-      if (!res.ok) throw new Error('API error');
-      const data = await res.json();
-      MILESTONES_DATA = data.milestones || MILESTONES_DATA;
-    } catch (e) {
-      console.warn('Milestones API failed, updating locally:', e.message);
-      ms.status = nextStatus;
-      ms.updatedAt = new Date().toISOString();
-      if (nextStatus === 'complete') {
-        ms.completedAt = new Date().toISOString();
-        ms.completedBy = progressUserName();
-      } else {
-        ms.completedAt = null;
-        ms.completedBy = null;
-      }
-    }
-
-    try { localStorage.setItem(MILESTONES_LOCAL_KEY, JSON.stringify(MILESTONES_DATA)); } catch (_) {}
-
-    // Log activity
-    const activityType = nextStatus === 'complete' ? 'milestone-completed' : 'status-change';
-    await submitProgressUpdate({
-      taskId,
-      milestoneId,
-      type: activityType,
-      message: `"${ms.title}" moved from ${prevStatus.replace(/-/g,' ')} to ${nextStatus.replace(/-/g,' ')}`,
-      previousStatus: prevStatus,
-      newStatus: nextStatus
-    });
-
-    progressSetStatus('Updated');
     renderProgressDashboard();
   };
 
