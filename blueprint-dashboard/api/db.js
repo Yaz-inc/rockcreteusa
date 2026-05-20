@@ -4,9 +4,10 @@
  * Replaces blob-helpers.js with proper PostgreSQL via Supabase.
  * All reads/writes go through the Supabase client using the service_role key.
  *
- * Required environment variables:
- *   SUPABASE_URL       — Project URL (https://xxx.supabase.co)
- *   SUPABASE_SERVICE_KEY — service_role key (bypasses RLS)
+ * Required environment variables (supports Vercel integration names):
+ *   SUPABASE_URL / NEXT_PUBLIC_SUPABASE_URL  — Project URL (https://xxx.supabase.co)
+ *   SUPABASE_SERVICE_KEY / SUPABASE_SERVICE_ROLE_KEY — service_role key (bypasses RLS)
+ *   SESSION_SECRET — HMAC-SHA256 key for cookie signing
  * ============================================================================
  */
 
@@ -18,10 +19,11 @@ let _supabase = null;
 
 function getSupabase() {
   if (_supabase) return _supabase;
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY;
+  // Support both custom names and Vercel integration names
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    throw new Error('SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables are required');
+    throw new Error('SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) and SUPABASE_SERVICE_KEY (or SUPABASE_SERVICE_ROLE_KEY) environment variables are required');
   }
   _supabase = createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
