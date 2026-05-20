@@ -1,22 +1,16 @@
-import { list, put, readJsonBlob } from './blob-helpers.js';
+/**
+ * Tracker API — Project tracker state CRUD
+ * ============================================================================
+ * GET/PUT for project tracker state stored in Supabase.
+ * Session verification via cookie; staff role check for writes.
+ * ============================================================================
+ */
+
 import { createHmac } from 'crypto';
-
-const TRACKER_STATE_PATH = 'rockcrete/project-tracker-state.json';
-
-function setJson(res, status, payload) {
-  res.status(status).setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-store');
-  res.end(JSON.stringify(payload));
-}
-
-async function writeStateToBlob(state) {
-  await put(TRACKER_STATE_PATH, JSON.stringify(state, null, 2), {
-    contentType: 'application/json',
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    access: 'public'
-  });
-}
+import {
+  setJson, requireAuth,
+  getTrackerState, patchTrackerTasks, patchTrackerAccessRequests,
+} from './db.js';
 
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_COMMENT_BODY = 4000;
@@ -76,51 +70,17 @@ function normalizeTaskPatch(task) {
   return out;
 }
 
-/* ── Session verification ───────────────────────────────────────────────── */
-
-function getSessionSecret() {
-  return process.env.SESSION_SECRET || 'rockcrete-default-secret-change-me-in-production';
-}
-
-function verifySessionCookie(req) {
-  const cookieHeader = req.headers?.cookie || '';
-  const match = cookieHeader.match(/rockcrete_session=([^;]+)/);
-  if (!match) return null;
-  try {
-    const decoded = JSON.parse(Buffer.from(match[1], 'base64url').toString('utf8'));
-    const { _sig, ...payload } = decoded;
-    const expected = createHmac('sha256', getSessionSecret()).update(JSON.stringify(payload)).digest('hex');
-    if (_sig.length !== expected.length) return null;
-    let mismatch = 0;
-    for (let i = 0; i < _sig.length; i++) {
-      mismatch |= _sig.charCodeAt(i) ^ expected.charCodeAt(i);
-    }
-    if (mismatch !== 0) return null;
-    if (payload.expiresAt && Date.now() > payload.expiresAt) return null;
-    return payload; // { userId, role, expiresAt }
-  } catch {
-    return null;
-  }
-}
-
-function requireAuth(req) {
-  const session = verifySessionCookie(req);
-  if (!session) return null;
-  return session; // { userId, role, expiresAt }
-}
-
 export default async function handler(req, res) {
   try {
-    // Auth check — require valid session for all operations
     const session = requireAuth(req);
     if (!session) {
       return setJson(res, 401, { error: 'Authentication required' });
     }
 
     if (req.method === 'GET') {
-      const state = await readJsonBlob(TRACKER_STATE_PATH);
+      const state = await getTrackerState();
       return setJson(res, 200, {
-        source: state ? 'blob' : 'seed',
+        source: Object.keys(state.tasks).length > 0 ? 'database' : 'seed',
         state: state || { tasks: {}, accessRequests: {} }
       });
     }
@@ -141,37 +101,19 @@ export default async function handler(req, res) {
     }
 
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-    const existing = await readJsonBlob(TRACKER_STATE_PATH);
-    const state = existing || { tasks: {}, accessRequests: {} };
 
     if (Array.isArray(body.tasks)) {
-      body.tasks.forEach((task) => {
-        const patch = normalizeTaskPatch(task);
-        if (!patch.id) return;
-        const prev = state.tasks[patch.id] || {};
-        const next = { ...prev, ...patch };
-        /* Caller may omit `comments` — keep persisted notes unless this PUT updates them */
-        if (!Object.prototype.hasOwnProperty.call(task, 'comments')) {
-          if ('comments' in prev) next.comments = prev.comments;
-          else delete next.comments;
-        }
-        state.tasks[patch.id] = next;
-      });
+      const patches = body.tasks.map(normalizeTaskPatch).filter(p => p.id);
+      await patchTrackerTasks(patches);
     }
 
     if (Array.isArray(body.accessRequests)) {
-      body.accessRequests.forEach((item) => {
-        const patch = normalizeTaskPatch(item);
-        if (patch.id) {
-          const prev = state.accessRequests[patch.id] || {};
-          state.accessRequests[patch.id] = { ...prev, ...patch };
-        }
-      });
+      const arPatches = body.accessRequests.map(normalizeTaskPatch).filter(p => p.id);
+      await patchTrackerAccessRequests(arPatches);
     }
 
-    state.updatedAt = new Date().toISOString();
-    await writeStateToBlob(state);
-    return setJson(res, 200, { source: 'blob', state });
+    const state = await getTrackerState();
+    return setJson(res, 200, { source: 'database', state });
   } catch (error) {
     return setJson(res, 500, {
       error: 'Tracker persistence failed',

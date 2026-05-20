@@ -1,71 +1,27 @@
 /**
  * Milestones API — CRUD for task milestones
  * ============================================================================
- * Stores milestone definitions per task in Vercel Blob Storage.
- * Completely isolated from the existing tracker.js — reads project-tracker.json
- * only to validate task IDs, never writes to it.
- *
- * Blob key: rockcrete/milestones.json
- *
- * Data shape:
- * {
- *   "taskId": {
- *     "taskId": "p1-dev-current-site-audit",
- *     "milestones": [
- *       {
- *         "id": "ms-a1b2c3",
- *         "title": "Crawl all site pages",
- *         "order": 1,
- *         "status": "not-started",  // "not-started" | "in-progress" | "complete" | "blocked"
- *         "completedAt": null,
- *         "completedBy": null,
- *         "notes": "",
- *         "createdAt": "2026-05-19T12:00:00Z",
- *         "updatedAt": "2026-05-19T12:00:00Z"
- *       }
- *     ],
- *     "createdAt": "...",
- *     "updatedAt": "..."
- *   }
- * }
+ * Stores milestone definitions per task in Supabase.
+ * Completely isolated from tracker.js — reads project data only to validate
+ * task IDs, never writes to it.
  * ============================================================================
  */
 
-import { list, put, readJsonBlob } from './blob-helpers.js';
-import { createHmac } from 'crypto';
+import {
+  setJson, requireAuth,
+  getAllMilestones, createMilestone, updateMilestone, deleteMilestone,
+  generateId,
+} from './db.js';
 
-const MILESTONES_PATH = 'rockcrete/milestones.json';
-
-/* ── Helpers ────────────────────────────────────────────────────────────── */
-
-function setJson(res, status, payload) {
-  res.status(status).setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-store');
-  res.end(JSON.stringify(payload));
-}
-
-async function writeToBlob(data) {
-  await put(MILESTONES_PATH, JSON.stringify(data, null, 2), {
-    contentType: 'application/json',
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    access: 'public'
-  });
-}
+const VALID_STATUSES = ['not-started', 'in-progress', 'complete', 'blocked'];
 
 function canEdit(role) {
   return ['admin', 'webdev', 'team'].includes(role);
 }
 
-function generateId() {
-  return 'ms-' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
-}
-
-const VALID_STATUSES = ['not-started', 'in-progress', 'complete', 'blocked'];
-
 function normalizeMilestone(ms, existing) {
   const out = {
-    id: String(ms.id || existing?.id || generateId()),
+    id: String(ms.id || existing?.id || generateId('ms')),
     title: String(ms.title || existing?.title || '').trim().slice(0, 200),
     order: typeof ms.order === 'number' ? ms.order : (existing?.order || 0),
     status: VALID_STATUSES.includes(ms.status) ? ms.status : (existing?.status || 'not-started'),
@@ -83,44 +39,8 @@ function normalizeMilestone(ms, existing) {
   return out;
 }
 
-/* ── Handler ────────────────────────────────────────────────────────────── */
-
-/* ── Session verification ───────────────────────────────────────────────── */
-
-function getSessionSecret() {
-  return process.env.SESSION_SECRET || 'rockcrete-default-secret-change-me-in-production';
-}
-
-function verifySessionCookie(req) {
-  const cookieHeader = req.headers?.cookie || '';
-  const match = cookieHeader.match(/rockcrete_session=([^;]+)/);
-  if (!match) return null;
-  try {
-    const decoded = JSON.parse(Buffer.from(match[1], 'base64url').toString('utf8'));
-    const { _sig, ...payload } = decoded;
-    const expected = createHmac('sha256', getSessionSecret()).update(JSON.stringify(payload)).digest('hex');
-    if (_sig.length !== expected.length) return null;
-    let mismatch = 0;
-    for (let i = 0; i < _sig.length; i++) {
-      mismatch |= _sig.charCodeAt(i) ^ expected.charCodeAt(i);
-    }
-    if (mismatch !== 0) return null;
-    if (payload.expiresAt && Date.now() > payload.expiresAt) return null;
-    return payload; // { userId, role, expiresAt }
-  } catch {
-    return null;
-  }
-}
-
-function requireAuth(req) {
-  const session = verifySessionCookie(req);
-  if (!session) return null;
-  return session; // { userId, role, expiresAt }
-}
-
 export default async function handler(req, res) {
   try {
-    // Auth check — require valid session for all operations
     const session = requireAuth(req);
     if (!session) {
       return setJson(res, 401, { error: 'Authentication required' });
@@ -130,10 +50,10 @@ export default async function handler(req, res) {
 
     /* ── GET: Fetch milestones ─────────────────────────────────────────── */
     if (req.method === 'GET') {
-      const data = await readJsonBlob(MILESTONES_PATH);
+      const data = await getAllMilestones();
       return setJson(res, 200, {
-        source: data ? 'blob' : 'empty',
-        milestones: data || {}
+        source: Object.keys(data).length > 0 ? 'database' : 'empty',
+        milestones: data
       });
     }
 
@@ -149,13 +69,12 @@ export default async function handler(req, res) {
       if (!taskId || typeof taskId !== 'string') {
         return setJson(res, 400, { error: 'taskId is required' });
       }
-
       if (!Array.isArray(rawMilestones) || rawMilestones.length === 0) {
         return setJson(res, 400, { error: 'milestones array is required and must not be empty' });
       }
 
-      const data = (await readJsonBlob(MILESTONES_PATH)) || {};
-      const existing = data[taskId] || { taskId, milestones: [], createdAt: new Date().toISOString() };
+      const allMilestones = await getAllMilestones();
+      const existing = allMilestones[taskId] || { taskId, milestones: [], createdAt: new Date().toISOString() };
 
       const newMilestones = rawMilestones.map((ms, i) => {
         const normalized = normalizeMilestone({ ...ms, order: ms.order ?? (existing.milestones.length + i + 1), updatedBy: incomingRole });
@@ -166,12 +85,13 @@ export default async function handler(req, res) {
         return setJson(res, 400, { error: 'No valid milestones provided' });
       }
 
-      existing.milestones = [...existing.milestones, ...newMilestones];
-      existing.updatedAt = new Date().toISOString();
-      data[taskId] = existing;
+      // Insert each new milestone into the database
+      for (const ms of newMilestones) {
+        await createMilestone({ ...ms, taskId });
+      }
 
-      await writeToBlob(data);
-      return setJson(res, 201, { source: 'blob', milestones: data });
+      const data = await getAllMilestones();
+      return setJson(res, 201, { source: 'database', milestones: data });
     }
 
     /* ── PUT: Update a milestone ───────────────────────────────────────── */
@@ -183,27 +103,27 @@ export default async function handler(req, res) {
       const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
       const { taskId, milestoneId, milestone: rawMs, milestones: bulkMs } = body;
 
-      const data = (await readJsonBlob(MILESTONES_PATH)) || {};
-
-      // Bulk update: update multiple milestones at once
+      // Bulk update
       if (bulkMs && Array.isArray(bulkMs)) {
         if (!taskId) {
           return setJson(res, 400, { error: 'taskId is required for bulk updates' });
         }
-        const taskEntry = data[taskId];
+        const allMilestones = await getAllMilestones();
+        const taskEntry = allMilestones[taskId];
         if (!taskEntry) {
           return setJson(res, 404, { error: 'Task milestones not found' });
         }
         for (const patch of bulkMs) {
-          const idx = taskEntry.milestones.findIndex(m => m.id === patch.id);
-          if (idx >= 0) {
-            const normalized = normalizeMilestone({ ...patch, updatedBy: incomingRole }, taskEntry.milestones[idx]);
-            if (normalized) taskEntry.milestones[idx] = normalized;
+          const existing = taskEntry.milestones.find(m => m.id === patch.id);
+          if (existing) {
+            const normalized = normalizeMilestone({ ...patch, updatedBy: incomingRole }, existing);
+            if (normalized) {
+              await updateMilestone(patch.id, normalized);
+            }
           }
         }
-        taskEntry.updatedAt = new Date().toISOString();
-        await writeToBlob(data);
-        return setJson(res, 200, { source: 'blob', milestones: data });
+        const data = await getAllMilestones();
+        return setJson(res, 200, { source: 'database', milestones: data });
       }
 
       // Single milestone update
@@ -211,25 +131,25 @@ export default async function handler(req, res) {
         return setJson(res, 400, { error: 'taskId and milestoneId are required' });
       }
 
-      const taskEntry = data[taskId];
+      const allMilestones = await getAllMilestones();
+      const taskEntry = allMilestones[taskId];
       if (!taskEntry) {
         return setJson(res, 404, { error: 'Task milestones not found' });
       }
 
-      const idx = taskEntry.milestones.findIndex(m => m.id === milestoneId);
-      if (idx < 0) {
+      const existing = taskEntry.milestones.find(m => m.id === milestoneId);
+      if (!existing) {
         return setJson(res, 404, { error: 'Milestone not found' });
       }
 
-      const normalized = normalizeMilestone({ ...rawMs, id: milestoneId, updatedBy: incomingRole }, taskEntry.milestones[idx]);
+      const normalized = normalizeMilestone({ ...rawMs, id: milestoneId, updatedBy: incomingRole }, existing);
       if (!normalized) {
         return setJson(res, 400, { error: 'Invalid milestone data' });
       }
 
-      taskEntry.milestones[idx] = normalized;
-      taskEntry.updatedAt = new Date().toISOString();
-      await writeToBlob(data);
-      return setJson(res, 200, { source: 'blob', milestones: data });
+      await updateMilestone(milestoneId, normalized);
+      const data = await getAllMilestones();
+      return setJson(res, 200, { source: 'database', milestones: data });
     }
 
     /* ── DELETE: Remove a milestone ────────────────────────────────────── */
@@ -245,21 +165,20 @@ export default async function handler(req, res) {
         return setJson(res, 400, { error: 'taskId and milestoneId are required' });
       }
 
-      const data = (await readJsonBlob(MILESTONES_PATH)) || {};
-      const taskEntry = data[taskId];
+      const allMilestones = await getAllMilestones();
+      const taskEntry = allMilestones[taskId];
       if (!taskEntry) {
         return setJson(res, 404, { error: 'Task milestones not found' });
       }
 
-      const before = taskEntry.milestones.length;
-      taskEntry.milestones = taskEntry.milestones.filter(m => m.id !== milestoneId);
-      if (taskEntry.milestones.length === before) {
+      const ms = taskEntry.milestones.find(m => m.id === milestoneId);
+      if (!ms) {
         return setJson(res, 404, { error: 'Milestone not found' });
       }
 
-      taskEntry.updatedAt = new Date().toISOString();
-      await writeToBlob(data);
-      return setJson(res, 200, { source: 'blob', milestones: data });
+      await deleteMilestone(milestoneId);
+      const data = await getAllMilestones();
+      return setJson(res, 200, { source: 'database', milestones: data });
     }
 
     /* ── Method not allowed ────────────────────────────────────────────── */

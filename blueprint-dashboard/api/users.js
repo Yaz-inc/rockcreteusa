@@ -2,149 +2,21 @@
  * Users API — Super Admin user management
  * ============================================================================
  * CRUD operations for user accounts. Only accessible by super_admin role.
- * Includes module-level access control management.
+ * Includes module-level access control management and invitation flow.
  *
- * Blob key: rockcrete/users.json
+ * Database: Supabase (replaces Vercel Blob)
  * Auth: Requires super_admin session cookie
  * ============================================================================
  */
 
-import { list, put, readJsonBlob } from './blob-helpers.js';
+import {
+  setJson, parseBody, generateId, stripSensitive,
+  getAllUsers, getUserByEmail, getUserById, upsertUser, updateUser, deleteUser,
+  getSettings, getDefaultModuleAccess, requireAuth, requireSuperAdmin,
+  verifySession, MODULE_REGISTRY, VALID_ROLES, ACCESS_LEVELS,
+} from './db.js';
+
 import { randomBytes } from 'crypto';
-
-const USERS_PATH = 'rockcrete/users.json';
-
-/* ── Constants ─────────────────────────────────────────────────────────── */
-
-const VALID_ROLES = ['super_admin', 'admin', 'pm', 'webdev', 'devops', 'seo', 'ui_ux', 'team', 'client_admin', 'client'];
-
-const MODULE_REGISTRY = [
-  { id: 'home',         name: 'Home Dashboard',      category: 'Navigation' },
-  { id: 'schedule',     name: 'Schedule',             category: 'Navigation' },
-  { id: 'tracker',      name: 'Project Tracker',      category: 'Project' },
-  { id: 'progress',     name: 'Team Progress',        category: 'Project' },
-  { id: 'scope',        name: 'Scope',                category: 'Project' },
-  { id: 'risks',        name: 'Risks & Open Items',   category: 'Project' },
-  { id: 'phase-1',      name: 'Phase 1: Discovery',   category: 'Phases' },
-  { id: 'phase-2',      name: 'Phase 2: Design',      category: 'Phases' },
-  { id: 'phase-3',      name: 'Phase 3: Build',       category: 'Phases' },
-  { id: 'phase-4',      name: 'Phase 4: Post-Launch', category: 'Phases' },
-  { id: 'integrations', name: 'Integrations',         category: 'Technical' },
-  { id: 'migration',    name: 'Data Migration',       category: 'Technical' },
-  { id: 'performance',  name: 'Performance Targets',  category: 'Technical' },
-  { id: 'deliverables', name: 'Deliverables',         category: 'Project' },
-  { id: 'team',         name: 'Team & Contacts',      category: 'Navigation' },
-  { id: 'documents',    name: 'Documents',            category: 'Project' },
-  { id: 'panel',        name: 'Operations Panel',     category: 'Admin' },
-  { id: 'pricing',      name: 'Pricing & Invoicing',  category: 'Admin' },
-  { id: 'profile',      name: 'My Profile',           category: 'Personal' },
-  { id: 'users',        name: 'User Management',      category: 'Admin' },
-  { id: 'settings',     name: 'System Settings',      category: 'Admin' },
-];
-
-const ACCESS_LEVELS = ['none', 'read', 'write', 'admin'];
-
-/* ── Helpers ────────────────────────────────────────────────────────────── */
-
-function setJson(res, status, payload) {
-  res.status(status).setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-store');
-  res.end(JSON.stringify(payload));
-}
-
-function parseBody(req) {
-  if (req.body && typeof req.body === 'object') return req.body;
-  if (typeof req.body === 'string') {
-    try { return JSON.parse(req.body || '{}'); } catch { return {}; }
-  }
-  return {};
-}
-
-function generateId(prefix) {
-  return prefix + '-' + randomBytes(4).toString('hex') + Date.now().toString(36).slice(-4);
-}
-
-async function writeBlob(path, data) {
-  await put(path, JSON.stringify(data, null, 2), {
-    contentType: 'application/json',
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    access: 'public'
-  });
-}
-
-async function getUsers() {
-  const data = await readJsonBlob(USERS_PATH);
-  return data?.users || [];
-}
-
-async function saveUsers(users) {
-  await writeBlob(USERS_PATH, { users });
-}
-
-function stripSensitive(user) {
-  const { passwordHash, ...safe } = user;
-  return safe;
-}
-
-/* ── Session verification ───────────────────────────────────────────────── */
-
-function getSessionSecret() {
-  return process.env.SESSION_SECRET || 'rockcrete-default-secret-change-me-in-production';
-}
-
-function verifySession(cookie) {
-  try {
-    const crypto = require('crypto');
-    const decoded = JSON.parse(Buffer.from(cookie, 'base64url').toString('utf8'));
-    const { _sig, ...payload } = decoded;
-    const expected = crypto.createHmac('sha256', getSessionSecret()).update(JSON.stringify(payload)).digest('hex');
-    if (_sig.length !== expected.length) return null;
-    let mismatch = 0;
-    for (let i = 0; i < _sig.length; i++) {
-      mismatch |= _sig.charCodeAt(i) ^ expected.charCodeAt(i);
-    }
-    if (mismatch !== 0) return null;
-    if (payload.expiresAt && Date.now() > payload.expiresAt) return null;
-    return payload;
-  } catch {
-    return null;
-  }
-}
-
-async function requireSuperAdmin(req) {
-  const cookieHeader = req.headers?.cookie || '';
-  const match = cookieHeader.match(/rockcrete_session=([^;]+)/);
-  if (!match) return null;
-  const session = verifySession(match[1]);
-  if (!session) return null;
-  const users = await getUsers();
-  const user = users.find(u => u.id === session.userId);
-  if (!user || user.role !== 'super_admin' || user.status !== 'active') return null;
-  return user;
-}
-
-function getDefaultModuleAccess(role) {
-  const allModules = MODULE_REGISTRY.map(m => m.id);
-  const noAdmin = ['users', 'settings'];
-  const noStaff = ['users', 'settings', 'pricing', 'panel'];
-  const noClient = ['users', 'settings', 'pricing', 'panel', 'risks'];
-  const noClientRead = ['users', 'settings', 'pricing', 'panel', 'risks', 'tracker', 'progress'];
-
-  const defaults = {
-    super_admin:   Object.fromEntries(allModules.map(m => [m, 'admin'])),
-    admin:         Object.fromEntries(allModules.map(m => [m, noAdmin.includes(m) ? 'none' : 'admin'])),
-    pm:            Object.fromEntries(allModules.map(m => [m, [...noAdmin, 'pricing'].includes(m) ? 'none' : 'write'])),
-    webdev:        Object.fromEntries(allModules.map(m => [m, noStaff.includes(m) ? 'none' : 'write'])),
-    devops:        Object.fromEntries(allModules.map(m => [m, [...noStaff, 'scope', 'risks', 'deliverables'].includes(m) ? 'none' : 'write'])),
-    seo:           Object.fromEntries(allModules.map(m => [m, [...noStaff, 'migration', 'performance'].includes(m) ? 'none' : 'read'])),
-    ui_ux:         Object.fromEntries(allModules.map(m => [m, [...noStaff, 'migration'].includes(m) ? 'none' : 'write'])),
-    team:          Object.fromEntries(allModules.map(m => [m, noStaff.includes(m) ? 'none' : 'write'])),
-    client_admin:  Object.fromEntries(allModules.map(m => [m, noClient.includes(m) ? 'none' : 'read'])),
-    client:        Object.fromEntries(allModules.map(m => [m, noClientRead.includes(m) ? 'none' : 'read'])),
-  };
-  return defaults[role] || defaults.client;
-}
 
 /* ── Password hashing ───────────────────────────────────────────────────── */
 
@@ -166,7 +38,7 @@ async function hashPassword(password) {
 
 export default async function handler(req, res) {
   try {
-    const admin = await requireSuperAdmin(req);
+    const admin = await requireSuperAdminReq(req);
     if (!admin) {
       return setJson(res, 403, { error: 'Super Admin access required' });
     }
@@ -175,7 +47,6 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const action = req.query?.action || '';
 
-      // Get module registry
       if (action === 'modules') {
         return setJson(res, 200, {
           modules: MODULE_REGISTRY,
@@ -192,24 +63,18 @@ export default async function handler(req, res) {
         });
       }
 
-      // Get single user
       if (req.query?.userId) {
-        const users = await getUsers();
-        const user = users.find(u => u.id === req.query.userId);
+        const user = await getUserById(req.query.userId);
         if (!user) return setJson(res, 404, { error: 'User not found' });
         return setJson(res, 200, { user: stripSensitive(user) });
       }
 
-      // List all users
-      const users = await getUsers();
-      return setJson(res, 200, {
-        users: users.map(stripSensitive),
-        total: users.length
-      });
+      const users = await getAllUsers();
+      return setJson(res, 200, { users: users.map(stripSensitive), total: users.length });
     }
 
     /* ── POST: Create new user ─────────────────────────────────────────── */
-    if (req.method === 'POST') {
+    if (req.method === 'POST' && !req.query?.action) {
       const body = parseBody(req);
       const email = String(body.email || '').trim().toLowerCase();
       const password = String(body.password || '');
@@ -224,54 +89,43 @@ export default async function handler(req, res) {
       if (!email || !password || !name) {
         return setJson(res, 400, { error: 'Email, password, and name are required' });
       }
-
       if (password.length < 8) {
         return setJson(res, 400, { error: 'Password must be at least 8 characters' });
       }
-
       if (!VALID_ROLES.includes(role)) {
         return setJson(res, 400, { error: `Invalid role. Valid: ${VALID_ROLES.join(', ')}` });
       }
-
       if (role === 'super_admin') {
         return setJson(res, 400, { error: 'Cannot create Super Admin accounts' });
       }
 
-      const users = await getUsers();
-      const existing = users.find(u => u.email.toLowerCase() === email);
+      const existing = await getUserByEmail(email);
       if (existing) {
         return setJson(res, 409, { error: 'A user with this email already exists' });
       }
 
       const passwordHash = await hashPassword(password);
-      const newUser = {
+      const newUser = await upsertUser({
         id: generateId('usr'),
         email,
         passwordHash,
         name,
         displayName,
         role,
-        avatar: null,
         phone,
         title,
         organization,
         preferences: { language: 'en', theme: 'auto' },
-        assignedTasks: body.assignedTasks || [],
         moduleAccess: moduleAccess || getDefaultModuleAccess(role),
         lastLoginAt: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
         createdBy: admin.id,
         status: 'active',
-      };
-
-      users.push(newUser);
-      await saveUsers(users);
+      });
 
       return setJson(res, 201, { ok: true, user: stripSensitive(newUser) });
     }
 
-    /* ── PUT: Update user (role, status, moduleAccess, etc.) ──────────── */
+    /* ── PUT: Update user ──────────────────────────────────────────────── */
     if (req.method === 'PUT') {
       const body = parseBody(req);
       const userId = body.userId;
@@ -280,57 +134,50 @@ export default async function handler(req, res) {
         return setJson(res, 400, { error: 'userId is required' });
       }
 
-      const users = await getUsers();
-      const idx = users.findIndex(u => u.id === userId);
-      if (idx < 0) {
+      const target = await getUserById(userId);
+      if (!target) {
         return setJson(res, 404, { error: 'User not found' });
       }
-
-      const target = users[idx];
 
       // Cannot modify super_admin
       if (target.role === 'super_admin' && target.id !== admin.id) {
         return setJson(res, 403, { error: 'Cannot modify another Super Admin' });
       }
 
-      // Update fields
-      if (body.name) users[idx].name = String(body.name).trim().slice(0, 200);
-      if (body.displayName) users[idx].displayName = String(body.displayName).trim().slice(0, 100);
+      const updates = {};
+
+      if (body.name) updates.name = String(body.name).trim().slice(0, 200);
+      if (body.displayName) updates.displayName = String(body.displayName).trim().slice(0, 100);
       if (body.email) {
         const email = String(body.email).trim().toLowerCase();
-        const dup = users.find(u => u.id !== userId && u.email.toLowerCase() === email);
-        if (dup) return setJson(res, 409, { error: 'Email already in use' });
-        users[idx].email = email;
+        const dup = await getUserByEmail(email);
+        if (dup && dup.id !== userId) return setJson(res, 409, { error: 'Email already in use' });
+        updates.email = email;
       }
-      if (body.phone !== undefined) users[idx].phone = String(body.phone).trim();
-      if (body.title !== undefined) users[idx].title = String(body.title).trim();
-      if (body.organization !== undefined) users[idx].organization = String(body.organization).trim();
+      if (body.phone !== undefined) updates.phone = String(body.phone).trim();
+      if (body.title !== undefined) updates.title = String(body.title).trim();
+      if (body.organization !== undefined) updates.organization = String(body.organization).trim();
       if (body.role) {
         if (!VALID_ROLES.includes(body.role)) return setJson(res, 400, { error: 'Invalid role' });
         if (body.role === 'super_admin') return setJson(res, 400, { error: 'Cannot assign Super Admin role' });
         if (target.role === 'super_admin') return setJson(res, 400, { error: 'Cannot change Super Admin role' });
-        users[idx].role = body.role;
+        updates.role = body.role;
       }
       if (body.status) {
         if (!['active', 'suspended', 'invited'].includes(body.status)) return setJson(res, 400, { error: 'Invalid status' });
         if (target.role === 'super_admin') return setJson(res, 400, { error: 'Cannot change Super Admin status' });
-        users[idx].status = body.status;
+        updates.status = body.status;
       }
       if (body.moduleAccess && typeof body.moduleAccess === 'object') {
-        users[idx].moduleAccess = body.moduleAccess;
+        updates.moduleAccess = body.moduleAccess;
       }
-      if (body.assignedTasks && Array.isArray(body.assignedTasks)) {
-        users[idx].assignedTasks = body.assignedTasks;
-      }
-      // Apply role defaults to module access
       if (body.applyRoleDefaults === true) {
-        users[idx].moduleAccess = getDefaultModuleAccess(users[idx].role);
+        const currentRole = updates.role || target.role;
+        updates.moduleAccess = getDefaultModuleAccess(currentRole);
       }
 
-      users[idx].updatedAt = new Date().toISOString();
-      await saveUsers(users);
-
-      return setJson(res, 200, { ok: true, user: stripSensitive(users[idx]) });
+      const updated = await updateUser(userId, updates);
+      return setJson(res, 200, { ok: true, user: stripSensitive(updated) });
     }
 
     /* ── DELETE: Remove user ───────────────────────────────────────────── */
@@ -342,19 +189,15 @@ export default async function handler(req, res) {
         return setJson(res, 400, { error: 'userId is required' });
       }
 
-      const users = await getUsers();
-      const target = users.find(u => u.id === userId);
+      const target = await getUserById(userId);
       if (!target) {
         return setJson(res, 404, { error: 'User not found' });
       }
-
       if (target.role === 'super_admin') {
         return setJson(res, 403, { error: 'Cannot delete Super Admin' });
       }
 
-      const filtered = users.filter(u => u.id !== userId);
-      await saveUsers(filtered);
-
+      await deleteUser(userId);
       return setJson(res, 200, { ok: true, message: 'User removed' });
     }
 
@@ -367,37 +210,30 @@ export default async function handler(req, res) {
       if (!userId || !newPassword) {
         return setJson(res, 400, { error: 'userId and newPassword are required' });
       }
-
       if (newPassword.length < 8) {
         return setJson(res, 400, { error: 'Password must be at least 8 characters' });
       }
 
-      const users = await getUsers();
-      const idx = users.findIndex(u => u.id === userId);
-      if (idx < 0) return setJson(res, 404, { error: 'User not found' });
-
-      if (users[idx].role === 'super_admin') {
+      const target = await getUserById(userId);
+      if (!target) return setJson(res, 404, { error: 'User not found' });
+      if (target.role === 'super_admin') {
         return setJson(res, 403, { error: 'Cannot reset Super Admin password via this endpoint' });
       }
 
       const passwordHash = await hashPassword(newPassword);
-      users[idx].passwordHash = passwordHash;
-      users[idx].updatedAt = new Date().toISOString();
-      await saveUsers(users);
+      await updateUser(userId, { passwordHash });
 
       return setJson(res, 200, { ok: true, message: 'Password reset successfully' });
     }
 
-    /* ── POST: Invite user via email (Admin/Client_Admin/Super_Admin) ─── */
+    /* ── POST: Invite user via email ───────────────────────────────────── */
     if (req.method === 'POST' && req.query?.action === 'invite') {
-      // Allow super_admin, admin, and client_admin to invite
       const cookieHeader = req.headers?.cookie || '';
       const match = cookieHeader.match(/rockcrete_session=([^;]+)/);
       if (!match) return setJson(res, 401, { error: 'Not authenticated' });
       const session = verifySession(match[1]);
       if (!session) return setJson(res, 401, { error: 'Invalid session' });
-      const users = await getUsers();
-      const inviter = users.find(u => u.id === session.userId);
+      const inviter = await getUserById(session.userId);
       if (!inviter || inviter.status !== 'active') return setJson(res, 401, { error: 'Not authenticated' });
       if (!['super_admin', 'admin', 'client_admin'].includes(inviter.role)) {
         return setJson(res, 403, { error: 'Only Admin or Client Admin can invite users' });
@@ -407,18 +243,16 @@ export default async function handler(req, res) {
       const email = String(body.email || '').trim().toLowerCase();
       const name = String(body.name || '').trim();
       const role = String(body.role || 'team').toLowerCase();
-      const assignedTasks = body.assignedTasks || [];
 
       if (!email || !name) {
         return setJson(res, 400, { error: 'Email and name are required' });
       }
 
-      // Client admin can only invite with limited roles
       if (inviter.role === 'client_admin' && !['client', 'client_admin', 'team'].includes(role)) {
         return setJson(res, 403, { error: 'Client Admin can only invite Client or Team roles' });
       }
 
-      const existing = users.find(u => u.email.toLowerCase() === email);
+      const existing = await getUserByEmail(email);
       if (existing) {
         return setJson(res, 409, { error: 'A user with this email already exists' });
       }
@@ -427,35 +261,28 @@ export default async function handler(req, res) {
       const tempPassword = randomBytes(6).toString('base64url').slice(0, 12);
       const passwordHash = await hashPassword(tempPassword);
 
-      const newUser = {
+      const newUser = await upsertUser({
         id: generateId('usr'),
         email,
         passwordHash,
         name,
         displayName: name.split(' ')[0] || name,
         role,
-        avatar: null,
         phone: '',
         title: String(body.title || '').trim(),
         organization: String(body.organization || '').trim(),
         preferences: { language: 'en', theme: 'auto' },
-        assignedTasks,
         moduleAccess: body.moduleAccess || getDefaultModuleAccess(role),
         lastLoginAt: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
         createdBy: inviter.id,
         status: 'invited',
         invitedBy: inviter.id,
-        tempPassword: true, // Force password change on first login
-      };
-
-      users.push(newUser);
-      await saveUsers(users);
+        tempPassword: true,
+      });
 
       // Send invitation email
-      const settingsData = await readJsonBlob('rockcrete/settings.json');
-      const emailConfig = settingsData?.email || {};
+      const settings = await getSettings();
+      const emailConfig = settings?.email || {};
       const apiKey = emailConfig.resendApiKey || process.env.RESEND_API_KEY || '';
       const fromEmail = emailConfig.fromEmail || process.env.RESEND_FROM_EMAIL || 'noreply@newmindsgroup.com';
       const fromName = emailConfig.fromName || process.env.RESEND_FROM_NAME || 'Rockcrete USA Blueprint';
@@ -498,46 +325,40 @@ export default async function handler(req, res) {
     if (req.method === 'POST' && req.query?.action === 'assign-tasks') {
       const body = parseBody(req);
       const userId = body.userId;
-      const taskIds = body.taskIds; // Array of task IDs
+      const taskIds = body.taskIds;
 
       if (!userId || !Array.isArray(taskIds)) {
         return setJson(res, 400, { error: 'userId and taskIds array are required' });
       }
 
-      const users = await getUsers();
-      const idx = users.findIndex(u => u.id === userId);
-      if (idx < 0) return setJson(res, 404, { error: 'User not found' });
+      const target = await getUserById(userId);
+      if (!target) return setJson(res, 404, { error: 'User not found' });
 
-      // Merge with existing assignments (no duplicates)
-      const existing = new Set(users[idx].assignedTasks || []);
-      taskIds.forEach(t => existing.add(t));
-      users[idx].assignedTasks = [...existing];
-      users[idx].updatedAt = new Date().toISOString();
-      await saveUsers(users);
+      // Use the new tasks table for assignment
+      const { getAllTasks, updateTask } = await import('./db.js');
+      for (const taskId of taskIds) {
+        await updateTask(taskId, { assigneeId: userId });
+      }
 
-      return setJson(res, 200, { ok: true, assignedTasks: users[idx].assignedTasks });
+      return setJson(res, 200, { ok: true, assignedTaskIds: taskIds });
     }
 
     /* ── POST: Remove task from a user ────────────────────────────────── */
     if (req.method === 'POST' && req.query?.action === 'unassign-tasks') {
       const body = parseBody(req);
       const userId = body.userId;
-      const taskIds = body.taskIds; // Array of task IDs to remove
+      const taskIds = body.taskIds;
 
       if (!userId || !Array.isArray(taskIds)) {
         return setJson(res, 400, { error: 'userId and taskIds array are required' });
       }
 
-      const users = await getUsers();
-      const idx = users.findIndex(u => u.id === userId);
-      if (idx < 0) return setJson(res, 404, { error: 'User not found' });
+      const { getAllTasks, updateTask } = await import('./db.js');
+      for (const taskId of taskIds) {
+        await updateTask(taskId, { assigneeId: null });
+      }
 
-      const removeSet = new Set(taskIds);
-      users[idx].assignedTasks = (users[idx].assignedTasks || []).filter(t => !removeSet.has(t));
-      users[idx].updatedAt = new Date().toISOString();
-      await saveUsers(users);
-
-      return setJson(res, 200, { ok: true, assignedTasks: users[idx].assignedTasks });
+      return setJson(res, 200, { ok: true, unassignedTaskIds: taskIds });
     }
 
     /* ── Method not allowed ────────────────────────────────────────────── */
@@ -548,4 +369,11 @@ export default async function handler(req, res) {
     console.error('Users API error:', error);
     return setJson(res, 500, { error: 'Users operation failed', message: error.message });
   }
+}
+
+/* ── Local requireSuperAdmin that uses db.js ──────────────────────────── */
+async function requireSuperAdminReq(req) {
+  const { user } = await requireAuth(req);
+  if (!requireSuperAdmin(user)) return null;
+  return user;
 }

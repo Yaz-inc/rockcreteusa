@@ -2180,6 +2180,7 @@
     <div class="nav-group nav-group--account" id="navGroupAccount" style="display:none; margin-top:auto; padding-top: 1rem; border-top: 1px solid var(--color-border);">
       <div class="eyebrow" data-es="Cuenta" data-en="Account">Account <span class="nav-new nav-new--pink" style="vertical-align:middle;">New</span></div>
       <a class="nav-link" data-route="profile" href="#profile" data-rc-auth="loggedin"><i data-lucide="user-circle" aria-hidden="true"></i><span data-es="Mi Perfil" data-en="My Profile">My Profile</span><span class="nav-new">New</span></a>
+      <a class="nav-link" data-route="team-mgmt" href="#team-mgmt" data-rc-auth="loggedin"><i data-lucide="network" aria-hidden="true"></i><span data-es="Gestión de Equipos" data-en="Team Management">Team Management</span><span class="nav-new nav-new--pink" style="vertical-align:middle;">New</span></a>
       <a class="nav-link" data-route="users" href="#users" data-rc-auth="super_admin"><i data-lucide="users-cog" aria-hidden="true"></i><span data-es="Gestión de Usuarios" data-en="User Management">User Management</span><span class="nav-new">New</span></a>
       <a class="nav-link" data-route="settings" href="#settings" data-rc-auth="super_admin"><i data-lucide="settings" aria-hidden="true"></i><span data-es="Configuración del Sistema" data-en="System Settings">System Settings</span><span class="nav-new">New</span></a>
       <button id="navAuthLogout" class="nav-link nav-auth-btn nav-auth--loggedin" style="width:100%; text-align:left; background:none; border:none; cursor:pointer; color: var(--color-error, #ef4444);"
@@ -3933,6 +3934,178 @@
       </div>
     </div>
   </div><!-- /screen-users -->
+
+  <!-- ============================================================ -->
+  <!-- SCREEN: TEAM MANAGEMENT                                      -->
+  <!-- ============================================================ -->
+  <div class="screen" id="screen-team-mgmt">
+    <div class="section-header">
+      <span class="eyebrow" data-es="Gestión de Equipos" data-en="Team Management">Team Management</span>
+      <h2 class="display" style="margin-top:.35rem;" data-es="Equipos, posiciones y asignación de tareas" data-en="Teams, positions & task assignment">Teams, positions & task assignment</h2>
+      <p style="color: var(--color-text-2); max-width: 70ch;" data-es="Crea equipos, agrega miembros con posiciones personalizadas y asigna tareas. Los administradores y clientes administradores pueden gestionar equipos." data-en="Create teams, add members with custom positions, and assign tasks. Admins and client admins can manage teams.">Create teams, add members with custom positions, and assign tasks. Admins and client admins can manage teams.</p>
+    </div>
+
+    <!-- Teams List -->
+    <section style="margin-top:1.5rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h3 data-es="Equipos" data-en="Teams">Teams</h3>
+        <button id="tmCreateTeamBtn" class="btn btn--primary" style="font-size:.85rem; padding:.5rem 1rem;" onclick="tmShowCreateTeam()">
+          <i data-lucide="plus" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+          <span data-es="Crear Equipo" data-en="Create Team">Create Team</span>
+        </button>
+      </div>
+      <div id="tmTeamsList" style="display:grid; gap:1rem;">
+        <!-- Dynamically populated -->
+        <div style="color:var(--color-text-2); padding:2rem; text-align:center;">Loading teams...</div>
+      </div>
+    </section>
+
+    <!-- Tasks Section -->
+    <section style="margin-top:2rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h3 data-es="Tareas del Proyecto" data-en="Project Tasks">Project Tasks</h3>
+        <button id="tmCreateTaskBtn" class="btn btn--secondary" style="font-size:.85rem; padding:.5rem 1rem;" onclick="tmShowCreateTask()">
+          <i data-lucide="plus" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;"></i>
+          <span data-es="Crear Tarea" data-en="Create Task">Create Task</span>
+        </button>
+      </div>
+      <div id="tmTasksList" style="display:grid; gap:.75rem;">
+        <!-- Dynamically populated -->
+        <div style="color:var(--color-text-2); padding:2rem; text-align:center;">Loading tasks...</div>
+      </div>
+    </section>
+
+    <!-- Create Team Dialog -->
+    <dialog id="tmCreateTeamDialog" style="border:none; border-radius:12px; padding:0; max-width:480px; width:90%;">
+      <form method="dialog" style="padding:1.5rem;">
+        <h3 style="margin:0 0 1rem;" data-es="Crear Nuevo Equipo" data-en="Create New Team">Create New Team</h3>
+        <div style="margin-bottom:.75rem;">
+          <label style="display:block; font-size:.85rem; font-weight:600; margin-bottom:.25rem;" data-es="Nombre del equipo" data-en="Team name">Team name</label>
+          <input id="tmTeamName" type="text" required style="width:100%; padding:.5rem; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); color:var(--color-text);" />
+        </div>
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; font-size:.85rem; font-weight:600; margin-bottom:.25rem;" data-es="Descripción" data-en="Description">Description</label>
+          <textarea id="tmTeamDesc" rows="2" style="width:100%; padding:.5rem; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); color:var(--color-text);"></textarea>
+        </div>
+        <div style="display:flex; gap:.5rem; justify-content:flex-end;">
+          <button type="button" onclick="document.getElementById('tmCreateTeamDialog').close()" class="btn btn--ghost" style="font-size:.85rem;">Cancel</button>
+          <button type="button" onclick="tmCreateTeam()" class="btn btn--primary" style="font-size:.85rem;" data-es="Crear" data-en="Create">Create</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Add Member Dialog -->
+    <dialog id="tmAddMemberDialog" style="border:none; border-radius:12px; padding:0; max-width:520px; width:90%;">
+      <form method="dialog" style="padding:1.5rem;">
+        <h3 style="margin:0 0 1rem;" data-es="Agregar Miembro al Equipo" data-en="Add Member to Team">Add Member to Team</h3>
+        <input type="hidden" id="tmMemberTeamId" />
+        <div style="margin-bottom:.75rem;">
+          <label style="display:block; font-size:.85rem; font-weight:600; margin-bottom:.25rem;" data-es="Usuario existente o nuevo" data-en="Existing or new user">Existing or new user</label>
+          <select id="tmMemberUserId" style="width:100%; padding:.5rem; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); color:var(--color-text);">
+            <option value="">-- Select user --</option>
+            <option value="__new__">+ Invite new user</option>
+          </select>
+        </div>
+        <div id="tmNewUserFields" style="display:none; margin-bottom:.75rem; padding:.75rem; background:var(--color-bg-2); border-radius:6px;">
+          <div style="margin-bottom:.5rem;">
+            <label style="display:block; font-size:.8rem; font-weight:600;">Email</label>
+            <input id="tmNewUserEmail" type="email" style="width:100%; padding:.4rem; border:1px solid var(--color-border); border-radius:4px; background:var(--color-surface); color:var(--color-text);" />
+          </div>
+          <div style="margin-bottom:.5rem;">
+            <label style="display:block; font-size:.8rem; font-weight:600;">Name</label>
+            <input id="tmNewUserName" type="text" style="width:100%; padding:.4rem; border:1px solid var(--color-border); border-radius:4px; background:var(--color-surface); color:var(--color-text);" />
+          </div>
+          <div>
+            <label style="display:block; font-size:.8rem; font-weight:600;">Role</label>
+            <select id="tmNewUserRole" style="width:100%; padding:.4rem; border:1px solid var(--color-border); border-radius:4px; background:var(--color-surface); color:var(--color-text);">
+              <option value="team">Team Member</option>
+              <option value="webdev">Web Developer</option>
+              <option value="devops">DevOp</option>
+              <option value="pm">Project Manager</option>
+              <option value="ui_ux">UI/UX Designer</option>
+              <option value="seo">SEO Specialist</option>
+              <option value="client">Client</option>
+              <option value="client_admin">Client Admin</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; font-size:.85rem; font-weight:600; margin-bottom:.25rem;" data-es="Posición en el equipo" data-en="Position on team">Position on team</label>
+          <input id="tmMemberPosition" type="text" placeholder="e.g. Frontend Developer, QA Lead" style="width:100%; padding:.5rem; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); color:var(--color-text);" />
+        </div>
+        <div style="display:flex; gap:.5rem; justify-content:flex-end;">
+          <button type="button" onclick="document.getElementById('tmAddMemberDialog').close()" class="btn btn--ghost" style="font-size:.85rem;">Cancel</button>
+          <button type="button" onclick="tmAddMember()" class="btn btn--primary" style="font-size:.85rem;" data-es="Agregar" data-en="Add">Add</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Create Task Dialog -->
+    <dialog id="tmCreateTaskDialog" style="border:none; border-radius:12px; padding:0; max-width:520px; width:90%;">
+      <form method="dialog" style="padding:1.5rem;">
+        <h3 style="margin:0 0 1rem;" data-es="Crear Tarea" data-en="Create Task">Create Task</h3>
+        <div style="margin-bottom:.75rem;">
+          <label style="display:block; font-size:.85rem; font-weight:600; margin-bottom:.25rem;">Title</label>
+          <input id="tmTaskTitle" type="text" required style="width:100%; padding:.5rem; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); color:var(--color-text);" />
+        </div>
+        <div style="margin-bottom:.75rem;">
+          <label style="display:block; font-size:.85rem; font-weight:600; margin-bottom:.25rem;">Description</label>
+          <textarea id="tmTaskDesc" rows="2" style="width:100%; padding:.5rem; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); color:var(--color-text);"></textarea>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-bottom:.75rem;">
+          <div>
+            <label style="display:block; font-size:.85rem; font-weight:600; margin-bottom:.25rem;">Assign to</label>
+            <select id="tmTaskAssignee" style="width:100%; padding:.5rem; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); color:var(--color-text);">
+              <option value="">Unassigned</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:.85rem; font-weight:600; margin-bottom:.25rem;">Team</label>
+            <select id="tmTaskTeam" style="width:100%; padding:.5rem; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); color:var(--color-text);">
+              <option value="">No team</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-bottom:1rem;">
+          <div>
+            <label style="display:block; font-size:.85rem; font-weight:600; margin-bottom:.25rem;">Priority</label>
+            <select id="tmTaskPriority" style="width:100%; padding:.5rem; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); color:var(--color-text);">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:.85rem; font-weight:600; margin-bottom:.25rem;">Due Date</label>
+            <input id="tmTaskDue" type="date" style="width:100%; padding:.5rem; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); color:var(--color-text);" />
+          </div>
+        </div>
+        <div style="display:flex; gap:.5rem; justify-content:flex-end;">
+          <button type="button" onclick="document.getElementById('tmCreateTaskDialog').close()" class="btn btn--ghost" style="font-size:.85rem;">Cancel</button>
+          <button type="button" onclick="tmCreateTask()" class="btn btn--primary" style="font-size:.85rem;" data-es="Crear" data-en="Create">Create</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Assign Task Dialog -->
+    <dialog id="tmAssignTaskDialog" style="border:none; border-radius:12px; padding:0; max-width:400px; width:90%;">
+      <form method="dialog" style="padding:1.5rem;">
+        <h3 style="margin:0 0 1rem;">Assign Task</h3>
+        <input type="hidden" id="tmAssignTaskId" />
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; font-size:.85rem; font-weight:600; margin-bottom:.25rem;">Assign to</label>
+          <select id="tmAssignUserId" style="width:100%; padding:.5rem; border:1px solid var(--color-border); border-radius:6px; background:var(--color-surface); color:var(--color-text);">
+            <option value="">Unassigned</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:.5rem; justify-content:flex-end;">
+          <button type="button" onclick="document.getElementById('tmAssignTaskDialog').close()" class="btn btn--ghost" style="font-size:.85rem;">Cancel</button>
+          <button type="button" onclick="tmAssignTask()" class="btn btn--primary" style="font-size:.85rem;">Assign</button>
+        </div>
+      </form>
+    </dialog>
+  </div><!-- /screen-team-mgmt -->
 
   <!-- ============================================================ -->
   <!-- SCREEN: SETTINGS (Super Admin only)                          -->
@@ -6879,7 +7052,7 @@
     if (!user || !user.moduleAccess) return;
 
     // Account group links are always handled by rcUpdateAuthUI
-    var accountRoutes = ['profile', 'users', 'settings'];
+    var accountRoutes = ['profile', 'team-mgmt', 'users', 'settings'];
 
     document.querySelectorAll('.sidebar .nav-link[data-route]').forEach(function(link) {
       var route = link.getAttribute('data-route');
@@ -7795,6 +7968,319 @@
     }
     event.target.value = '';
   }
+
+  /* ============================================================
+     TEAM MANAGEMENT SCREEN
+     ============================================================ */
+
+  var tmTeamsCache = [];
+  var tmTasksCache = [];
+  var tmUsersCache = [];
+
+  // Toggle new user fields visibility
+  document.getElementById('tmMemberUserId')?.addEventListener('change', function() {
+    var newFields = document.getElementById('tmNewUserFields');
+    if (newFields) newFields.style.display = this.value === '__new__' ? 'block' : 'none';
+  });
+
+  async function tmLoadAll() {
+    if (!rcIsLoggedIn()) return;
+    try {
+      var [teamsData, tasksData, usersData] = await Promise.all([
+        rcApi('/api/teams?action=list'),
+        rcApi('/api/teams?action=tasks'),
+        rcApi('/api/users')
+      ]);
+      tmTeamsCache = teamsData.teams || [];
+      tmTasksCache = tasksData.tasks || [];
+      tmUsersCache = usersData.users || [];
+      tmRenderTeams();
+      tmRenderTasks();
+    } catch (e) {
+      console.error('Team Management load error:', e);
+      document.getElementById('tmTeamsList').innerHTML = '<div style="color:var(--color-error); padding:2rem; text-align:center;">Failed to load teams. ' + e.message + '</div>';
+      document.getElementById('tmTasksList').innerHTML = '<div style="color:var(--color-error); padding:2rem; text-align:center;">Failed to load tasks.</div>';
+    }
+  }
+
+  function tmRenderTeams() {
+    var container = document.getElementById('tmTeamsList');
+    if (!tmTeamsCache.length) {
+      container.innerHTML = '<div class="card" style="text-align:center; color:var(--color-text-2); padding:2rem;">No teams yet. Create your first team to get started.</div>';
+      return;
+    }
+    var canManage = ['super_admin', 'admin', 'client_admin'].indexOf(window.__rcCurrentUser?.role) >= 0;
+    var html = '';
+    tmTeamsCache.forEach(function(team) {
+      html += '<div class="card stack" style="padding:1.25rem;">';
+      html += '<div style="display:flex; justify-content:space-between; align-items:flex-start;">';
+      html += '<div>';
+      html += '<h3 style="margin:0;">' + tmEsc(team.name) + '</h3>';
+      if (team.description) html += '<p style="margin:.25rem 0 0; color:var(--color-text-2); font-size:.9rem;">' + tmEsc(team.description) + '</p>';
+      html += '</div>';
+      if (canManage) {
+        html += '<div style="display:flex; gap:.25rem;">';
+        html += '<button class="btn btn--ghost" style="font-size:.75rem; padding:.25rem .5rem;" onclick="tmShowAddMember(\'' + team.id + '\')">+ Member</button>';
+        html += '<button class="btn btn--ghost" style="font-size:.75rem; padding:.25rem .5rem; color:var(--color-error);" onclick="tmDeleteTeam(\'' + team.id + '\', \'' + tmEsc(team.name) + '\')">Delete</button>';
+        html += '</div>';
+      }
+      html += '</div>';
+
+      // Members
+      if (team.members && team.members.length > 0) {
+        html += '<div style="margin-top:.75rem; display:grid; gap:.5rem;">';
+        team.members.forEach(function(m) {
+          var userName = m.user ? (m.user.displayName || m.user.name) : 'Unknown';
+          var userEmail = m.user ? m.user.email : '';
+          var userRole = m.user ? m.user.role : '';
+          html += '<div style="display:flex; justify-content:space-between; align-items:center; padding:.5rem .75rem; background:var(--color-bg-2); border-radius:6px;">';
+          html += '<div>';
+          html += '<span style="font-weight:600; font-size:.9rem;">' + tmEsc(userName) + '</span>';
+          if (m.position) html += ' <span style="font-size:.8rem; color:var(--color-text-2);">(' + tmEsc(m.position) + ')</span>';
+          html += '<div style="font-size:.75rem; color:var(--color-text-muted);">' + tmEsc(userEmail) + ' &middot; ' + tmEsc(userRole) + '</div>';
+          html += '</div>';
+          if (canManage) {
+            html += '<button class="btn btn--ghost" style="font-size:.7rem; padding:.15rem .4rem; color:var(--color-error);" onclick="tmRemoveMember(\'' + m.id + '\', \'' + tmEsc(userName) + '\')">Remove</button>';
+          }
+          html += '</div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<p style="margin-top:.5rem; font-size:.85rem; color:var(--color-text-muted);">No members yet.</p>';
+      }
+      html += '</div>';
+    });
+    container.innerHTML = html;
+  }
+
+  function tmRenderTasks() {
+    var container = document.getElementById('tmTasksList');
+    if (!tmTasksCache.length) {
+      container.innerHTML = '<div class="card" style="text-align:center; color:var(--color-text-2); padding:2rem;">No tasks yet. Create your first task to get started.</div>';
+      return;
+    }
+    var canManage = ['super_admin', 'admin', 'client_admin'].indexOf(window.__rcCurrentUser?.role) >= 0;
+    var canEdit = canManage || ['pm', 'webdev', 'team'].indexOf(window.__rcCurrentUser?.role) >= 0;
+    var statusColors = { not_started: '#6b7177', in_progress: '#2563eb', blocked: '#ef4444', complete: '#16a34a', review: '#f59e0b' };
+    var priorityColors = { low: '#6b7177', medium: '#2563eb', high: '#f59e0b', urgent: '#ef4444' };
+
+    var html = '';
+    tmTasksCache.forEach(function(task) {
+      var statusLabel = (task.status || 'not_started').replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+      var assigneeName = task.assignee ? (task.assignee.displayName || task.assignee.name) : 'Unassigned';
+      var teamName = '';
+      if (task.teamId) {
+        var team = tmTeamsCache.find(function(t) { return t.id === task.teamId; });
+        if (team) teamName = team.name;
+      }
+
+      html += '<div class="card" style="padding:1rem; display:grid; grid-template-columns:1fr auto; gap:.75rem; align-items:start;">';
+      html += '<div>';
+      html += '<div style="font-weight:600;">' + tmEsc(task.title) + '</div>';
+      if (task.description) html += '<div style="font-size:.85rem; color:var(--color-text-2); margin-top:.25rem;">' + tmEsc(task.description) + '</div>';
+      html += '<div style="font-size:.8rem; color:var(--color-text-muted); margin-top:.35rem;">';
+      html += 'Assigned: <strong>' + tmEsc(assigneeName) + '</strong>';
+      if (teamName) html += ' &middot; Team: ' + tmEsc(teamName);
+      if (task.dueDate) html += ' &middot; Due: ' + task.dueDate;
+      html += '</div>';
+      html += '</div>';
+      html += '<div style="display:flex; flex-direction:column; align-items:flex-end; gap:.35rem;">';
+      html += '<span style="font-size:.75rem; font-weight:600; padding:.15rem .5rem; border-radius:99px; color:#fff; background:' + (statusColors[task.status] || '#6b7177') + ';">' + statusLabel + '</span>';
+      html += '<span style="font-size:.7rem; padding:.1rem .4rem; border-radius:99px; border:1px solid ' + (priorityColors[task.priority] || '#6b7177') + '; color:' + (priorityColors[task.priority] || '#6b7177') + ';">' + tmEsc(task.priority || 'medium') + '</span>';
+      if (canEdit) {
+        html += '<button class="btn btn--ghost" style="font-size:.7rem; padding:.15rem .4rem;" onclick="tmShowAssignTask(\'' + task.id + '\')">Assign</button>';
+      }
+      if (canManage) {
+        html += '<button class="btn btn--ghost" style="font-size:.7rem; padding:.15rem .4rem; color:var(--color-error);" onclick="tmDeleteTask(\'' + task.id + '\', \'' + tmEsc(task.title) + '\')">Delete</button>';
+      }
+      html += '</div>';
+      html += '</div>';
+    });
+    container.innerHTML = html;
+  }
+
+  function tmEsc(str) {
+    var div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  function tmShowCreateTeam() {
+    document.getElementById('tmTeamName').value = '';
+    document.getElementById('tmTeamDesc').value = '';
+    document.getElementById('tmCreateTeamDialog').showModal();
+  }
+
+  async function tmCreateTeam() {
+    var name = document.getElementById('tmTeamName').value.trim();
+    var desc = document.getElementById('tmTeamDesc').value.trim();
+    if (!name) { rcToast('Team name is required', 'error'); return; }
+    try {
+      await rcApi('/api/teams?action=create', { method: 'POST', body: { name: name, description: desc } });
+      rcToast('Team created successfully', 'success');
+      document.getElementById('tmCreateTeamDialog').close();
+      await tmLoadAll();
+    } catch (e) {
+      rcToast('Failed: ' + e.message, 'error');
+    }
+  }
+
+  async function tmDeleteTeam(teamId, teamName) {
+    var confirm = await showModal({ title: 'Delete Team', sub: 'Delete "' + teamName + '"? This cannot be undone.', fields: [], confirmText: 'Delete' });
+    if (!confirm) return;
+    try {
+      await rcApi('/api/teams?action=delete', { method: 'DELETE', body: { teamId: teamId } });
+      rcToast('Team deleted', 'success');
+      await tmLoadAll();
+    } catch (e) {
+      rcToast('Failed: ' + e.message, 'error');
+    }
+  }
+
+  function tmShowAddMember(teamId) {
+    document.getElementById('tmMemberTeamId').value = teamId;
+    document.getElementById('tmMemberPosition').value = '';
+    document.getElementById('tmNewUserFields').style.display = 'none';
+    document.getElementById('tmNewUserEmail').value = '';
+    document.getElementById('tmNewUserName').value = '';
+    // Populate user select
+    var select = document.getElementById('tmMemberUserId');
+    select.innerHTML = '<option value="">-- Select user --</option><option value="__new__">+ Invite new user</option>';
+    tmUsersCache.forEach(function(u) {
+      select.innerHTML += '<option value="' + u.id + '">' + tmEsc(u.displayName || u.name) + ' (' + tmEsc(u.email) + ')</option>';
+    });
+    document.getElementById('tmAddMemberDialog').showModal();
+  }
+
+  async function tmAddMember() {
+    var teamId = document.getElementById('tmMemberTeamId').value;
+    var userId = document.getElementById('tmMemberUserId').value;
+    var position = document.getElementById('tmMemberPosition').value.trim();
+    var isNew = userId === '__new__';
+
+    try {
+      if (isNew) {
+        var email = document.getElementById('tmNewUserEmail').value.trim();
+        var name = document.getElementById('tmNewUserName').value.trim();
+        var role = document.getElementById('tmNewUserRole').value;
+        if (!email || !name) { rcToast('Email and name are required for new users', 'error'); return; }
+        await rcApi('/api/teams?action=invite-member', {
+          method: 'POST',
+          body: { teamId: teamId, email: email, name: name, role: role, position: position }
+        });
+      } else {
+        if (!userId) { rcToast('Please select a user', 'error'); return; }
+        await rcApi('/api/teams?action=add-member', {
+          method: 'POST',
+          body: { teamId: teamId, userId: userId, position: position }
+        });
+      }
+      rcToast('Member added to team', 'success');
+      document.getElementById('tmAddMemberDialog').close();
+      await tmLoadAll();
+    } catch (e) {
+      rcToast('Failed: ' + e.message, 'error');
+    }
+  }
+
+  async function tmRemoveMember(memberId, userName) {
+    var confirm = await showModal({ title: 'Remove Member', sub: 'Remove "' + userName + '" from team?', fields: [], confirmText: 'Remove' });
+    if (!confirm) return;
+    try {
+      await rcApi('/api/teams?action=remove-member', { method: 'POST', body: { memberId: memberId } });
+      rcToast('Member removed', 'success');
+      await tmLoadAll();
+    } catch (e) {
+      rcToast('Failed: ' + e.message, 'error');
+    }
+  }
+
+  function tmShowCreateTask() {
+    document.getElementById('tmTaskTitle').value = '';
+    document.getElementById('tmTaskDesc').value = '';
+    document.getElementById('tmTaskDue').value = '';
+    // Populate assignee select
+    var assigneeSelect = document.getElementById('tmTaskAssignee');
+    assigneeSelect.innerHTML = '<option value="">Unassigned</option>';
+    tmUsersCache.forEach(function(u) {
+      assigneeSelect.innerHTML += '<option value="' + u.id + '">' + tmEsc(u.displayName || u.name) + '</option>';
+    });
+    // Populate team select
+    var teamSelect = document.getElementById('tmTaskTeam');
+    teamSelect.innerHTML = '<option value="">No team</option>';
+    tmTeamsCache.forEach(function(t) {
+      teamSelect.innerHTML += '<option value="' + t.id + '">' + tmEsc(t.name) + '</option>';
+    });
+    document.getElementById('tmCreateTaskDialog').showModal();
+  }
+
+  async function tmCreateTask() {
+    var title = document.getElementById('tmTaskTitle').value.trim();
+    if (!title) { rcToast('Task title is required', 'error'); return; }
+    try {
+      await rcApi('/api/teams?action=create-task', {
+        method: 'POST',
+        body: {
+          title: title,
+          description: document.getElementById('tmTaskDesc').value.trim(),
+          assigneeId: document.getElementById('tmTaskAssignee').value || null,
+          teamId: document.getElementById('tmTaskTeam').value || null,
+          priority: document.getElementById('tmTaskPriority').value,
+          dueDate: document.getElementById('tmTaskDue').value || null,
+        }
+      });
+      rcToast('Task created', 'success');
+      document.getElementById('tmCreateTaskDialog').close();
+      await tmLoadAll();
+    } catch (e) {
+      rcToast('Failed: ' + e.message, 'error');
+    }
+  }
+
+  function tmShowAssignTask(taskId) {
+    document.getElementById('tmAssignTaskId').value = taskId;
+    var select = document.getElementById('tmAssignUserId');
+    select.innerHTML = '<option value="">Unassigned</option>';
+    tmUsersCache.forEach(function(u) {
+      select.innerHTML += '<option value="' + u.id + '">' + tmEsc(u.displayName || u.name) + ' (' + tmEsc(u.role) + ')</option>';
+    });
+    document.getElementById('tmAssignTaskDialog').showModal();
+  }
+
+  async function tmAssignTask() {
+    var taskId = document.getElementById('tmAssignTaskId').value;
+    var assigneeId = document.getElementById('tmAssignUserId').value || null;
+    try {
+      await rcApi('/api/teams?action=assign-task', {
+        method: 'POST',
+        body: { taskId: taskId, assigneeId: assigneeId }
+      });
+      rcToast('Task assigned', 'success');
+      document.getElementById('tmAssignTaskDialog').close();
+      await tmLoadAll();
+    } catch (e) {
+      rcToast('Failed: ' + e.message, 'error');
+    }
+  }
+
+  async function tmDeleteTask(taskId, taskTitle) {
+    var confirm = await showModal({ title: 'Delete Task', sub: 'Delete "' + taskTitle + '"?', fields: [], confirmText: 'Delete' });
+    if (!confirm) return;
+    try {
+      await rcApi('/api/teams?action=delete-task', { method: 'DELETE', body: { taskId: taskId } });
+      rcToast('Task deleted', 'success');
+      await tmLoadAll();
+    } catch (e) {
+      rcToast('Failed: ' + e.message, 'error');
+    }
+  }
+
+  // Load team management when screen is shown
+  var origShowScreen = window.showScreen;
+  window.showScreen = function(route) {
+    origShowScreen(route);
+    if (route === 'team-mgmt') tmLoadAll();
+  };
 </script>
 </body>
 </html>
