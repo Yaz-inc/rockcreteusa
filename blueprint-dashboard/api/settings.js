@@ -181,6 +181,52 @@ export default async function handler(req, res) {
       }
     }
 
+    /* ── GET: Resend API usage/quota ──────────────────────────────────────── */
+    if (req.method === 'GET' && action === 'resend-usage') {
+      const settings = await getSettings();
+      const emailConfig = settings?.email || {};
+      const apiKey = emailConfig.resendApiKey || process.env.RESEND_API_KEY || '';
+
+      if (!apiKey) {
+        return setJson(res, 200, { configured: false, reason: 'No Resend API key configured' });
+      }
+
+      try {
+        // Fetch domains to verify API key works
+        const domainsResp = await fetch('https://api.resend.com/domains', {
+          headers: { 'Authorization': `Bearer ${apiKey}` },
+        });
+
+        if (!domainsResp.ok) {
+          return setJson(res, 200, { configured: false, reason: 'Invalid API key or API error' });
+        }
+
+        // Get API key info — Resend doesn't have a dedicated usage endpoint,
+        // but we can infer from the API key prefix and recent emails
+        // For now, return that the key is valid and configured
+        // Resend's free tier: 100 emails/day, 3,000/month
+        // We'll estimate usage by checking what we've stored
+
+        const isProductionKey = apiKey.startsWith('re_') && !apiKey.startsWith('re_test_');
+        const dailyLimit = isProductionKey ? 100 : 100;
+        const monthlyLimit = isProductionKey ? 3000 : 100;
+
+        return setJson(res, 200, {
+          configured: true,
+          keyValid: true,
+          keyPrefix: apiKey.slice(0, 6) + '...' + apiKey.slice(-4),
+          isProduction: isProductionKey,
+          dailyLimit,
+          monthlyLimit,
+          // Resend doesn't expose a usage API, so we show limits only
+          // Users can check their dashboard at resend.com/emails
+          dashboardUrl: 'https://resend.com/emails',
+        });
+      } catch (err) {
+        return setJson(res, 200, { configured: false, reason: err.message });
+      }
+    }
+
     /* ── GET: Verify email domain ──────────────────────────────────────── */
     if (req.method === 'GET' && action === 'verify-email') {
       const settings = await getSettings();

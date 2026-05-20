@@ -1990,28 +1990,32 @@
   .rc-toast--info { background: var(--color-brand); color: #fff; }
 
   /* ============================================================
-     FULL-SCREEN LOGIN GATE
+     LOGIN GATE — Full-screen 2-column landing page
      ============================================================ */
   .rc-login-gate {
     position: fixed; inset: 0; z-index: 200;
-    display: flex; align-items: center; justify-content: center;
+    display: grid; grid-template-columns: 1fr 1fr;
     background: var(--color-bg);
-    padding: 1.5rem;
+    overflow: hidden;
   }
   .rc-login-gate[data-hidden] { display: none; }
+
+  /* Left column — Login Form */
+  .rc-login-left {
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem;
+    border-right: 1px solid var(--color-border);
+    background: var(--color-surface);
+    overflow-y: auto;
+  }
   .rc-login-card {
     width: 100%; max-width: 420px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-3);
-    padding: 2.5rem 2rem;
   }
   .rc-login-logo {
     display: flex; align-items: center; gap: 0.65rem;
-    margin-bottom: 1.75rem;
+    margin-bottom: 2rem;
   }
-  .rc-login-logo img { width: clamp(100px, 12vw, 140px); height: auto; max-height: 32px; }
+  .rc-login-logo img { width: clamp(120px, 14vw, 180px); height: auto; max-height: 40px; }
   .rc-login-logo--dark { display: none; }
   :root[data-theme="dark"] .rc-login-logo--light { display: none; }
   :root[data-theme="dark"] .rc-login-logo--dark { display: block; }
@@ -2020,29 +2024,29 @@
     :root[data-theme="auto"] .rc-login-logo--dark { display: block; }
   }
   .rc-login-title {
-    font-size: 1.25rem; font-weight: 700; margin-bottom: 0.35rem;
-    letter-spacing: -0.015em;
+    font-size: 1.5rem; font-weight: 800; margin-bottom: 0.35rem;
+    letter-spacing: -0.02em;
   }
   .rc-login-sub {
-    font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1.5rem; line-height: 1.45;
+    font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: 1.75rem; line-height: 1.5;
   }
-  .rc-login-field { margin-bottom: 1rem; }
+  .rc-login-field { margin-bottom: 1.1rem; }
   .rc-login-field label {
     display: block; font-size: 0.75rem; font-weight: 600;
-    color: var(--color-text-2); margin-bottom: 0.3rem;
+    color: var(--color-text-2); margin-bottom: 0.35rem;
     text-transform: uppercase; letter-spacing: 0.05em;
   }
   .rc-login-field input {
     width: 100%; font-family: inherit; font-size: 0.9rem;
-    padding: 0.6rem 0.75rem; border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm); background: var(--color-surface);
+    padding: 0.7rem 0.85rem; border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm); background: var(--color-bg);
     color: var(--color-text); transition: border-color var(--duration-1) var(--ease);
   }
   .rc-login-field input:focus {
     outline: 2px solid var(--color-brand); outline-offset: 1px; border-color: var(--color-brand);
   }
   .rc-login-btn {
-    width: 100%; padding: 0.65rem; font-size: 0.9rem; font-weight: 600;
+    width: 100%; padding: 0.75rem; font-size: 0.9rem; font-weight: 600;
     background: var(--color-brand); color: #fff; border: none;
     border-radius: var(--radius-sm); cursor: pointer;
     transition: background var(--duration-1) var(--ease);
@@ -2051,7 +2055,7 @@
   .rc-login-btn:hover { background: var(--color-brand-2); }
   .rc-login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .rc-login-forgot {
-    display: block; margin-top: 0.75rem; font-size: 0.82rem;
+    display: block; margin-top: 0.85rem; font-size: 0.82rem;
     color: var(--color-brand); cursor: pointer; text-align: center;
     text-decoration: underline; text-underline-offset: 2px;
     background: none; border: none; font-family: inherit; width: 100%;
@@ -2089,6 +2093,112 @@
     text-decoration: underline; text-underline-offset: 2px; margin-bottom: 1rem;
   }
   .rc-login-back:hover { color: var(--color-brand-2); }
+
+  /* Right column — Project Insights */
+  .rc-login-right {
+    display: flex; align-items: center; justify-content: center;
+    padding: 3rem 2.5rem;
+    background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-2) 100%);
+    color: #fff;
+    position: relative;
+    overflow-y: auto;
+  }
+  :root[data-theme="dark"] .rc-login-right {
+    background: linear-gradient(135deg, #0c1220 0%, #1a2236 50%, #0c1220 100%);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root[data-theme="auto"] .rc-login-right {
+      background: linear-gradient(135deg, #0c1220 0%, #1a2236 50%, #0c1220 100%);
+    }
+  }
+  .rc-login-right-inner {
+    width: 100%; max-width: 480px;
+  }
+  .rc-login-right .insight-title {
+    font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+  }
+  .rc-login-right .insight-sub {
+    font-size: 0.95rem; opacity: 0.8; margin-bottom: 2rem; line-height: 1.5;
+  }
+  .rc-login-right .insight-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .rc-login-right .insight-card {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  :root[data-theme="dark"] .rc-login-right .insight-card {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.1);
+  }
+  .rc-login-right .insight-card .ic-label {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 600; opacity: 0.75; margin-bottom: 0.4rem;
+  }
+  .rc-login-right .insight-card .ic-value {
+    font-size: 1.75rem; font-weight: 700; font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .rc-login-right .insight-card .ic-delta {
+    font-size: 0.75rem; margin-top: 0.3rem; opacity: 0.7;
+  }
+  .rc-login-right .insight-progress-section {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  :root[data-theme="dark"] .rc-login-right .insight-progress-section {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.1);
+  }
+  .rc-login-right .insight-progress-label {
+    font-size: 0.8rem; font-weight: 600; margin-bottom: 0.6rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .rc-login-right .insight-progress-bar {
+    height: 10px; background: rgba(255,255,255,0.2);
+    border-radius: 999px; overflow: hidden;
+  }
+  .rc-login-right .insight-progress-fill {
+    display: block; height: 100%; background: #fff;
+    border-radius: inherit; transition: width 1s var(--ease);
+  }
+  .rc-login-right .insight-footer {
+    margin-top: 1.5rem; font-size: 0.8rem; opacity: 0.6; text-align: center;
+  }
+  .rc-login-right .insight-footer a {
+    color: #fff; opacity: 0.8; text-decoration: underline;
+  }
+  .rc-login-right .insight-footer a:hover { opacity: 1; }
+
+  /* Mobile: stack columns vertically */
+  @media (max-width: 900px) {
+    .rc-login-gate {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+    }
+    .rc-login-left {
+      border-right: none; border-bottom: 1px solid var(--color-border);
+      padding: 1.5rem;
+    }
+    .rc-login-right { padding: 2rem 1.5rem; }
+    .rc-login-right .insight-title { font-size: 1.35rem; }
+    .rc-login-right .insight-grid { gap: 0.75rem; }
+    .rc-login-right .insight-card .ic-value { font-size: 1.4rem; }
+  }
+  @media (max-width: 640px) {
+    .rc-login-left { padding: 1.25rem; }
+    .rc-login-right { display: none; }
+  }
 
   /* ============================================================
      USER DROPDOWN MENU
@@ -2227,64 +2337,112 @@
 <!-- Shown when NOT logged in; hides the entire dashboard behind it.  -->
 <!-- ================================================================ -->
 <div class="rc-login-gate" id="rcLoginGate" data-mode="login">
-  <div class="rc-login-card">
-    <div class="rc-login-logo">
-      <img class="brand-logo brand-logo--light" src="rockcrete-logo-horizontal.svg" alt="Rockcrete USA" />
-      <img class="brand-logo brand-logo--dark" src="rockcrete-logo-horizontal-dark.svg" alt="Rockcrete USA" />
-    </div>
+  <!-- LEFT COLUMN: Login Form -->
+  <div class="rc-login-left">
+    <div class="rc-login-card">
+      <div class="rc-login-logo">
+        <img class="brand-logo brand-logo--light" src="rockcrete-logo-horizontal.svg" alt="Rockcrete USA" />
+        <img class="brand-logo brand-logo--dark" src="rockcrete-logo-horizontal-dark.svg" alt="Rockcrete USA" />
+      </div>
 
-    <!-- LOGIN MODE -->
-    <div class="rc-login-mode-login">
-      <div class="rc-login-title">Rockcrete USA Blueprint</div>
-      <div class="rc-login-sub">Sign in to access the project dashboard.</div>
-      <div class="rc-login-seed-banner" id="rcLoginSeedBanner" style="display:none;">
-        <strong>First time:</strong> No users registered. Create a Super Admin account to get started.
+      <!-- LOGIN MODE -->
+      <div class="rc-login-mode-login">
+        <div class="rc-login-title">Welcome Back</div>
+        <div class="rc-login-sub">Sign in to access your project dashboard.</div>
+        <div class="rc-login-seed-banner" id="rcLoginSeedBanner" style="display:none;">
+          <strong>First time:</strong> No users registered. Create a Super Admin account to get started.
+        </div>
+        <div class="rc-login-field">
+          <label for="rcLoginEmail">Email</label>
+          <input type="email" id="rcLoginEmail" autocomplete="email" placeholder="you@company.com" />
+        </div>
+        <div class="rc-login-field">
+          <label for="rcLoginPassword">Password</label>
+          <input type="password" id="rcLoginPassword" autocomplete="current-password" placeholder="Enter your password" />
+        </div>
+        <button class="rc-login-btn" id="rcLoginBtn" onclick="rcGateLogin()">Sign In</button>
+        <button class="rc-login-btn" id="rcSeedBtn" style="display:none; background: var(--color-accent);" onclick="rcGateSeed()">Create Super Admin</button>
+        <button type="button" class="rc-login-forgot" onclick="rcGateSwitchToForgot()">Forgot Password?</button>
       </div>
-      <div class="rc-login-field">
-        <label for="rcLoginEmail">Email</label>
-        <input type="email" id="rcLoginEmail" autocomplete="email" placeholder="you@company.com" />
-      </div>
-      <div class="rc-login-field">
-        <label for="rcLoginPassword">Password</label>
-        <input type="password" id="rcLoginPassword" autocomplete="current-password" placeholder="Enter your password" />
-      </div>
-      <button class="rc-login-btn" id="rcLoginBtn" onclick="rcGateLogin()">Sign In</button>
-      <button class="rc-login-btn" id="rcSeedBtn" style="display:none; background: var(--color-accent);" onclick="rcGateSeed()">Create Super Admin</button>
-      <button type="button" class="rc-login-forgot" onclick="rcGateSwitchToForgot()">Forgot Password?</button>
-    </div>
 
-    <!-- FORGOT PASSWORD MODE -->
-    <div class="rc-login-mode-forgot">
-      <button type="button" class="rc-login-back" onclick="rcGateSwitchToLogin()"><i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back to Sign In</button>
-      <div class="rc-login-title">Reset Password</div>
-      <div class="rc-login-sub">Enter your email and we'll send a verification code.</div>
-      <div class="rc-login-field">
-        <label for="rcLoginForgotEmail">Email</label>
-        <input type="email" id="rcLoginForgotEmail" autocomplete="email" placeholder="you@company.com" />
+      <!-- FORGOT PASSWORD MODE -->
+      <div class="rc-login-mode-forgot">
+        <button type="button" class="rc-login-back" onclick="rcGateSwitchToLogin()"><i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back to Sign In</button>
+        <div class="rc-login-title">Reset Password</div>
+        <div class="rc-login-sub">Enter your email and we'll send a verification code.</div>
+        <div class="rc-login-field">
+          <label for="rcLoginForgotEmail">Email</label>
+          <input type="email" id="rcLoginForgotEmail" autocomplete="email" placeholder="you@company.com" />
+        </div>
+        <button class="rc-login-btn" onclick="rcGateForgotPassword()">Send Code</button>
       </div>
-      <button class="rc-login-btn" onclick="rcGateForgotPassword()">Send Code</button>
-    </div>
 
-    <!-- VERIFY CODE MODE -->
-    <div class="rc-login-mode-verify">
-      <button type="button" class="rc-login-back" onclick="rcGateSwitchToForgot()"><i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Resend code</button>
-      <div class="rc-login-title">Verify &amp; Reset</div>
-      <div class="rc-login-sub">Enter the code from your email and set a new password.</div>
-      <div class="rc-login-field">
-        <label for="rcLoginVerifyCode">Verification Code</label>
-        <input type="text" id="rcLoginVerifyCode" autocomplete="one-time-code" placeholder="Enter code" />
+      <!-- VERIFY CODE MODE -->
+      <div class="rc-login-mode-verify">
+        <button type="button" class="rc-login-back" onclick="rcGateSwitchToForgot()"><i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Resend code</button>
+        <div class="rc-login-title">Verify &amp; Reset</div>
+        <div class="rc-login-sub">Enter the code from your email and set a new password.</div>
+        <div class="rc-login-field">
+          <label for="rcLoginVerifyCode">Verification Code</label>
+          <input type="text" id="rcLoginVerifyCode" autocomplete="one-time-code" placeholder="Enter code" />
+        </div>
+        <div class="rc-login-field">
+          <label for="rcLoginNewPassword">New Password</label>
+          <input type="password" id="rcLoginNewPassword" autocomplete="new-password" placeholder="Min 8 characters" />
+        </div>
+        <button class="rc-login-btn" onclick="rcGateVerifyReset()">Reset Password</button>
       </div>
-      <div class="rc-login-field">
-        <label for="rcLoginNewPassword">New Password</label>
-        <input type="password" id="rcLoginNewPassword" autocomplete="new-password" placeholder="Min 8 characters" />
-      </div>
-      <button class="rc-login-btn" onclick="rcGateVerifyReset()">Reset Password</button>
-    </div>
 
-    <div class="rc-login-error" id="rcLoginError"></div>
+      <div class="rc-login-error" id="rcLoginError"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: Project Insights -->
+  <div class="rc-login-right">
+    <div class="rc-login-right-inner">
+      <div class="insight-title">Project Insights</div>
+      <div class="insight-sub">Real-time overview of the Rockcrete USA website rebuild project progress and team activity.</div>
+
+      <div class="insight-grid">
+        <div class="insight-card">
+          <div class="ic-label">Team Members</div>
+          <div class="ic-value" id="insightTeamMembers">—</div>
+          <div class="ic-delta">Active contributors</div>
+        </div>
+        <div class="insight-card">
+          <div class="ic-label">Total Tasks</div>
+          <div class="ic-value" id="insightTotalTasks">—</div>
+          <div class="ic-delta">Project tasks</div>
+        </div>
+        <div class="insight-card">
+          <div class="ic-label">In Progress</div>
+          <div class="ic-value" id="insightInProgress">—</div>
+          <div class="ic-delta">Currently active</div>
+        </div>
+        <div class="insight-card">
+          <div class="ic-label">Completed</div>
+          <div class="ic-value" id="insightCompleted">—</div>
+          <div class="ic-delta">Tasks delivered</div>
+        </div>
+      </div>
+
+      <div class="insight-progress-section">
+        <div class="insight-progress-label">
+          <span>Overall Progress</span>
+          <span id="insightProgressPct">0%</span>
+        </div>
+        <div class="insight-progress-bar">
+          <span class="insight-progress-fill" id="insightProgressFill" style="width: 0%;"></span>
+        </div>
+      </div>
+
+      <div class="insight-footer">
+        <span id="insightPortalName">Rockcrete USA Blueprint</span> — Managed by <span id="insightCompanyName">New Minds Group</span>
+      </div>
+    </div>
   </div>
 </div>
-<div class="app">
+<div class="app" style="display:none;">
 
 <!-- ================================================================ -->
 <!-- TOPBAR                                                           -->
@@ -4448,6 +4606,55 @@
         <div class="settings-field">
           <label data-es="Empresa de Gestión" data-en="Management Company">Management Company</label>
           <input type="text" id="settingsMgmtCompany" placeholder="" />
+        </div>
+      </div>
+    </div>
+
+    <!-- API Configuration — Resend -->
+    <div class="card settings-section">
+      <div class="settings-section-title" data-es="Configuración de API (Resend)" data-en="API Configuration (Resend)">API Configuration (Resend)</div>
+      <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1rem;">
+        Configure the Resend API key for sending emails (password reset codes, invitations, notifications). 
+        Get your API key from <a href="https://resend.com/api-keys" target="_blank" rel="noopener">resend.com/api-keys</a>.
+      </p>
+      <div class="settings-grid">
+        <div class="settings-field">
+          <label data-es="Clave API de Resend" data-en="Resend API Key">Resend API Key</label>
+          <input type="password" id="settingsResendApiKey" placeholder="re_xxxxxxxxxxxx" />
+          <div class="field-hint" data-es="Se muestra enmascarada por seguridad. Ingrese una nueva clave para actualizar." data-en="Masked for security. Enter a new key to update.">Masked for security. Enter a new key to update.</div>
+        </div>
+      </div>
+      <div class="settings-actions" style="margin-top: 1rem;">
+        <button class="btn btn--secondary" onclick="rcSettingsCheckUsage()">
+          <i data-lucide="bar-chart-3" aria-hidden="true"></i>
+          <span data-es="Verificar Uso y Cuota" data-en="Check Usage &amp; Quota">Check Usage &amp; Quota</span>
+        </button>
+      </div>
+      <!-- Usage display -->
+      <div id="resendUsagePanel" style="display:none; margin-top: 1rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="kpi">
+            <div class="kpi-label">API Key Status</div>
+            <div class="kpi-value" id="resendKeyStatus" style="font-size: 1rem;">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Key Type</div>
+            <div class="kpi-value" id="resendKeyType" style="font-size: 1rem;">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Daily Limit</div>
+            <div class="kpi-value" id="resendDailyLimit">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Monthly Limit</div>
+            <div class="kpi-value" id="resendMonthlyLimit">—</div>
+          </div>
+        </div>
+        <div style="margin-top: 0.75rem; text-align: center;">
+          <a href="https://resend.com/emails" target="_blank" rel="noopener" style="font-size: 0.82rem;">
+            <i data-lucide="external-link" style="width:14px;height:14px;vertical-align:middle;"></i>
+            View full usage on Resend Dashboard
+          </a>
         </div>
       </div>
     </div>
@@ -7185,6 +7392,7 @@
       gate.setAttribute('data-mode', 'login');
       rcGateClearError();
       rcGateCheckSeed();
+      rcLoadProjectInsights();
       if (window.lucide) setTimeout(function() { lucide.createIcons(); }, 50);
     }
   }
@@ -8088,6 +8296,7 @@
     if (el('settingsFromEmail')) el('settingsFromEmail').value = e.fromEmail || '';
     if (el('settingsReplyTo')) el('settingsReplyTo').value = e.replyTo || '';
     if (el('settingsResendKey')) el('settingsResendKey').value = e.resendApiKey || '';
+    if (el('settingsResendApiKey')) el('settingsResendApiKey').value = e.resendApiKey || '';
     if (el('settingsSessionDays')) el('settingsSessionDays').value = sy.sessionDurationDays || 7;
     if (el('settingsResetExpiry')) el('settingsResetExpiry').value = sy.resetCodeExpiryMinutes || 15;
     if (el('settingsMaxLogin')) el('settingsMaxLogin').value = sy.maxLoginAttempts || 5;
@@ -8101,12 +8310,15 @@
   async function rcSettingsSave() {
     var el = function(id) { return document.getElementById(id); };
 
+    // The API key may be in either field — prefer the dedicated one, fallback to email config
+    var apiKeyValue = el('settingsResendApiKey')?.value || el('settingsResendKey')?.value || '';
+
     var body = {
       email: {
         fromName: el('settingsFromName')?.value.trim() || '',
         fromEmail: el('settingsFromEmail')?.value.trim() || '',
         replyTo: el('settingsReplyTo')?.value.trim() || '',
-        resendApiKey: el('settingsResendKey')?.value || ''
+        resendApiKey: apiKeyValue
       },
       system: {
         sessionDurationDays: parseInt(el('settingsSessionDays')?.value || '7', 10),
@@ -8215,6 +8427,63 @@
       rcToast('Import failed: ' + e.message, 'error');
     }
     event.target.value = '';
+  }
+
+  /* ── Resend API Usage Check ─────────────────────────────────── */
+  async function rcSettingsCheckUsage() {
+    try {
+      var data = await rcApi('/api/settings?action=resend-usage');
+      var panel = document.getElementById('resendUsagePanel');
+      if (!panel) return;
+
+      if (data.configured) {
+        panel.style.display = '';
+        var statusEl = document.getElementById('resendKeyStatus');
+        var typeEl = document.getElementById('resendKeyType');
+        var dailyEl = document.getElementById('resendDailyLimit');
+        var monthlyEl = document.getElementById('resendMonthlyLimit');
+
+        if (statusEl) statusEl.textContent = data.keyValid ? 'Valid' : 'Invalid';
+        if (statusEl) statusEl.style.color = data.keyValid ? 'var(--color-success)' : 'var(--color-danger)';
+        if (typeEl) typeEl.textContent = data.isProduction ? 'Production' : 'Test / Development';
+        if (typeEl) typeEl.style.color = data.isProduction ? 'var(--color-success)' : 'var(--color-warn)';
+        if (dailyEl) dailyEl.textContent = (data.dailyLimit || 100).toLocaleString();
+        if (monthlyEl) monthlyEl.textContent = (data.monthlyLimit || 3000).toLocaleString();
+
+        rcToast('Resend API key is valid and configured.', 'success');
+      } else {
+        panel.style.display = 'none';
+        rcToast('Resend not configured: ' + (data.reason || 'Unknown'), 'error');
+      }
+      if (window.lucide) lucide.createIcons();
+    } catch (e) {
+      rcToast('Failed to check usage: ' + e.message, 'error');
+    }
+  }
+
+  /* ============================================================
+     PROJECT INSIGHTS — Login page right column
+     ============================================================ */
+  async function rcLoadProjectInsights() {
+    try {
+      var data = await rcApi('/api/auth?action=public-stats');
+      var el = function(id) { return document.getElementById(id); };
+
+      if (el('insightTeamMembers')) el('insightTeamMembers').textContent = data.activeUsers || '0';
+      if (el('insightTotalTasks')) el('insightTotalTasks').textContent = data.totalTasks || '0';
+      if (el('insightInProgress')) el('insightInProgress').textContent = data.inProgressTasks || '0';
+      if (el('insightCompleted')) el('insightCompleted').textContent = data.completedTasks || '0';
+
+      var pct = data.overallProgress || 0;
+      if (el('insightProgressPct')) el('insightProgressPct').textContent = pct + '%';
+      var fill = el('insightProgressFill');
+      if (fill) fill.style.width = pct + '%';
+
+      if (el('insightPortalName')) el('insightPortalName').textContent = data.portalName || 'Rockcrete USA Blueprint';
+      if (el('insightCompanyName')) el('insightCompanyName').textContent = data.companyName || 'New Minds Group';
+    } catch (e) {
+      // Silently fail — insights are nice-to-have on the login page
+    }
   }
 
   /* ============================================================

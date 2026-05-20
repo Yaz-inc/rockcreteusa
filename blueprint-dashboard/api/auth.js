@@ -19,6 +19,7 @@ import {
   getAllUsers, getUserByEmail, getUserById, getUserCount, upsertUser, updateUser,
   getResetTokens, createResetToken, invalidateResetTokens, updateResetToken, cleanupOldResetTokens,
   getSettings, getDefaultModuleAccess, requireAuth, requireSuperAdmin,
+  getAllTasks, getAllTeams,
   VALID_ROLES,
 } from './db.js';
 
@@ -447,11 +448,51 @@ export default async function handler(req, res) {
       return setJson(res, 201, { ok: true, user: safeUser, message: 'Super Admin account created. You can now log in.' });
     }
 
+    /* ── GET /api/auth?action=public-stats ─────────────────────────────── */
+    if (req.method === 'GET' && action === 'public-stats') {
+      try {
+        const [
+          users, tasks, teams, settings
+        ] = await Promise.all([
+          getAllUsers(),
+          getAllTasks(),
+          getAllTeams(),
+          getSettings(),
+        ]);
+
+        const activeUsers = users.filter(u => u.status === 'active').length;
+        const totalTasks = tasks.length;
+        const completedTasks = tasks.filter(t => t.status === 'completed' || t.status === 'done').length;
+        const inProgressTasks = tasks.filter(t => t.status === 'in_progress' || t.status === 'in-progress').length;
+        const totalTeams = teams.length;
+        const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        const portalName = settings?.branding?.portalName || 'Rockcrete USA Blueprint';
+        const companyName = settings?.branding?.companyName || 'Rockcrete USA';
+
+        return setJson(res, 200, {
+          activeUsers,
+          totalTasks,
+          completedTasks,
+          inProgressTasks,
+          totalTeams,
+          overallProgress,
+          portalName,
+          companyName,
+        });
+      } catch (e) {
+        return setJson(res, 200, {
+          activeUsers: 0, totalTasks: 0, completedTasks: 0,
+          inProgressTasks: 0, totalTeams: 0, overallProgress: 0,
+          portalName: 'Rockcrete USA Blueprint', companyName: 'Rockcrete USA',
+        });
+      }
+    }
+
     /* ── Method / action not found ────────────────────────────────────── */
     res.setHeader('Allow', 'GET, POST');
     return setJson(res, 400, {
       error: 'Invalid or missing action parameter',
-      validActions: ['login', 'logout', 'me', 'register', 'change-password', 'forgot-password', 'verify-reset', 'seed', 'check-seed'],
+      validActions: ['login', 'logout', 'me', 'register', 'change-password', 'forgot-password', 'verify-reset', 'seed', 'check-seed', 'public-stats'],
     });
 
   } catch (error) {
