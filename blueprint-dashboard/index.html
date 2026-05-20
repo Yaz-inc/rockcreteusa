@@ -6559,6 +6559,19 @@
     return trackerIsTeamOrAdmin();
   }
 
+  /* Check if current user can edit a specific task (admin/PM = always, others = only their assigned tasks) */
+  function progressCanEditTask(taskId) {
+    if (progressCanEdit()) return true; // admin/PM can edit everything
+    const currentUser = window.__rcCurrentUser;
+    if (!currentUser) return false;
+    const task = (TRACKER_DATA?.tasks || []).find(t => t.id === taskId);
+    const state = TRACKER_STATE?.tasks?.[taskId] || {};
+    const assigneeId = task?.assigneeId || state.assigneeId || '';
+    return assigneeId === currentUser.id ||
+           assigneeId.toLowerCase() === (currentUser.email || '').toLowerCase() ||
+           assigneeId.toLowerCase() === (currentUser.displayName || currentUser.name || '').toLowerCase();
+  }
+
   function progressCurrentUser() {
     if (!window.__role || typeof window.__role.current !== 'function') return 'guest';
     return window.__role.current();
@@ -6568,6 +6581,22 @@
     const role = progressCurrentUser();
     const label = window.__role?.label?.() || role;
     return label;
+  }
+
+  /* Resolve an assignee ID/email/name to a display name using known users */
+  function progressResolveAssignee(assigneeId) {
+    if (!assigneeId) return '';
+    // Check auth system users first
+    if (window.__rcCurrentUser && assigneeId === window.__rcCurrentUser.id) {
+      return window.__rcCurrentUser.displayName || window.__rcCurrentUser.name || assigneeId;
+    }
+    // Check cached team users from Team Management
+    if (typeof tmUsersCache !== 'undefined' && Array.isArray(tmUsersCache)) {
+      const found = tmUsersCache.find(u => u.id === assigneeId || u.email?.toLowerCase() === assigneeId.toLowerCase());
+      if (found) return found.displayName || found.name || assigneeId;
+    }
+    // Return as-is (could be a name already)
+    return assigneeId;
   }
 
   function progressSetStatus(msg) {
@@ -6736,19 +6765,20 @@
     if (!wrap || !TRACKER_DATA) return;
 
     const tasks = TRACKER_DATA.tasks || [];
-    const role = progressCurrentUser();
+    const currentUser = window.__rcCurrentUser;
+    const currentUserId = currentUser?.id || '';
     const isES = lang() === 'es';
+    const isAdminOrPM = progressCanEdit(); // admin, pm, webdev, client_admin
 
     // Filter tasks based on view
     let visibleTasks = tasks;
-    if (PROGRESS_VIEW === 'mine' && role !== 'admin') {
+    if (PROGRESS_VIEW === 'mine' && !isAdminOrPM) {
       visibleTasks = tasks.filter(t => {
-        const ms = MILESTONES_DATA[t.id];
-        const assignee = t.assigneeId || TRACKER_STATE.tasks?.[t.id]?.assigneeId || '';
-        const roleMap = { daniel: 'admin', lorena: 'webdev', yasir: 'webdev', angel: 'webdev' };
-        const isMine = assignee.toLowerCase().includes(role) ||
-                       Object.entries(roleMap).some(([name, r]) => r === role && assignee.toLowerCase().includes(name));
-        return isMine || (ms && ms.milestones?.some(m => m.status !== 'not-started'));
+        const state = TRACKER_STATE.tasks?.[t.id] || {};
+        const assigneeId = t.assigneeId || state.assigneeId || '';
+        return assigneeId === currentUserId ||
+               (currentUser && assigneeId.toLowerCase() === currentUser.email?.toLowerCase()) ||
+               (currentUser && assigneeId.toLowerCase() === (currentUser.displayName || currentUser.name || '').toLowerCase());
       });
     }
 
@@ -6765,16 +6795,20 @@
       const pct = milestonePct(milestones);
       const phase = (TRACKER_DATA.phases || []).find(p => p.id === task.phase);
       const state = TRACKER_STATE.tasks?.[task.id] || {};
-      const assignee = task.assigneeId || state.assigneeId || '';
+      const assigneeId = task.assigneeId || state.assigneeId || '';
+      const assigneeName = progressResolveAssignee(assigneeId);
+      const taskName = task.title || task.label || task.id;
       const fillClass = pct >= 100 ? 'is-complete' : milestones.some(m => m.status === 'blocked') ? 'is-blocked' : '';
+      // Permission: only assigned user or admin/PM can edit milestones & submit progress
+      const canEditTask = isAdminOrPM || assigneeId === currentUserId;
 
       return `<div class="progress-task-card" data-task-id="${progressEscape(task.id)}">
         <div class="progress-task-header" onclick="toggleProgressTask('${progressEscape(task.id)}')">
           <div>
-            <div class="progress-task-title">${progressEscape(task.label)}</div>
+            <div class="progress-task-title">${progressEscape(taskName)}</div>
             <div class="progress-task-meta">
               ${phase ? `<span>${progressEscape(phase.label)}</span>` : ''}
-              ${assignee ? `<span>${progressEscape(assignee)}</span>` : ''}
+              ${assigneeName ? `<span>Assigned: ${progressEscape(assigneeName)}</span>` : '<span style="opacity:.5;">Unassigned</span>'}
               ${task.dueDate ? `<span>Due ${progressEscape(task.dueDate)}</span>` : ''}
               ${milestones.length > 0 ? `<span>${milestones.filter(m=>m.status==='complete').length}/${milestones.length} milestones</span>` : '<span style="opacity:.6;">No milestones yet</span>'}
             </div>
@@ -6787,21 +6821,21 @@
           </div>
         </div>
         <div class="progress-task-body">
-          ${milestones.length > 0 ? renderMilestoneList(task.id, milestones) : renderNoMilestones(task.id)}
-          ${progressCanEdit() ? renderAddMilestoneForm(task.id) : ''}
-          ${renderProgressSubmitForm(task.id)}
+          ${milestones.length > 0 ? renderMilestoneList(task.id, milestones, canEditTask) : renderNoMilestones(task.id, canEditTask)}
+          ${canEditTask ? renderAddMilestoneForm(task.id) : ''}
+          ${canEditTask ? renderProgressSubmitForm(task.id) : ''}
         </div>
       </div>`;
     }).join('');
   }
 
-  function renderMilestoneList(taskId, milestones) {
+  function renderMilestoneList(taskId, milestones, canEditTask) {
     const isES = lang() === 'es';
+    const canChange = canEditTask !== false && progressCanEdit();
     return `<div class="milestone-list">
       ${milestones.map(ms => {
         const iconChar = milestoneIconChar(ms.status);
         const statusLabel = ms.status.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        const canChange = progressCanEdit();
         return `<div class="milestone-item" data-milestone-id="${progressEscape(ms.id)}">
           <div class="milestone-icon is-${ms.status}">${iconChar}</div>
           <div class="milestone-info">
@@ -6820,11 +6854,12 @@
     </div>`;
   }
 
-  function renderNoMilestones(taskId) {
+  function renderNoMilestones(taskId, canEditTask) {
     const isES = lang() === 'es';
+    const canEdit = canEditTask !== false && progressCanEdit();
     return `<div style="padding:.75rem 0; text-align:center; color:var(--color-text-muted); font-size:.85rem;">
       <p>${isES ? 'Esta tarea no tiene milestones todavía.' : 'This task has no milestones yet.'}</p>
-      ${progressCanEdit() ? `<p style="margin-top:.35rem;">${isES ? 'Agrega milestones abajo para desglosar el trabajo.' : 'Add milestones below to break down the work.'}</p>` : ''}
+      ${canEdit ? `<p style="margin-top:.35rem;">${isES ? 'Agrega milestones abajo para desglosar el trabajo.' : 'Add milestones below to break down the work.'}</p>` : ''}
     </div>`;
   }
 
@@ -6970,7 +7005,7 @@
 
   /* ── Add milestones to a task ───────────────────────────────────────── */
   window.addMilestones = async function(taskId) {
-    if (!progressCanEdit()) return;
+    if (!progressCanEditTask(taskId)) return;
     const isES = lang() === 'es';
     const form = document.getElementById('add-ms-form-' + taskId);
     if (!form) return;
@@ -7032,7 +7067,7 @@
 
   /* ── Cycle milestone status ─────────────────────────────────────────── */
   window.cycleMilestoneStatus = async function(taskId, milestoneId) {
-    if (!progressCanEdit()) return;
+    if (!progressCanEditTask(taskId)) return;
 
     const taskEntry = MILESTONES_DATA[taskId];
     if (!taskEntry) return;
@@ -7091,7 +7126,7 @@
 
   /* ── Delete a milestone ─────────────────────────────────────────────── */
   window.deleteMilestone = async function(taskId, milestoneId) {
-    if (!progressCanEdit()) return;
+    if (!progressCanEditTask(taskId)) return;
     const isES = lang() === 'es';
     if (!confirm(isES ? 'Eliminar este milestone?' : 'Delete this milestone?')) return;
 
@@ -7128,6 +7163,7 @@
 
   /* ── Submit progress update ─────────────────────────────────────────── */
   window.submitProgress = async function(taskId) {
+    if (!progressCanEditTask(taskId)) return;
     const isES = lang() === 'es';
     const card = document.querySelector(`.progress-task-card[data-task-id="${taskId}"]`);
     if (!card) return;
