@@ -5254,6 +5254,7 @@
   // ============================================================
   let TRACKER_DATA = null;
   let TRACKER_STATE = { tasks: {}, accessRequests: {} };
+  let ASSIGNEES_CACHE = [];
   const TRACKER_LOCAL_KEY = 'rockcrete_project_tracker_state';
   const TRACKER_COMMENT_BODY_MAX = 4000;
   const TRACKER_COMMENTS_CAP = 80;
@@ -5343,16 +5344,23 @@
   function trackerAssigneeLabel(assigneeId) {
     const id = assigneeId == null || assigneeId === '' ? '' : String(assigneeId);
     if (!id) return 'Unassigned';
+    const user = ASSIGNEES_CACHE.find(u => u.id === id);
+    if (user) return user.displayName;
     const row = (TRACKER_DATA?.teamMembers || []).find(m => m.id === id);
     return row ? row.label : id;
   }
 
   function trackerAssigneeOptions(selectedId) {
     const sel = selectedId == null || selectedId === '' ? '' : String(selectedId);
-    return (TRACKER_DATA?.teamMembers || [])
-      .filter(m => m.id !== '')
-      .map(m => `<option value="${trackerEscape(m.id)}" ${m.id === sel ? 'selected' : ''}>${trackerEscape(m.label)}</option>`)
-      .join('');
+    const source = ASSIGNEES_CACHE.length > 0
+      ? ASSIGNEES_CACHE
+      : (TRACKER_DATA?.teamMembers || []).filter(m => m.id !== '');
+    return source.map(m => {
+      const val = m.id;
+      const label = m.displayName || m.label;
+      const roleBadge = m.role ? ` (${m.role.replace('_', ' ')})` : '';
+      return `<option value="${trackerEscape(val)}" ${val === sel ? 'selected' : ''}>${trackerEscape(label)}${trackerEscape(roleBadge)}</option>`;
+    }).join('');
   }
 
   /** Tag + optional assignee dropdown — staff (web dev, client admin, admin) only */
@@ -6586,16 +6594,15 @@
   /* Resolve an assignee ID/email/name to a display name using known users */
   function progressResolveAssignee(assigneeId) {
     if (!assigneeId) return '';
-    // Check auth system users first
+    const user = ASSIGNEES_CACHE.find(u => u.id === assigneeId || u.email?.toLowerCase() === assigneeId.toLowerCase());
+    if (user) return user.displayName;
     if (window.__rcCurrentUser && assigneeId === window.__rcCurrentUser.id) {
       return window.__rcCurrentUser.displayName || window.__rcCurrentUser.name || assigneeId;
     }
-    // Check cached team users from Team Management
     if (typeof tmUsersCache !== 'undefined' && Array.isArray(tmUsersCache)) {
       const found = tmUsersCache.find(u => u.id === assigneeId || u.email?.toLowerCase() === assigneeId.toLowerCase());
       if (found) return found.displayName || found.name || assigneeId;
     }
-    // Return as-is (could be a name already)
     return assigneeId;
   }
 
@@ -7235,9 +7242,22 @@
     renderProgressDashboard();
   }
 
+  async function fetchAssignees() {
+    try {
+      const res = await fetch('/api/users?action=assignees');
+      if (res.ok) {
+        const data = await res.json();
+        ASSIGNEES_CACHE = data.assignees || [];
+      }
+    } catch (e) {
+      console.warn('Failed to fetch assignees:', e);
+    }
+  }
+
   // Load when tracker data is ready
   const origTrackerInit = window.__rcTrackerInit;
   window.__rcTrackerInit = true;
+  fetchAssignees();
   if (TRACKER_DATA) {
     initProgressDashboard();
   } else {

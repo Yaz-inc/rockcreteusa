@@ -38,6 +38,25 @@ async function hashPassword(password) {
 
 export default async function handler(req, res) {
   try {
+    /* ── GET: Assignees list (any authenticated user) ──────────────────── */
+    if (req.method === 'GET' && req.query?.action === 'assignees') {
+      const session = await requireAuth(req);
+      if (!session || !session.user) {
+        return setJson(res, 401, { error: 'Authentication required' });
+      }
+      const users = await getAllUsers();
+      const assignees = users
+        .filter(u => u.status === 'active' && u.role !== 'client' && u.role !== 'client_admin')
+        .map(u => ({
+          id: u.id,
+          displayName: u.displayName || u.name || u.email,
+          role: u.role,
+          email: u.email,
+          title: u.title || '',
+        }));
+      return setJson(res, 200, { assignees });
+    }
+
     const admin = await requireSuperAdminReq(req);
     if (!admin) {
       return setJson(res, 403, { error: 'Super Admin access required' });
