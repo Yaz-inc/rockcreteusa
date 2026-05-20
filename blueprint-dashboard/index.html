@@ -7245,6 +7245,36 @@
     var dropdown = document.getElementById('rcUserDropdown');
 
     if (user) {
+      // ── Bridge: window.__role compatibility layer ────────────────
+      // Maps the new auth system (window.__rcCurrentUser) to the old
+      // role-gating API (window.__role) so all existing tracker,
+      // progress, and milestone functions continue to work unchanged.
+      var _r = user.role || 'guest';
+      var _legacyRole = _r === 'super_admin' ? 'admin'
+                      : _r === 'admin'       ? 'admin'
+                      : _r === 'pm'          ? 'admin'
+                      : _r === 'webdev'      ? 'webdev'
+                      : _r === 'devops'      ? 'webdev'
+                      : _r === 'team'        ? 'webdev'
+                      : _r === 'client_admin'? 'client_admin'
+                      : _r === 'client'      ? 'client'
+                      : 'guest';
+      window.__role = {
+        current:       function () { return _legacyRole; },
+        label:         function () { return user.displayName || user.name || _legacyRole; },
+        isAdmin:       function () { return _legacyRole === 'admin'; },
+        isWebDev:      function () { return _legacyRole === 'webdev'; },
+        isClientAdmin: function () { return _legacyRole === 'client_admin'; },
+        isStaffEditor: function () { return _legacyRole === 'webdev' || _legacyRole === 'client_admin' || _legacyRole === 'admin'; },
+        isTeam:        function () { return _legacyRole === 'webdev' || _legacyRole === 'client_admin'; },
+        isClient:      function () { return _legacyRole === 'client' || _legacyRole === 'guest'; },
+        setRole:       function () { /* no-op: role comes from auth system now */ },
+        signOut:       function () { rcAuthLogout(); }
+      };
+      // Also set body class for legacy CSS rules
+      document.body.classList.remove('role-admin','role-webdev','role-client_admin','role-client','role-guest');
+      document.body.classList.add('role-' + _legacyRole);
+
       // Logged in — show dashboard, hide login gate
       if (loginGate) loginGate.setAttribute('data-hidden', '');
       if (appEl) appEl.style.display = '';
@@ -7289,7 +7319,22 @@
       if (dash) dash.removeAttribute('data-hidden');
       rcDashboardLoad();
     } else {
-      // Not logged in — show login gate, hide dashboard
+      // Not logged in — clear legacy role bridge and show login gate
+      window.__role = {
+        current: function () { return 'guest'; },
+        label: function () { return 'guest'; },
+        isAdmin: function () { return false; },
+        isWebDev: function () { return false; },
+        isClientAdmin: function () { return false; },
+        isStaffEditor: function () { return false; },
+        isTeam: function () { return false; },
+        isClient: function () { return true; },
+        setRole: function () {},
+        signOut: function () {}
+      };
+      document.body.classList.remove('role-admin','role-webdev','role-client_admin','role-client','role-guest');
+      document.body.classList.add('role-guest');
+
       if (loginGate) loginGate.removeAttribute('data-hidden');
       if (appEl) appEl.style.display = 'none';
       if (guestGroup) guestGroup.style.display = '';
