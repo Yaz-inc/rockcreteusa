@@ -12,6 +12,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { randomBytes, createHmac } from 'crypto';
 
 /* ── Singleton Supabase client ─────────────────────────────────────────── */
 
@@ -48,7 +49,6 @@ function parseBody(req) {
 }
 
 function generateId(prefix) {
-  const { randomBytes } = require('crypto');
   return prefix + '-' + randomBytes(4).toString('hex') + Date.now().toString(36).slice(-4);
 }
 
@@ -117,7 +117,6 @@ function getSessionSecret() {
 }
 
 function signSession(payload) {
-  const { createHmac } = require('crypto');
   const secret = getSessionSecret();
   const data = JSON.stringify(payload);
   const sig = createHmac('sha256', secret).update(data).digest('hex');
@@ -126,7 +125,6 @@ function signSession(payload) {
 
 function verifySession(cookie) {
   try {
-    const { createHmac } = require('crypto');
     const decoded = JSON.parse(Buffer.from(cookie, 'base64url').toString('utf8'));
     const { _sig, ...payload } = decoded;
     const secret = getSessionSecret();
