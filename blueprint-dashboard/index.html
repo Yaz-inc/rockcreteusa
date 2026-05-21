@@ -4757,55 +4757,6 @@
       </div>
     </div>
 
-    <!-- API Configuration — Resend -->
-    <div class="card settings-section">
-      <div class="settings-section-title" data-es="Configuración de API (Resend)" data-en="API Configuration (Resend)">API Configuration (Resend)</div>
-      <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1rem;">
-        Configure the Resend API key for sending emails (password reset codes, invitations, notifications). 
-        Get your API key from <a href="https://resend.com/api-keys" target="_blank" rel="noopener">resend.com/api-keys</a>.
-      </p>
-      <div class="settings-grid">
-        <div class="settings-field">
-          <label data-es="Clave API de Resend" data-en="Resend API Key">Resend API Key</label>
-          <input type="password" id="settingsResendApiKey" placeholder="re_xxxxxxxxxxxx" />
-          <div class="field-hint" data-es="Se muestra enmascarada por seguridad. Ingrese una nueva clave para actualizar." data-en="Masked for security. Enter a new key to update.">Masked for security. Enter a new key to update.</div>
-        </div>
-      </div>
-      <div class="settings-actions" style="margin-top: 1rem;">
-        <button class="btn btn--secondary" onclick="rcSettingsCheckUsage()">
-          <i data-lucide="bar-chart-3" aria-hidden="true"></i>
-          <span data-es="Verificar Uso y Cuota" data-en="Check Usage &amp; Quota">Check Usage &amp; Quota</span>
-        </button>
-      </div>
-      <!-- Usage display -->
-      <div id="resendUsagePanel" style="display:none; margin-top: 1rem;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-          <div class="kpi">
-            <div class="kpi-label">API Key Status</div>
-            <div class="kpi-value" id="resendKeyStatus" style="font-size: 1rem;">—</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">Key Type</div>
-            <div class="kpi-value" id="resendKeyType" style="font-size: 1rem;">—</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">Daily Limit</div>
-            <div class="kpi-value" id="resendDailyLimit">—</div>
-          </div>
-          <div class="kpi">
-            <div class="kpi-label">Monthly Limit</div>
-            <div class="kpi-value" id="resendMonthlyLimit">—</div>
-          </div>
-        </div>
-        <div style="margin-top: 0.75rem; text-align: center;">
-          <a href="https://resend.com/emails" target="_blank" rel="noopener" style="font-size: 0.82rem;">
-            <i data-lucide="external-link" style="width:14px;height:14px;vertical-align:middle;"></i>
-            View full usage on Resend Dashboard
-          </a>
-        </div>
-      </div>
-    </div>
-
     <!-- Save all settings -->
     <div style="margin-top: 1rem;">
       <button class="btn btn--primary" onclick="rcSettingsSave()">
@@ -8937,7 +8888,7 @@
     if (el('settingsFromEmail')) el('settingsFromEmail').value = e.fromEmail || '';
     if (el('settingsReplyTo')) el('settingsReplyTo').value = e.replyTo || '';
     if (el('settingsResendKey')) el('settingsResendKey').value = e.resendApiKey || '';
-    if (el('settingsResendApiKey')) el('settingsResendApiKey').value = e.resendApiKey || '';
+
     if (el('settingsSessionDays')) el('settingsSessionDays').value = sy.sessionDurationDays || 7;
     if (el('settingsResetExpiry')) el('settingsResetExpiry').value = sy.resetCodeExpiryMinutes || 15;
     if (el('settingsMaxLogin')) el('settingsMaxLogin').value = sy.maxLoginAttempts || 5;
@@ -8951,8 +8902,7 @@
   async function rcSettingsSave() {
     var el = function(id) { return document.getElementById(id); };
 
-    // The API key may be in either field — prefer the dedicated one, fallback to email config
-    var apiKeyValue = el('settingsResendApiKey')?.value || el('settingsResendKey')?.value || '';
+    var apiKeyValue = el('settingsResendKey')?.value || '';
 
     var body = {
       email: {
@@ -8986,6 +8936,8 @@
 
   async function rcSettingsVerifyEmail() {
     try {
+      // Auto-save settings first so the API key is persisted before checking
+      await rcSettingsSave();
       var data = await rcApi('/api/settings?action=verify-email');
       if (data.configured) {
         var domainList = (data.domains || []).map(function(d) { return d.name + ' (' + d.status + ')'; }).join(', ');
@@ -9011,6 +8963,8 @@
     if (!result || !result.to) return;
 
     try {
+      // Auto-save settings first so the API key is persisted
+      await rcSettingsSave();
       var data = await rcApi('/api/settings?action=test-email', {
         method: 'POST',
         body: { to: result.to }
@@ -9073,6 +9027,7 @@
   /* ── Resend API Usage Check ─────────────────────────────────── */
   async function rcSettingsCheckUsage() {
     try {
+      await rcSettingsSave();
       var data = await rcApi('/api/settings?action=resend-usage');
       var panel = document.getElementById('resendUsagePanel');
       if (!panel) return;
