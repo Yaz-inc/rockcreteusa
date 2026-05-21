@@ -6712,24 +6712,8 @@
       try { PROGRESS_UPDATES = JSON.parse(localStorage.getItem(PROGRESS_LOCAL_KEY)) || []; } catch (_) { PROGRESS_UPDATES = []; }
     }
   }
-  }
 
-  /* ── Fetch progress updates from API ────────────────────────────────── */
-  async function fetchProgress() {
-    try {
-      const headers = { 'x-rockcrete-role': trackerPersistedRole() };
-      const res = await fetch('/api/progress', { headers });
-      if (!res.ok) throw new Error('Progress fetch failed');
-      const data = await res.json();
-      PROGRESS_UPDATES = data.updates || [];
-      try { localStorage.setItem(PROGRESS_LOCAL_KEY, JSON.stringify(PROGRESS_UPDATES)); } catch (_) {}
-    } catch (e) {
-      console.warn('Progress API failed, using cache:', e.message);
-      try { PROGRESS_UPDATES = JSON.parse(localStorage.getItem(PROGRESS_LOCAL_KEY)) || []; } catch (_) { PROGRESS_UPDATES = []; }
-    }
-  }
-
-  /* ── Save milestones to API ─────────────────────────────────────────── */
+  /* ── Save milestones to API ────────────────────────────────────────── */
   async function saveMilestones() {
     try {
       const res = await fetch('/api/milestones', {
