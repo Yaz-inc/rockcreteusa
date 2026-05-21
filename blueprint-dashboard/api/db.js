@@ -428,6 +428,27 @@ async function createProgressUpdate(update) {
   };
 }
 
+async function deleteProgressUpdate(id) {
+  const sb = getSupabase();
+  const { error } = await sb.from('progress_updates').delete().eq('id', id);
+  if (error) throw error;
+  return { ok: true };
+}
+
+async function updateProgressUpdate(id, fields) {
+  const sb = getSupabase();
+  const row = {};
+  if (fields.message !== undefined) row.message = String(fields.message).slice(0, 2000);
+  const { data, error } = await sb.from('progress_updates').update(row).eq('id', id).select().single();
+  if (error) throw error;
+  return {
+    id: data.id, taskId: data.task_id, milestoneId: data.milestone_id,
+    submittedBy: data.submitted_by, role: data.role, type: data.type,
+    message: data.message, previousStatus: data.previous_status,
+    newStatus: data.new_status, createdAt: data.created_at,
+  };
+}
+
 /* ── Tracker state operations ───────────────────────────────────────────── */
 
 async function getTrackerState() {
@@ -900,7 +921,7 @@ export {
   // Milestones
   getAllMilestones, getMilestonesByTask, createMilestone, updateMilestone, deleteMilestone,
   // Progress
-  getProgressUpdates, createProgressUpdate,
+  getProgressUpdates, createProgressUpdate, deleteProgressUpdate, updateProgressUpdate,
   // Tracker state
   getTrackerState, saveTrackerState, patchTrackerTasks, patchTrackerAccessRequests,
   // Reset tokens

@@ -8,7 +8,7 @@
 
 import {
   setJson, requireAuth, generateId,
-  getProgressUpdates, createProgressUpdate,
+  getProgressUpdates, createProgressUpdate, deleteProgressUpdate, updateProgressUpdate,
 } from './db.js';
 
 const MAX_MESSAGE = 2000;
@@ -89,8 +89,39 @@ export default async function handler(req, res) {
       return setJson(res, 201, { source: 'database', update: saved, total: allUpdates.length });
     }
 
+    /* ── DELETE: Remove a progress update ────────────────────────────── */
+    if (req.method === 'DELETE') {
+      if (!canSubmit(incomingRole)) {
+        return setJson(res, 403, { error: 'Staff role required' });
+      }
+      const id = req.query?.id || '';
+      if (!id) {
+        return setJson(res, 400, { error: 'id query parameter required' });
+      }
+      await deleteProgressUpdate(id);
+      return setJson(res, 200, { ok: true, message: 'Progress update deleted' });
+    }
+
+    /* ── PUT: Edit a progress update message ───────────────────────── */
+    if (req.method === 'PUT') {
+      if (!canSubmit(incomingRole)) {
+        return setJson(res, 403, { error: 'Staff role required' });
+      }
+      const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+      const id = body.id || req.query?.id || '';
+      if (!id) {
+        return setJson(res, 400, { error: 'id is required' });
+      }
+      const message = String(body.message || '').trim();
+      if (!message) {
+        return setJson(res, 400, { error: 'message is required' });
+      }
+      const updated = await updateProgressUpdate(id, { message });
+      return setJson(res, 200, { ok: true, update: updated });
+    }
+
     /* ── Method not allowed ────────────────────────────────────────────── */
-    res.setHeader('Allow', 'GET, POST');
+    res.setHeader('Allow', 'GET, POST, PUT, DELETE');
     return setJson(res, 405, { error: 'Method not allowed' });
 
   } catch (error) {

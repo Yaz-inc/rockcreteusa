@@ -10,7 +10,7 @@
  */
 
 import {
-  setJson, parseBody, stripSensitive,
+  setJson, parseBody, stripSensitive, getSupabase,
   getSettings, saveSettings, DEFAULT_SETTINGS,
   getAllUsers, getAllMilestones, getProgressUpdates, getResetTokens,
   requireAuth, requireSuperAdmin,
@@ -256,6 +256,7 @@ export default async function handler(req, res) {
 
     /* ── GET: Export all application data ──────────────────────────────── */
     if (req.method === 'GET' && action === 'export') {
+      const supabase = getSupabase();
       const [users, milestones, progress, tokens] = await Promise.all([
         getAllUsers(),
         getAllMilestones(),
@@ -263,22 +264,35 @@ export default async function handler(req, res) {
         getResetTokens(),
       ]);
 
+      // Fetch additional tables
+      let trackerState = [], teams = [], teamMembers = [], tasks = [];
+      try { const { data } = await supabase.from('tracker_state').select('*'); trackerState = data || []; } catch {}
+      try { const { data } = await supabase.from('teams').select('*'); teams = data || []; } catch {}
+      try { const { data } = await supabase.from('team_members').select('*'); teamMembers = data || []; } catch {}
+      try { const { data } = await supabase.from('tasks').select('*'); tasks = data || []; } catch {}
+
       const exportData = {
         _meta: {
           exportedAt: new Date().toISOString(),
-          version: 'V17_A',
+          version: 'V20',
           source: 'Rockcrete USA Blueprint Portal',
           database: 'Supabase',
+          improvement: '#20',
         },
         data: {
-          'rockcrete/users.json': { users: users.map(stripSensitive) },
+          'rockcrete/users.json': { users },
           'rockcrete/settings.json': await getSettings(),
           'rockcrete/milestones.json': milestones,
           'rockcrete/progress.json': { updates: progress },
           'rockcrete/reset-tokens.json': { tokens },
+          'rockcrete/tracker-state.json': { entries: trackerState },
+          'rockcrete/teams.json': { teams },
+          'rockcrete/team-members.json': { members: teamMembers },
+          'rockcrete/tasks.json': { tasks },
         },
       };
 
+      res.setHeader('Content-Disposition', `attachment; filename="rockcrete-backup-${new Date().toISOString().split('T')[0]}.json"`);
       return setJson(res, 200, exportData);
     }
 
