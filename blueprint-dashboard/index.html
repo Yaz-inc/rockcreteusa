@@ -2423,6 +2423,25 @@
     </div>
   </div>
 </div>
+<script>
+// Instant session restore — runs BEFORE any other JS.
+// If we have a cached session in localStorage, hide the login gate and show
+// the app immediately so the user never sees a flash of the login page.
+(function() {
+  try {
+    var u = localStorage.getItem('rockcrete_session_user');
+    if (u && JSON.parse(u)) {
+      var gate = document.getElementById('rcLoginGate');
+      if (gate) gate.setAttribute('data-hidden', '');
+      // The .app div below starts with display:none; override it
+      document.addEventListener('DOMContentLoaded', function() {
+        var app = document.querySelector('.app');
+        if (app) app.style.display = '';
+      });
+    }
+  } catch(e) {}
+})();
+</script>
 <div class="app" style="display:none;">
 
 <!-- ================================================================ -->
