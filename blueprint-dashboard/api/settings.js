@@ -46,8 +46,13 @@ async function sendEmail({ to, subject, html, text, emailConfig }) {
     });
 
     if (!resp.ok) {
-      const err = await resp.text();
-      return { sent: false, reason: `Resend API error: ${err}` };
+      const errText = await resp.text();
+      let reason = `Resend API error (${resp.status})`;
+      try {
+        const errObj = JSON.parse(errText);
+        reason = errObj.message || errObj.error || reason;
+      } catch { reason += ': ' + errText; }
+      return { sent: false, reason };
     }
 
     const result = await resp.json();

@@ -4678,22 +4678,28 @@
     <!-- Email Configuration -->
     <div class="card settings-section">
       <div class="settings-section-title" data-es="Configuración de Correo" data-en="Email Configuration">Email Configuration</div>
+      <p style="font-size:.82rem; color:var(--color-text-muted); margin:0 0 1rem;">
+        Configure the Resend API key for sending emails (password resets, invitations).
+        Get your API key from <a href="https://resend.com/api-keys" target="_blank" rel="noopener">resend.com/api-keys</a>.
+        The "From Email" domain must match a verified domain in your Resend account.
+      </p>
       <div class="settings-grid">
         <div class="settings-field">
           <label data-es="Nombre del Remitente" data-en="From Name">From Name</label>
-          <input type="text" id="settingsFromName" placeholder="" />
+          <input type="text" id="settingsFromName" placeholder="Rockcrete USA Blueprint" />
         </div>
         <div class="settings-field">
           <label data-es="Correo del Remitente" data-en="From Email">From Email</label>
-          <input type="email" id="settingsFromEmail" placeholder="" />
+          <input type="email" id="settingsFromEmail" placeholder="noreply@yourdomain.com" />
+          <div class="field-hint">Must match a verified domain in Resend.</div>
         </div>
         <div class="settings-field">
           <label data-es="Correo de Respuesta" data-en="Reply-To Email">Reply-To Email</label>
-          <input type="email" id="settingsReplyTo" placeholder="" />
+          <input type="email" id="settingsReplyTo" placeholder="support@yourdomain.com" />
         </div>
         <div class="settings-field">
           <label data-es="Clave API de Resend" data-en="Resend API Key">Resend API Key</label>
-          <input type="password" id="settingsResendKey" placeholder="" />
+          <input type="password" id="settingsResendKey" placeholder="re_xxxxxxxxxxxx" />
           <div class="field-hint" data-es="Se muestra enmascarada por seguridad. Ingrese una nueva clave para actualizar." data-en="Masked for security. Enter a new key to update.">Masked for security. Enter a new key to update.</div>
         </div>
       </div>
@@ -4706,6 +4712,37 @@
           <i data-lucide="send" aria-hidden="true"></i>
           <span data-es="Enviar Correo de Prueba" data-en="Send Test Email">Send Test Email</span>
         </button>
+        <button class="btn btn--secondary" onclick="rcSettingsCheckUsage()">
+          <i data-lucide="bar-chart-3" aria-hidden="true"></i>
+          <span data-es="Verificar Uso y Cuota" data-en="Check Usage &amp; Quota">Check Usage &amp; Quota</span>
+        </button>
+      </div>
+      <!-- Usage display -->
+      <div id="resendUsagePanel" style="display:none; margin-top: 1rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="kpi">
+            <div class="kpi-label">API Key Status</div>
+            <div class="kpi-value" id="resendKeyStatus" style="font-size: 1rem;">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Key Type</div>
+            <div class="kpi-value" id="resendKeyType" style="font-size: 1rem;">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Daily Limit</div>
+            <div class="kpi-value" id="resendDailyLimit">—</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Monthly Limit</div>
+            <div class="kpi-value" id="resendMonthlyLimit">—</div>
+          </div>
+        </div>
+        <div style="margin-top: 0.75rem; text-align: center;">
+          <a href="https://resend.com/emails" target="_blank" rel="noopener" style="font-size: 0.82rem;">
+            <i data-lucide="external-link" style="width:14px;height:14px;vertical-align:middle;"></i>
+            View full usage on Resend Dashboard
+          </a>
+        </div>
       </div>
     </div>
 
@@ -8940,8 +8977,21 @@
       await rcSettingsSave();
       var data = await rcApi('/api/settings?action=verify-email');
       if (data.configured) {
-        var domainList = (data.domains || []).map(function(d) { return d.name + ' (' + d.status + ')'; }).join(', ');
-        rcToast('Email configured! Domains: ' + (domainList || 'none found'), 'success');
+        var domains = data.domains || [];
+        var domainList = domains.map(function(d) { return d.name + ' (' + d.status + ')'; }).join(', ');
+
+        // Check if fromEmail domain matches a verified domain
+        var fromEmail = document.getElementById('settingsFromEmail')?.value || '';
+        var fromDomain = fromEmail.split('@')[1] || '';
+        var verifiedDomains = domains.filter(function(d) { return d.status === 'verified'; }).map(function(d) { return d.name; });
+
+        if (verifiedDomains.length === 0) {
+          rcToast('⚠️ API key valid but no verified domains found. Verify your domain at resend.com/domains.', 'error');
+        } else if (fromDomain && verifiedDomains.indexOf(fromDomain) === -1) {
+          rcToast('⚠️ API key valid! Domains: ' + domainList + '. Warning: "From Email" domain (' + fromDomain + ') does not match any verified domain. Use: ' + verifiedDomains.join(', '), 'info');
+        } else {
+          rcToast('✅ Email configured! Domains: ' + (domainList || 'none found'), 'success');
+        }
       } else {
         rcToast('Email not configured: ' + (data.reason || 'Unknown'), 'error');
       }
