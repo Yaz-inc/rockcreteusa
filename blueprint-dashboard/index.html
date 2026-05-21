@@ -6688,7 +6688,7 @@
   async function fetchMilestones() {
     try {
       const headers = { 'x-rockcrete-role': trackerPersistedRole() };
-      const res = await fetch('/api/milestones', { headers });
+      const res = await fetch('/api/milestones', { headers, credentials: 'same-origin' });
       if (!res.ok) throw new Error('Milestones fetch failed');
       const data = await res.json();
       MILESTONES_DATA = data.milestones || {};
@@ -6697,6 +6697,21 @@
       console.warn('Milestones API failed, using cache:', e.message);
       try { MILESTONES_DATA = JSON.parse(localStorage.getItem(MILESTONES_LOCAL_KEY)) || {}; } catch (_) { MILESTONES_DATA = {}; }
     }
+  }
+
+  async function fetchProgress() {
+    try {
+      const headers = { 'x-rockcrete-role': trackerPersistedRole() };
+      const res = await fetch('/api/progress', { headers, credentials: 'same-origin' });
+      if (!res.ok) throw new Error('Progress fetch failed');
+      const data = await res.json();
+      PROGRESS_UPDATES = data.updates || [];
+      try { localStorage.setItem(PROGRESS_LOCAL_KEY, JSON.stringify(PROGRESS_UPDATES)); } catch (_) {}
+    } catch (e) {
+      console.warn('Progress API failed, using cache:', e.message);
+      try { PROGRESS_UPDATES = JSON.parse(localStorage.getItem(PROGRESS_LOCAL_KEY)) || []; } catch (_) { PROGRESS_UPDATES = []; }
+    }
+  }
   }
 
   /* ── Fetch progress updates from API ────────────────────────────────── */
@@ -6720,6 +6735,7 @@
       const res = await fetch('/api/milestones', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-rockcrete-role': trackerPersistedRole() },
+        credentials: 'same-origin',
         body: JSON.stringify({ milestones: MILESTONES_DATA })
       });
       if (!res.ok) throw new Error('Save failed');
@@ -6740,6 +6756,7 @@
       const res = await fetch('/api/progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-rockcrete-role': trackerPersistedRole() },
+        credentials: 'same-origin',
         body: JSON.stringify({ ...update, submittedBy: progressUserName(), role: progressCurrentUser() })
       });
       if (!res.ok) throw new Error('Submit failed');
@@ -6946,6 +6963,7 @@
       const res = await fetch('/api/tracker', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-rockcrete-role': trackerPersistedRole() },
+        credentials: 'same-origin',
         body: JSON.stringify({
           tasks: [{ id: taskId, status: newStatus, updatedAt: new Date().toISOString(), updatedBy: progressUserName() }]
         })
@@ -7000,6 +7018,7 @@
       const res = await fetch('/api/milestones', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-rockcrete-role': trackerPersistedRole() },
+        credentials: 'same-origin',
         body: JSON.stringify({
           taskId, milestoneId,
           milestone: { status: newStatus }
@@ -7200,6 +7219,7 @@
       const res = await fetch('/api/milestones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-rockcrete-role': trackerPersistedRole() },
+        credentials: 'same-origin',
         body: JSON.stringify({
           taskId,
           milestones: [{ title, notes }]
@@ -7251,6 +7271,7 @@
       const res = await fetch('/api/milestones', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', 'x-rockcrete-role': trackerPersistedRole() },
+        credentials: 'same-origin',
         body: JSON.stringify({ taskId, milestoneId })
       });
       if (!res.ok) throw new Error('API error');
