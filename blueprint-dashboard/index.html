@@ -1,22 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-// DEBUG: Catch ALL JS errors and show them visibly
-window.__rcErrors = [];
-window.onerror = function(msg, url, line, col, err) {
-  window.__rcErrors.push(line + ': ' + msg);
-  var d = document.getElementById('rc-error-banner');
-  if (!d) { d = document.createElement('div'); d.id = 'rc-error-banner'; d.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#ff0000;color:#fff;padding:8px 16px;font:12px monospace;max-height:200px;overflow:auto;'; document.body ? document.body.prepend(d) : document.addEventListener('DOMContentLoaded', function(){document.body.prepend(d)}); }
-  d.innerHTML = '<b>JS ERRORS:</b><br>' + window.__rcErrors.join('<br>');
-  return false;
-};
-window.addEventListener('unhandledrejection', function(e) {
-  window.__rcErrors.push('Promise: ' + (e.reason?.message || e.reason || 'unknown'));
-  var d = document.getElementById('rc-error-banner');
-  if (d) d.innerHTML = '<b>JS ERRORS:</b><br>' + window.__rcErrors.join('<br>');
-});
-</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
@@ -6031,7 +6015,6 @@ window.addEventListener('unhandledrejection', function(e) {
     fetch('./api/tracker').then(r => r.ok ? r.json() : null).catch(() => null)
   ])
     .then(([seed, remote]) => {
-      console.log('[Tracker] Data loaded, tasks:', (seed?.tasks||[]).length);
       TRACKER_DATA = seed;
       const seedDue = {};
       (TRACKER_DATA.tasks || []).forEach(t => {
