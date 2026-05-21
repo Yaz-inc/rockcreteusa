@@ -5302,9 +5302,9 @@ window.addEventListener('unhandledrejection', function(e) {
   // ============================================================
   // PROJECT TRACKER, client-facing progress with admin controls
   // ============================================================
-  let TRACKER_DATA = null;
-  let TRACKER_STATE = { tasks: {}, accessRequests: {} };
-  let ASSIGNEES_CACHE = [];
+  var TRACKER_DATA = null;
+  var TRACKER_STATE = { tasks: {}, accessRequests: {} };
+  var ASSIGNEES_CACHE = [];
   const TRACKER_LOCAL_KEY = 'rockcrete_project_tracker_state';
   const TRACKER_COMMENT_BODY_MAX = 4000;
   const TRACKER_COMMENTS_CAP = 80;
@@ -6638,9 +6638,9 @@ window.addEventListener('unhandledrejection', function(e) {
   // Completely isolated from tracker.js — uses its own API + Blob
   // ============================================================
 
-  let MILESTONES_DATA = {};   // { taskId: { taskId, milestones: [...] } }
-  let PROGRESS_UPDATES = [];  // [{ id, taskId, milestoneId, submittedBy, role, type, message, ... }]
-  let PROGRESS_VIEW = 'all';  // 'all' | 'mine'
+  var MILESTONES_DATA = {};   // { taskId: { taskId, milestones: [...] } }
+  var PROGRESS_UPDATES = [];  // [{ id, taskId, milestoneId, submittedBy, role, type, message, ... }]
+  var PROGRESS_VIEW = 'all';  // 'all' | 'mine'
 
   const MILESTONES_LOCAL_KEY = 'rockcrete_milestones';
   const PROGRESS_LOCAL_KEY = 'rockcrete_progress_updates';
