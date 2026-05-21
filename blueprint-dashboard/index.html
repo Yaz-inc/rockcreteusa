@@ -6023,6 +6023,26 @@
       console.warn('Tracker load failed', error);
     });
 
+  // Re-load tracker state after login (preserves checkboxes/selections)
+  window.trackerReloadState = function() {
+    if (!TRACKER_DATA) return;
+    Promise.all([
+      fetch('./api/tracker').then(r => r.ok ? r.json() : null).catch(() => null)
+    ]).then(([remote]) => {
+      const local = trackerLoadLocalState();
+      const empty = { tasks: {}, accessRequests: {} };
+      if (remote?.source === 'blob' && remote.state) {
+        TRACKER_STATE = remote.state;
+      } else if (trackerStateHasPatches(local)) {
+        TRACKER_STATE = local;
+      } else {
+        TRACKER_STATE = remote?.state || local || empty;
+      }
+      trackerApplyState();
+      renderTracker();
+    }).catch(() => {});
+  };
+
   // ============================================================
   // PANEL INTERNO, load REAL telemetry from telemetry/panel-interno-telemetry.json
   // ============================================================
@@ -7578,21 +7598,51 @@
   }
 
   /* ── Check auth on page load ─────────────────────────────────── */
+  const RC_SESSION_KEY = 'rockcrete_session_user';
+
+  function rcSaveSessionLocally(user) {
+    try { localStorage.setItem(RC_SESSION_KEY, JSON.stringify(user)); } catch (_) {}
+  }
+  function rcClearSessionLocally() {
+    try { localStorage.removeItem(RC_SESSION_KEY); } catch (_) {}
+  }
+  function rcLoadSessionLocally() {
+    try { return JSON.parse(localStorage.getItem(RC_SESSION_KEY)); } catch (_) { return null; }
+  }
+
   async function rcAuthInit() {
+    // First, try to restore from localStorage for instant UI
+    var cached = rcLoadSessionLocally();
+    if (cached) {
+      window.__rcCurrentUser = cached;
+      rcUpdateAuthUI();
+      rcGateHide();
+    }
+    // Then verify with server (revalidate the cookie session)
     try {
       var data = await rcApi('/api/auth?action=me');
       if (data.user) {
         window.__rcCurrentUser = data.user;
+        rcSaveSessionLocally(data.user);
         rcUpdateAuthUI();
+        rcGateHide();
+        // Re-render tracker with correct permissions after auth
+        if (typeof renderTracker === 'function') renderTracker();
+        if (typeof initProgressDashboard === 'function') initProgressDashboard();
       } else {
+        // Server says not authenticated — clear local cache too
         window.__rcCurrentUser = null;
+        rcClearSessionLocally();
         rcUpdateAuthUI();
         rcGateShow();
       }
     } catch (e) {
-      window.__rcCurrentUser = null;
-      rcUpdateAuthUI();
-      rcGateShow();
+      // API unreachable — keep local session if we have one
+      if (!cached) {
+        window.__rcCurrentUser = null;
+        rcUpdateAuthUI();
+        rcGateShow();
+      }
     }
   }
 
@@ -7680,9 +7730,13 @@
       });
       if (data.ok && data.user) {
         window.__rcCurrentUser = data.user;
+        rcSaveSessionLocally(data.user);
         rcUpdateAuthUI();
         rcGateHide();
+        // Reload tracker state and progress with correct role
+        if (typeof trackerReloadState === 'function') trackerReloadState();
         if (typeof renderTracker === 'function') renderTracker();
+        if (typeof initProgressDashboard === 'function') initProgressDashboard();
         // First-login enforcement: if temp_password, force password change
         if (data.user.tempPassword) {
           rcToast('Welcome! Please set your new password to continue.', 'info');
@@ -7786,6 +7840,7 @@
       await rcApi('/api/auth?action=logout', { method: 'POST' });
     } catch (e) { /* ignore */ }
     window.__rcCurrentUser = null;
+    rcClearSessionLocally();
     rcUpdateAuthUI();
     showScreen('home');
     rcGateShow();
