@@ -1,13 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
-  "buildCommand": null,
   "installCommand": "npm install",
-  "outputDirectory": ".",
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/((?!api/|data/|telemetry/|.*\\\\..*).*$)", "destination": "/index.html" }
+    { "source": "/((?!api/|data/|telemetry/|.*\\..*).*)", "destination": "/index.html" }
   ],
   "headers": [
     {

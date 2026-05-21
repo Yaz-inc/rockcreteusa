@@ -1,2 +1,6 @@
 .vercel
 .env*.local
+.env
+.env.*
+node_modules/
+_patch.json

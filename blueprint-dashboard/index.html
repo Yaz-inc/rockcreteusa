@@ -12,6 +12,7 @@
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
 <meta name="theme-color" content="#0d5b54" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co;" />
 <title>Rockcrete USA Website Rebuild · Blueprint</title>
 
 <!--
@@ -45,7 +46,7 @@
   href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
   rel="stylesheet"
 />
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.js" defer></script>
 
 <style>
   /* ============================================================
@@ -4813,20 +4814,20 @@
         let control;
         switch (f.type) {
           case 'textarea':
-            control = `<textarea id="${id}" name="${f.name}" placeholder="${placeholder}" ${required}>${value}</textarea>`; break;
+            control = `<textarea id="${id}" name="${f.name}" placeholder="${escapeHTML(placeholder)}" ${required}>${escapeHTML(value)}</textarea>`; break;
           case 'select':
-            const opts = (f.options || []).map(o => `<option value="${o.value}" ${o.value == value ? 'selected':''}>${(isES ? o.label_es : o.label_en) || o.value}</option>`).join('');
+            const opts = (f.options || []).map(o => `<option value="${escapeHTML(String(o.value))}" ${o.value == value ? 'selected':''}>${escapeHTML((isES ? o.label_es : o.label_en) || String(o.value))}</option>`).join('');
             control = `<select id="${id}" name="${f.name}" ${required}>${opts}</select>`; break;
           case 'date':
-            control = `<input id="${id}" name="${f.name}" type="date" value="${value}" ${required} />`; break;
+            control = `<input id="${id}" name="${f.name}" type="date" value="${escapeHTML(value)}" ${required} />`; break;
           case 'time':
-            control = `<input id="${id}" name="${f.name}" type="time" value="${value}" ${required} />`; break;
+            control = `<input id="${id}" name="${f.name}" type="time" value="${escapeHTML(value)}" ${required} />`; break;
           case 'number':
-            control = `<input id="${id}" name="${f.name}" type="number" value="${value}" ${min} placeholder="${placeholder}" ${required} />`; break;
+            control = `<input id="${id}" name="${f.name}" type="number" value="${escapeHTML(value)}" ${min} placeholder="${escapeHTML(placeholder)}" ${required} />`; break;
           case 'info':
             control = `<div style="font-size:.85rem; color: var(--color-text-2); padding:.55rem .7rem; background: var(--color-surface-2); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">${value}</div>`; break;
           default:
-            control = `<input id="${id}" name="${f.name}" type="text" value="${value}" placeholder="${placeholder}" ${required} />`;
+            control = `<input id="${id}" name="${f.name}" type="text" value="${escapeHTML(value)}" placeholder="${escapeHTML(placeholder)}" ${required} />`;
         }
         if (f.type === 'info') {
           return `<div><label>${labelText}</label>${control}${hint ? `<div class="field-hint">${hint}</div>` : ''}</div>`;
@@ -4849,8 +4850,8 @@
       dlg.innerHTML = `
         <form method="dialog" class="modal-form">
           <div class="modal-header">
-            <h3 class="modal-title">${title}</h3>
-            ${sub ? `<div class="modal-sub">${sub}</div>` : ''}
+            <h3 class="modal-title">${escapeHTML(title)}</h3>
+            ${sub ? `<div class="modal-sub">${escapeHTML(sub)}</div>` : ''}
           </div>
           <div class="modal-body">
             <div class="modal-fields">${grouped.join('')}</div>
@@ -4975,7 +4976,8 @@
       `).join('');
     }
 
-    input.addEventListener('input', render);
+    let _searchTimer;
+    input.addEventListener('input', () => { clearTimeout(_searchTimer); _searchTimer = setTimeout(render, 180); });
     results.addEventListener('click', e => {
       const button = e.target.closest('.search-result[data-route]');
       if (!button) return;
@@ -5389,14 +5391,7 @@
     return `<div class="tracker-assignee-row"><span class="${tagClass}" title="Assignee">${trackerEscape(label)}</span>${select}</div>`;
   }
 
-  function trackerEscape(value) {
-    return String(value ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
+  const trackerEscape = escapeHTML;
 
   function trackerNewCommentId() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
@@ -6317,7 +6312,21 @@
     if (!timerPaused) elapsed += (Date.now() - timerStart) / 1000;
     el.textContent = fmtSec(elapsed);
   }
-  setInterval(tickTimer, 1000);
+  let _timerInterval = null;
+  function startTimerInterval() {
+    if (!_timerInterval) _timerInterval = setInterval(tickTimer, 1000);
+  }
+  function stopTimerInterval() {
+    if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
+  }
+  // Only tick when the panel screen is visible
+  document.addEventListener('click', e => {
+    const link = e.target.closest('.nav-link[data-route]');
+    if (!link) return;
+    if (link.dataset.route === 'panel') { startTimerInterval(); } else { stopTimerInterval(); }
+  });
+  // Start immediately if panel is the initial screen
+  if ((location.hash || '').replace('#','') === 'panel') startTimerInterval();
 
   // Local persistence so manually-added time entries survive a reload during preview
   function saveTasksLocally() {
@@ -6375,7 +6384,7 @@
   });
 
   // Helper, task select options for modal forms
-  function taskSelectOptions(defaultId) {
+  function taskSelectOptions() {
     return (TASKS_DATA?.tasks || []).map(t => ({
       value: t.id,
       label_es: t.name_es,
