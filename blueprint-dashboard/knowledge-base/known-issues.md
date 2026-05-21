@@ -1,19 +1,23 @@
 # Known Issues & Technical Debt
 
-## Resolved Issues (This Session)
+## Resolved Issues
 
-| Issue | Root Cause | Fix |
-|-------|-----------|-----|
-| **Session lost on refresh** | No localStorage fallback; relied solely on cookie | Added `rcSaveSessionLocally()` + inline restore script |
-| **"Loading..." forever on refresh** | `let TRACKER_DATA` caused TDZ error when `showScreen()` called `renderTracker()` before the `let` declaration executed | Changed `let` → `var` for all state variables |
-| **Tracker/progress not rendering after auth** | `rcAuthInit()` didn't call `renderTracker()` or `initProgressDashboard()` after restoring cached session | Added `rcPostAuthRender()` called in all auth paths |
-| **CSP too restrictive** | `connect-src 'self'` blocked some browser fetch calls | Removed CSP meta tag entirely |
-| **Dead BLUEPRINT_PASSWORD code** | Old auth system remnant | Deleted `api/session.js`, removed env var |
+| Issue | Root Cause | Fix | Version |
+|-------|-----------|-----|---------|
+| **Session lost on refresh** | No localStorage fallback; relied solely on cookie | Added `rcSaveSessionLocally()` + inline restore script | V17_A |
+| **"Loading..." forever on refresh** | `let TRACKER_DATA` caused TDZ error when `showScreen()` called `renderTracker()` before the `let` declaration executed | Changed `let` → `var` for all state variables | V20 |
+| **Tracker/progress not rendering after auth** | `rcAuthInit()` didn't call `renderTracker()` or `initProgressDashboard()` after restoring cached session | Added `rcPostAuthRender()` called in all auth paths | V17_A |
+| **CSP too restrictive** | `connect-src 'self'` blocked some browser fetch calls | Removed CSP meta tag entirely | V17_A |
+| **Dead BLUEPRINT_PASSWORD code** | Old auth system remnant | Deleted `api/session.js`, removed env var | V20 |
+| **Browser `prompt()`/`confirm()`/`alert()` usage** | Old-school browser dialogs for edit/delete actions | Replaced with inline textarea editor, inline confirmation bar, `rcToast()` notifications | V20 |
+| **Duplicate API key inputs** | Two separate "Resend API Key" inputs in Settings | Merged into single "Email Configuration" card | V20 |
+| **Email verify fails with fresh API key** | Key not saved to DB before API call tries to use it | Auto-save settings before verify/test/usage | V20 |
+| **Save/Cancel buttons unreadable** | Low contrast colors on action buttons | Updated to solid brand-color background + dark text | V20 |
 
 ## Current Technical Debt
 
 ### 1. Single-File Architecture
-`index.html` is ~9,100 lines containing ALL HTML, CSS, and JS. This makes it:
+`index.html` is ~9,400 lines containing ALL HTML, CSS, and JS. This makes it:
 - Hard to navigate
 - Prone to scope issues (like the TDZ bug)
 - Difficult to test individual modules
@@ -28,10 +32,10 @@ The Content Security Policy was removed because it was too restrictive. Should b
 default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co;
 ```
 
-### 3. No Email Integration
-Password reset generates verification codes but doesn't actually send emails. Codes are returned in the API response (development mode).
+### 3. Email Domain Configuration
+Resend email requires verified domain DNS records. Current domain `notifications.finriskgroup.com` is `partially_failed`. From Email must match a verified domain.
 
-**Recommendation**: Integrate with SendGrid, Resend, or Supabase email.
+**Recommendation**: Either verify the domain fully in Resend dashboard (fix DNS records) or use `onboarding@resend.dev` for testing.
 
 ### 4. Session Cookie vs localStorage Inconsistency
 The session cookie (`rockcrete_session`) and localStorage (`rockcrete_session_user`) can get out of sync. If the cookie expires but localStorage still has data, the user sees the dashboard but API calls fail.
@@ -44,7 +48,7 @@ The old role system (`window.__role`) is a compatibility layer over the new user
 **Recommendation**: Gradually migrate all `window.__role` usage to direct `window.__rcCurrentUser.role` checks.
 
 ### 6. No Rate Limiting
-API endpoints have no rate limiting. Login brute-force attempts are not throttled.
+API endpoints have no rate limiting beyond the login lockout mechanism (5 attempts → 15-min lockout).
 
 **Recommendation**: Add rate limiting via Vercel Edge Middleware or API-level request counting.
 
@@ -65,10 +69,10 @@ Some UI elements use inline `onclick` handlers (e.g., `onclick="showModal(...)"`
 
 **Recommendation**: Use `addEventListener()` exclusively.
 
-### 10. Error Handling Gaps
-Some API error responses don't include detailed messages. Some client-side catch blocks silently swallow errors.
+### 10. Improvement #20 — Setup API UI
+Backend `api/setup.js` is fully functional but the frontend UI (System Settings panel for Supabase configuration) has not been built yet.
 
-**Recommendation**: Add structured error logging and user-visible error toasts for all failure cases.
+**Recommendation**: Add a "Database" tab to System Settings with connect/migrate/test/export/import buttons.
 
 ## Extension Points
 
@@ -91,3 +95,12 @@ Some API error responses don't include detailed messages. Some client-side catch
 2. Update `rcUpdateAuthUI()` in `index.html` to map the role
 3. Update `trackerIsTeamOrAdmin()` if the role should edit the tracker
 4. Update `progressCanEdit()` if the role should manage milestones
+
+### Adding Edit/Delete to a New Entity
+The pattern established in V20 for inline edit/delete:
+1. Add `data-*-edit-id` and `data-*-del-id` attributes to buttons in HTML template
+2. CSS: Use `.tc-inline-edit` and `.tc-delete-confirm` classes (already styled)
+3. Edit handler: swap body text → textarea + Save/Cancel buttons
+4. Delete handler: append red confirmation bar with Delete/Cancel
+5. Use `rcToast(message, type)` for all feedback
+6. Support keyboard: Ctrl+Enter to save, Escape to cancel

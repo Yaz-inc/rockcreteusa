@@ -176,9 +176,65 @@ Create a progress update.
 
 **Response (201):** Created update
 
+### PUT `/api/progress`
+Edit a progress update message.
+
+**Headers:** `x-rockcrete-role: admin`, `Content-Type: application/json`
+
+**Request:** `{ "id": "upd-xxx", "message": "Updated message text" }`
+
+**Response (200):** `{ "ok": true, "update": {...} }`
+
+### DELETE `/api/progress?id=<id>`
+Delete a progress update.
+
+**Headers:** `x-rockcrete-role: admin`
+
+**Response (200):** `{ "ok": true, "message": "Progress update deleted" }`
+
 ---
 
-## Users (Auth Required — super_admin only for list/create/delete)
+## Setup (Auth Required — super_admin only)
+
+### GET `/api/setup?action=status`
+Check database connection status and table row counts.
+
+### POST `/api/setup?action=test`
+Test database connection latency.
+
+### POST `/api/setup?action=migrate`
+Run full migration SQL (creates 9 tables + indexes + triggers + RLS).
+
+### GET `/api/setup?action=export`
+Export complete database as JSON.
+
+### POST `/api/setup?action=import`
+Import data from JSON export with upsert.
+
+---
+
+## Settings (Auth Required — super_admin)
+
+### GET `/api/settings`
+Get system settings. **Requires:** super_admin role.
+
+### PUT `/api/settings`
+Update settings (email, system, branding). **Requires:** super_admin role.
+
+### GET `/api/settings?action=verify-email`
+Verify Resend API connection and list domains.
+
+### POST `/api/settings?action=test-email`
+Send a test email to verify configuration.
+
+### GET `/api/settings?action=resend-usage`
+Check API key status, type (production/test), and quota limits.
+
+### GET `/api/settings?action=export`
+Export all application data (9 tables) as JSON.
+
+### POST `/api/settings?action=import`
+Import data from JSON backup.
 
 ### GET `/api/users?action=list`
 List all users. **Requires:** super_admin role.
@@ -194,16 +250,6 @@ Update user details. **Requires:** super_admin.
 
 ### DELETE `/api/users?action=delete`
 Delete a user. **Requires:** super_admin.
-
----
-
-## Settings (Auth Required — admin+)
-
-### GET `/api/settings`
-Get system settings. **Requires:** admin role.
-
-### PUT `/api/settings`
-Update settings. **Requires:** admin role.
 
 ---
 

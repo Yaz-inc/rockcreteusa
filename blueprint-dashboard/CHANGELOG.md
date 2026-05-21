@@ -5,6 +5,81 @@ Versioning follows the pattern: `V<major>_<minor>` where major = milestone relea
 
 ---
 
+## V20 — Edit/Delete Notes, URL Auto-Linking, Setup API, Email Fix (2026-05-21)
+
+Major UX improvements to staff notes, activity feed, email configuration, and data portability.
+
+**Improvement #20 — Self-Service Database Setup API**
+- Created `api/setup.js` with 5 actions:
+  - `GET ?action=status` — connection status + table row counts
+  - `POST ?action=test` — latency test
+  - `POST ?action=migrate` — full migration SQL (9 tables + indexes + triggers + RLS)
+  - `GET ?action=export` — complete data export
+  - `POST ?action=import` — full data import with upsert
+- Super Admin only access
+
+**Improvement #21 — Staff Note Edit & Delete**
+- ✏️ **Edit** button on each note (hover to reveal)
+  - Inline textarea replaces the note body (no browser `prompt()`)
+  - Save / Cancel buttons with Ctrl+Enter and Escape shortcuts
+  - "edited" marker shown after editing
+- 🗑️ **Delete** button on each note (hover to reveal)
+  - Inline red confirmation bar (no browser `confirm()`)
+  - "Delete this note?" with Delete / Cancel buttons
+  - Animated fade-in on confirmation bar
+- All feedback via `rcToast()` notifications (no more `alert()`)
+- Applied to both **Staff Notes** (tracker) and **Activity Feed** (progress)
+
+**Improvement #22 — URL Auto-Linking**
+- URLs in staff notes auto-converted to clickable `<a>` tags
+- URLs in activity feed messages auto-linked
+- All links open in new tab (`target="_blank"`)
+- CSS: link styling with underline, brand color, break-all for long URLs
+
+**Progress API — Edit & Delete Support**
+- `PUT /api/progress` — edit a progress update message
+- `DELETE /api/progress?id=<id>` — delete a progress update
+- `db.js`: added `deleteProgressUpdate()` and `updateProgressUpdate()` functions
+
+**Email Configuration Fix**
+- Merged duplicate "API Configuration (Resend)" card into single "Email Configuration" section
+- Single API key input (`settingsResendKey`) now serves all purposes
+- Removed duplicate `settingsResendApiKey` element and all references
+- **Verify Connection**, **Send Test Email**, and **Check Usage & Quota** now auto-save settings before calling the API
+- Added domain mismatch detection: warns if From Email domain doesn't match verified Resend domain
+- Improved error parsing: Resend JSON errors shown as clean human-readable messages
+- Added helpful placeholders: `Rockcrete USA Blueprint`, `noreply@yourdomain.com`, `re_xxxxxxxxxxxx`
+- Added explanation text with link to resend.com/api-keys
+- Restored Check Usage & Quota button + stats panel (API Key Status, Key Type, Daily Limit, Monthly Limit)
+
+**Data Export Upgrade**
+- Export now includes ALL 9 tables (was missing `tracker_state`, `teams`, `team_members`, `tasks`)
+- Password hashes included in export for full portability
+- Version bumped to V20
+
+**UX — Modern Inline Interactions**
+- Replaced all `prompt()`, `confirm()`, `alert()` with:
+  - Inline textarea editor with Save/Cancel
+  - Inline red confirmation bar with Delete/Cancel
+  - `rcToast()` notifications for all feedback
+- CSS: `.tc-inline-edit`, `.tc-delete-confirm` with animations
+- Keyboard shortcuts: Ctrl+Enter to save, Escape to cancel
+
+**Bugfixes**
+- Fixed `BLUEPRINT_PASSWORD` references — variable removed (unused after user management system)
+- Fixed TDZ crash: `let` → `var` for `TRACKER_DATA` / `TRACKER_STATE` to prevent "Loading..." hang
+- Fixed Save/Cancel button readability: solid brand color background + dark text
+- Cleaned up embedded git repo and cookies.txt from tracking
+- Added `.gitignore` entries for `rockcreteusa/` and `cookies.txt`
+
+**Knowledge Base**
+- Created 10 comprehensive AI agent documentation files in `knowledge-base/`
+- Updated `CHANGELOG.md` with complete V20 release notes
+- Updated API reference with new Progress PUT/DELETE endpoints
+- Updated known issues with resolution status
+
+---
+
 ## V17_A — User Login & Profile System (2026-05-20)
 
 Replaces the broken shared-password + self-assigned-role system with individual user accounts, module-level access control, and a complete authentication flow including forgot-password with email verification codes.
@@ -48,22 +123,18 @@ Replaces the broken shared-password + self-assigned-role system with individual 
 - `GET /api/settings` — get system settings (Super Admin only)
 - `PATCH /api/settings` — update email config, branding, system settings
 - `POST /api/settings?action=test-email` — send test email via Resend API
-- `POST /api/settings?action=export` — export all data (users, settings, milestones, progress)
+- `GET /api/settings?action=verify-email` — verify Resend domain configuration
+- `GET /api/settings?action=resend-usage` — check API key status and quota
+- `POST /api/settings?action=export` — export all data (users, settings, milestones, progress, tracker, teams)
 - `POST /api/settings?action=import` — import data from backup
-- Settings screen (`#settings`) with tabs: Email Config, System Settings, Branding, Data Management
-- Email configuration: Resend API key, from email, from name, test email
-- Branding: company name, logo URLs, primary color
-- Data export/import for backup and recovery
+- Settings screen (`#settings`) with Email Config, System Settings, Branding, Data Management
 
 **Added — UI Components**
 - Login dialog modal with email/password form and forgot-password flow
 - Profile screen with user info, preferences, password change
 - Users screen with user table, role badges, add/edit modals (Super Admin only)
 - Settings screen with email config, system settings, branding, data management (Super Admin only)
-- "NEW" badge on new sidebar menu links (Profile, User Management, System Settings) — green pill with pulse animation, auto-fades after 3 cycles
-- V17_A version badge in header (red pill)
 - Account nav group in sidebar (visible when logged in)
-- Auth nav group: Login button (guest) / Profile + Logout (signed in)
 - Module access filtering: sidebar links hidden based on user's module access level
 - Bilingual support for all new screens (EN/ES via `data-en`/`data-es`)
 
@@ -72,23 +143,10 @@ Replaces the broken shared-password + self-assigned-role system with individual 
 - Auth dialog CSS mode switching properly hides/shows login/forgot/verify sections in all modes
 
 **Environment Variables Required**
+- `SUPABASE_URL` — Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key
 - `SESSION_SECRET` — HMAC signing key for session cookies (auto-generated, set on Vercel)
-- `RESEND_API_KEY` — Resend API key for transactional emails (DevOps to configure)
-- `RESEND_FROM_EMAIL` — Sender email address (e.g., noreply@newmindsgroup.com)
-- `BLOB_READ_WRITE_TOKEN` — Vercel Blob storage token (already set)
-- `BLUEPRINT_PASSWORD` — HTTP Basic Auth gate password (already set)
-
-**Blob Storage Keys**
-- `rockcrete/users.json` — User accounts
-- `rockcrete/sessions.json` — Active sessions
-- `rockcrete/reset-tokens.json` — Password reset verification codes
-- `rockcrete/settings.json` — System settings (email config, branding)
-
-**Known Limitations**
-- Email (forgot-password) requires DevOps to configure Resend API + DNS records
-- No TOTP/MFA yet (planned for future version)
-- No email verification on registration (Super Admin creates accounts manually)
-- Session cookie is not rotated on privilege change (user must log out and back in)
+- `RESEND_API_KEY` — Resend API key for transactional emails (optional, can set in Settings UI)
 
 ---
 
@@ -102,11 +160,7 @@ Adds milestone tracking and activity feed to the Team Progress Dashboard.
 - Team Progress Dashboard screen (`#progress`) with milestone cards, progress bars, activity feed
 - Milestone CRUD: create, update status, delete with confirmation
 - Progress updates with author attribution and timestamps
-- V17 version badge in header (red pill)
 - Bilingual labels for new components (EN/ES)
-
-**Fixed**
-- V17 badge separated into its own `<span>` outside bilingual `data-en`/`data-es` element to prevent text replacement from wiping the badge
 
 ---
 
@@ -124,7 +178,6 @@ Initial extraction from the AQUAFLOW Blueprint del Proyecto engagement.
 - Role gating model: client view vs. admin/manager Internal Panel
 - Screen routing via sidebar `data-route` + `showScreen()` function
 - `localStorage` persistence for theme, language, and in-app edits
-- HTTP Basic Auth via Edge Middleware (`middleware.js` + `api/session.js`)
 - Project tracker state persistence via Vercel Blob (`api/tracker.js`)
 - Vercel deployment with `vercel.json` rewrites and security headers
 
