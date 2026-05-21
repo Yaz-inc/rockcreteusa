@@ -5034,10 +5034,10 @@
     document.querySelectorAll('.nav-link').forEach(a => a.removeAttribute('aria-current'));
     const activeLink = document.querySelector(`.nav-link[data-route="${route}"]`);
     if (activeLink) activeLink.setAttribute('aria-current', 'page');
-    setNav(false);  // close mobile drawer
+    setNav(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Update hash without page jump
     history.replaceState(null, '', '#' + route);
+    if (typeof renderTracker === 'function' && (route === 'tracker' || route.startsWith('phase-'))) renderTracker();
   }
   document.querySelectorAll('.nav-link[data-route]').forEach(a => {
     a.addEventListener('click', e => { e.preventDefault(); showScreen(a.dataset.route); });
@@ -7673,6 +7673,7 @@
         window.__rcCurrentUser = data.user;
         rcUpdateAuthUI();
         rcGateHide();
+        if (typeof renderTracker === 'function') renderTracker();
         // First-login enforcement: if temp_password, force password change
         if (data.user.tempPassword) {
           rcToast('Welcome! Please set your new password to continue.', 'info');
