@@ -12,7 +12,6 @@
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
 <meta name="theme-color" content="#0d5b54" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.supabase.co;" />
 <title>Rockcrete USA Website Rebuild · Blueprint</title>
 
 <!--
@@ -6016,6 +6015,7 @@
     fetch('./api/tracker').then(r => r.ok ? r.json() : null).catch(() => null)
   ])
     .then(([seed, remote]) => {
+      console.log('[Tracker] Data loaded, tasks:', (seed?.tasks||[]).length);
       TRACKER_DATA = seed;
       const seedDue = {};
       (TRACKER_DATA.tasks || []).forEach(t => {
