@@ -6042,6 +6042,10 @@
       renderTracker();
     }).catch(() => {});
   };
+  // Re-render tracker when auth state changes (role becomes admin, checkboxes unlock)
+  document.addEventListener('rc:authchange', function() {
+    if (TRACKER_DATA) renderTracker();
+  });
 
   // ============================================================
   // PANEL INTERNO, load REAL telemetry from telemetry/panel-interno-telemetry.json
@@ -7617,6 +7621,8 @@
       window.__rcCurrentUser = cached;
       rcUpdateAuthUI();
       rcGateHide();
+      // Immediately re-render tracker/progress with cached role
+      rcPostAuthRender();
     }
     // Then verify with server (revalidate the cookie session)
     try {
@@ -7626,9 +7632,7 @@
         rcSaveSessionLocally(data.user);
         rcUpdateAuthUI();
         rcGateHide();
-        // Re-render tracker with correct permissions after auth
-        if (typeof renderTracker === 'function') renderTracker();
-        if (typeof initProgressDashboard === 'function') initProgressDashboard();
+        rcPostAuthRender();
       } else {
         // Server says not authenticated — clear local cache too
         window.__rcCurrentUser = null;
@@ -7643,7 +7647,14 @@
         rcUpdateAuthUI();
         rcGateShow();
       }
+      // If cached, we already rendered above, nothing more to do
     }
+  }
+
+  // Centralized post-auth render: call this after any auth state change
+  function rcPostAuthRender() {
+    if (typeof renderTracker === 'function') renderTracker();
+    if (typeof initProgressDashboard === 'function') initProgressDashboard();
   }
 
   /* ── Full-Screen Login Gate Functions ───────────────────────── */
@@ -7735,8 +7746,7 @@
         rcGateHide();
         // Reload tracker state and progress with correct role
         if (typeof trackerReloadState === 'function') trackerReloadState();
-        if (typeof renderTracker === 'function') renderTracker();
-        if (typeof initProgressDashboard === 'function') initProgressDashboard();
+        rcPostAuthRender();
         // First-login enforcement: if temp_password, force password change
         if (data.user.tempPassword) {
           rcToast('Welcome! Please set your new password to continue.', 'info');
