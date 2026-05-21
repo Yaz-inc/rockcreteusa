@@ -1307,24 +1307,118 @@
   .tracker-comment-item:hover .tracker-comment-actions {
     opacity: 1;
   }
-  .tracker-comment-actions button {
+  .tracker-comment-actions button,
+  .activity-actions button {
     background: none;
     border: none;
     cursor: pointer;
-    padding: .1rem .3rem;
-    font-size: .62rem;
-    border-radius: 3px;
+    padding: .15rem .35rem;
+    font-size: .65rem;
+    border-radius: 4px;
     color: var(--color-text-muted);
-    transition: background .15s, color .15s;
+    transition: background .18s, color .18s;
+    line-height: 1;
   }
-  .tracker-comment-actions button:hover {
+  .tracker-comment-actions button:hover,
+  .activity-actions button:hover {
     background: var(--color-border);
     color: var(--color-text);
   }
-  .tracker-comment-actions .tc-delete:hover {
+  .tracker-comment-actions .tc-delete:hover,
+  .activity-actions .act-delete:hover {
     background: #fee2e2;
     color: #dc2626;
   }
+  /* Inline edit mode */
+  .tc-inline-edit {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    margin-top: .3rem;
+  }
+  .tc-inline-edit textarea {
+    width: 100%;
+    min-height: 2.8rem;
+    resize: vertical;
+    font: inherit;
+    font-size: .76rem;
+    padding: .4rem .5rem;
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    outline: none;
+  }
+  .tc-inline-edit .tc-edit-actions {
+    display: flex;
+    gap: .35rem;
+    align-items: center;
+  }
+  .tc-inline-edit .tc-edit-save {
+    padding: .3rem .7rem;
+    font-size: .68rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    background: var(--color-primary);
+    color: #fff;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .tc-inline-edit .tc-edit-save:hover { opacity: .85; }
+  .tc-inline-edit .tc-edit-cancel {
+    padding: .3rem .7rem;
+    font-size: .68rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .tc-inline-edit .tc-edit-cancel:hover { background: var(--color-surface-2); }
+  /* Inline delete confirm */
+  .tc-delete-confirm {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .35rem .55rem;
+    margin-top: .3rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm);
+    font-size: .7rem;
+    color: #991b1b;
+    animation: tcFadeIn .15s ease;
+  }
+  @keyframes tcFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .tc-delete-confirm span { font-weight: 500; }
+  .tc-delete-confirm .tc-del-yes {
+    padding: .2rem .55rem;
+    font-size: .65rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 3px;
+    background: #dc2626;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .tc-delete-confirm .tc-del-yes:hover { opacity: .85; }
+  .tc-delete-confirm .tc-del-no {
+    padding: .2rem .55rem;
+    font-size: .65rem;
+    border: 1px solid #fca5a5;
+    border-radius: 3px;
+    background: #fff;
+    color: #991b1b;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .tc-delete-confirm .tc-del-no:hover { background: #fef2f2; }
   .tracker-comment-compose {
     display: flex;
     flex-direction: column;
@@ -6072,46 +6166,96 @@
       trackerSetStatus('Note added.');
     });
 
-    // ── Delete note handler ──
+    // ── Delete note handler (inline confirm) ──
     document.addEventListener('click', (e) => {
       const btn = e.target && e.target.closest && e.target.closest('[data-tc-del-task]');
       if (!(btn instanceof HTMLElement) || !TRACKER_DATA || !trackerCanEditTracker()) return;
       const taskId = btn.getAttribute('data-tc-del-task');
       const commentId = btn.getAttribute('data-tc-del-id');
       if (!taskId || !commentId) return;
-      if (!confirm('Delete this note?')) return;
-      const task = (TRACKER_DATA.tasks || []).find(x => x.id === taskId);
-      if (!task || !Array.isArray(task.trackerComments)) return;
-      task.trackerComments = task.trackerComments.filter(c => c.id !== commentId);
-      renderTracker();
-      saveTrackerState();
-      trackerSetStatus('Note deleted.');
+
+      // Find the comment LI
+      const li = btn.closest('.tracker-comment-item');
+      if (!li || li.querySelector('.tc-delete-confirm')) return; // already showing
+
+      const confirmBar = document.createElement('div');
+      confirmBar.className = 'tc-delete-confirm';
+      confirmBar.innerHTML = '<span>Delete this note?</span><button type="button" class="tc-del-yes">Delete</button><button type="button" class="tc-del-no">Cancel</button>';
+      li.appendChild(confirmBar);
+
+      confirmBar.querySelector('.tc-del-yes').addEventListener('click', () => {
+        const task = (TRACKER_DATA.tasks || []).find(x => x.id === taskId);
+        if (!task || !Array.isArray(task.trackerComments)) return;
+        task.trackerComments = task.trackerComments.filter(c => c.id !== commentId);
+        renderTracker();
+        saveTrackerState();
+        rcToast('Note deleted.', 'success');
+      });
+
+      confirmBar.querySelector('.tc-del-no').addEventListener('click', () => {
+        confirmBar.remove();
+      });
     });
 
-    // ── Edit note handler ──
+    // ── Edit note handler (inline textarea) ──
     document.addEventListener('click', (e) => {
       const btn = e.target && e.target.closest && e.target.closest('[data-tc-edit-task]');
       if (!(btn instanceof HTMLElement) || !TRACKER_DATA || !trackerCanEditTracker()) return;
       const taskId = btn.getAttribute('data-tc-edit-task');
       const commentId = btn.getAttribute('data-tc-edit-id');
       if (!taskId || !commentId) return;
+
       const task = (TRACKER_DATA.tasks || []).find(x => x.id === taskId);
       if (!task || !Array.isArray(task.trackerComments)) return;
       const comment = task.trackerComments.find(c => c.id === commentId);
       if (!comment) return;
-      const newBody = prompt('Edit note:', comment.body);
-      if (newBody === null) return; // cancelled
-      const trimmed = newBody.trim().slice(0, TRACKER_COMMENT_BODY_MAX);
-      if (!trimmed) {
-        trackerSetStatus('Note cannot be empty.');
-        return;
-      }
-      comment.body = trimmed;
-      comment.edited = true;
-      comment.editedAt = new Date().toISOString();
-      renderTracker();
-      saveTrackerState();
-      trackerSetStatus('Note updated.');
+
+      // Find the comment LI and body
+      const li = btn.closest('.tracker-comment-item');
+      if (!li || li.querySelector('.tc-inline-edit')) return; // already editing
+
+      const bodyEl = li.querySelector('.tracker-comment-body');
+      if (!bodyEl) return;
+
+      // Hide original body, show inline editor
+      bodyEl.style.display = 'none';
+      const editor = document.createElement('div');
+      editor.className = 'tc-inline-edit';
+      editor.innerHTML = `<textarea maxlength="${TRACKER_COMMENT_BODY_MAX}">${trackerEscape(comment.body)}</textarea><div class="tc-edit-actions"><button type="button" class="tc-edit-save">Save</button><button type="button" class="tc-edit-cancel">Cancel</button></div>`;
+      li.appendChild(editor);
+
+      const textarea = editor.querySelector('textarea');
+      textarea.focus();
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+
+      // Ctrl+Enter to save
+      textarea.addEventListener('keydown', (ev) => {
+        if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter') {
+          editor.querySelector('.tc-edit-save').click();
+        }
+        if (ev.key === 'Escape') {
+          editor.querySelector('.tc-edit-cancel').click();
+        }
+      });
+
+      editor.querySelector('.tc-edit-save').addEventListener('click', () => {
+        const trimmed = textarea.value.trim().slice(0, TRACKER_COMMENT_BODY_MAX);
+        if (!trimmed) {
+          rcToast('Note cannot be empty.', 'error');
+          return;
+        }
+        comment.body = trimmed;
+        comment.edited = true;
+        comment.editedAt = new Date().toISOString();
+        renderTracker();
+        saveTrackerState();
+        rcToast('Note updated.', 'success');
+      });
+
+      editor.querySelector('.tc-edit-cancel').addEventListener('click', () => {
+        editor.remove();
+        bodyEl.style.display = '';
+      });
     });
   }
 
@@ -7274,44 +7418,86 @@
       </div>`;
     }).join('');
 
-    // Wire edit/delete handlers for activity items
+    // Wire delete handlers (inline confirmation)
     wrap.querySelectorAll('[data-act-del-id]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('Delete this progress update?')) return;
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.activity-item');
+        if (!item || item.querySelector('.tc-delete-confirm')) return;
         const id = btn.getAttribute('data-act-del-id');
-        try {
-          const role = window.__role || 'admin';
-          const resp = await fetch(`./api/progress?id=${encodeURIComponent(id)}`, {
-            method: 'DELETE',
-            headers: { 'x-rockcrete-role': role }
-          });
-          if (!resp.ok) { const e = await resp.json(); alert(e.error || 'Delete failed'); return; }
-          PROGRESS_UPDATES = PROGRESS_UPDATES.filter(u => u.id !== id);
-          renderActivityFeed();
-        } catch (err) { alert('Delete failed: ' + err.message); }
+
+        const confirmBar = document.createElement('div');
+        confirmBar.className = 'tc-delete-confirm';
+        confirmBar.innerHTML = '<span>Delete this update?</span><button type="button" class="tc-del-yes">Delete</button><button type="button" class="tc-del-no">Cancel</button>';
+        item.appendChild(confirmBar);
+
+        confirmBar.querySelector('.tc-del-yes').addEventListener('click', async () => {
+          try {
+            const role = window.__role || 'admin';
+            const resp = await fetch(`./api/progress?id=${encodeURIComponent(id)}`, {
+              method: 'DELETE',
+              headers: { 'x-rockcrete-role': role }
+            });
+            if (!resp.ok) { const e = await resp.json(); rcToast(e.error || 'Delete failed', 'error'); return; }
+            PROGRESS_UPDATES = PROGRESS_UPDATES.filter(u => u.id !== id);
+            renderActivityFeed();
+            rcToast('Update deleted.', 'success');
+          } catch (err) { rcToast('Delete failed: ' + err.message, 'error'); }
+        });
+
+        confirmBar.querySelector('.tc-del-no').addEventListener('click', () => {
+          confirmBar.remove();
+        });
       });
     });
 
+    // Wire edit handlers (inline textarea)
     wrap.querySelectorAll('[data-act-edit-id]').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.activity-item');
+        if (!item || item.querySelector('.tc-inline-edit')) return;
         const id = btn.getAttribute('data-act-edit-id');
         const update = PROGRESS_UPDATES.find(u => u.id === id);
         if (!update) return;
-        const newMsg = prompt('Edit message:', update.message);
-        if (newMsg === null) return;
-        const trimmed = newMsg.trim();
-        if (!trimmed) { alert('Message cannot be empty.'); return; }
-        try {
-          const role = window.__role || 'admin';
-          const resp = await fetch('./api/progress', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'x-rockcrete-role': role },
-            body: JSON.stringify({ id, message: trimmed })
-          });
-          if (!resp.ok) { const e = await resp.json(); alert(e.error || 'Edit failed'); return; }
-          update.message = trimmed;
-          renderActivityFeed();
-        } catch (err) { alert('Edit failed: ' + err.message); }
+
+        const msgEl = item.querySelector('.activity-message');
+        if (!msgEl) return;
+
+        msgEl.style.display = 'none';
+        const editor = document.createElement('div');
+        editor.className = 'tc-inline-edit';
+        editor.innerHTML = `<textarea>${progressEscape(update.message)}</textarea><div class="tc-edit-actions"><button type="button" class="tc-edit-save">Save</button><button type="button" class="tc-edit-cancel">Cancel</button></div>`;
+        item.querySelector('.activity-body').appendChild(editor);
+
+        const textarea = editor.querySelector('textarea');
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+
+        textarea.addEventListener('keydown', (ev) => {
+          if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter') editor.querySelector('.tc-edit-save').click();
+          if (ev.key === 'Escape') editor.querySelector('.tc-edit-cancel').click();
+        });
+
+        editor.querySelector('.tc-edit-save').addEventListener('click', async () => {
+          const trimmed = textarea.value.trim();
+          if (!trimmed) { rcToast('Message cannot be empty.', 'error'); return; }
+          try {
+            const role = window.__role || 'admin';
+            const resp = await fetch('./api/progress', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', 'x-rockcrete-role': role },
+              body: JSON.stringify({ id, message: trimmed })
+            });
+            if (!resp.ok) { const e = await resp.json(); rcToast(e.error || 'Edit failed', 'error'); return; }
+            update.message = trimmed;
+            renderActivityFeed();
+            rcToast('Update saved.', 'success');
+          } catch (err) { rcToast('Edit failed: ' + err.message, 'error'); }
+        });
+
+        editor.querySelector('.tc-edit-cancel').addEventListener('click', () => {
+          editor.remove();
+          msgEl.style.display = '';
+        });
       });
     });
   }
