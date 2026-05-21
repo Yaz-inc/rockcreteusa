@@ -6828,15 +6828,15 @@
     wrap.innerHTML = visibleTasks.map(task => {
       const ms = MILESTONES_DATA[task.id];
       const milestones = ms?.milestones || [];
+      const state = TRACKER_STATE.tasks?.[task.id] || {};
+      const taskStatus = state.status || task.status || 'not_started';
       const pct = taskProgressPct(taskStatus, milestones);
       const phase = (TRACKER_DATA.phases || []).find(p => p.id === task.phase);
-      const state = TRACKER_STATE.tasks?.[task.id] || {};
       const assigneeId = task.assigneeId || state.assigneeId || '';
       const assigneeName = progressResolveAssignee(assigneeId);
       const taskName = task.title || task.label || task.id;
       const fillClass = taskStatus === 'done' ? 'is-complete' : pct >= 100 ? 'is-complete' : milestones.some(m => m.status === 'blocked') ? 'is-blocked' : '';
       const canEditTask = isAdminOrPM || assigneeId === currentUserId;
-      const taskStatus = state.status || task.status || 'not_started';
 
       return `<div class="progress-task-card" data-task-id="${progressEscape(task.id)}">
         <div class="progress-task-header" onclick="toggleProgressTask('${progressEscape(task.id)}')">
