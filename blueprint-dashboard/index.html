@@ -4794,6 +4794,59 @@
       </div>
     </div>
 
+    <!-- Database Configuration (Improvement #20) -->
+    <div class="card settings-section">
+      <div class="settings-section-title" data-es="Base de Datos" data-en="Database Configuration">Database Configuration</div>
+      <p style="font-size:.82rem; color:var(--color-text-muted); margin:0 0 1rem;">
+        Supabase connection status and migration tools. Environment variables are configured on the hosting platform (Vercel).
+      </p>
+
+      <!-- Connection status panel -->
+      <div id="dbStatusPanel" style="margin-bottom:1rem;">
+        <div style="display:flex; align-items:center; gap:.5rem; padding:.7rem 1rem; border-radius:var(--radius-sm); background:var(--color-surface-2); border:1px solid var(--color-border);">
+          <span id="dbStatusDot" style="width:10px; height:10px; border-radius:50%; background:#6b7177; flex-shrink:0;"></span>
+          <span id="dbStatusText" style="font-size:.82rem; color:var(--color-text);">Checking connection…</span>
+          <button class="btn btn--ghost" onclick="rcSetupRefreshStatus()" style="margin-left:auto; font-size:.72rem; padding:.2rem .5rem;">
+            <i data-lucide="refresh-cw" style="width:12px;height:12px;"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Environment Variables -->
+      <div id="dbEnvVars" style="display:none; margin-bottom:1rem;">
+        <div style="font-size:.78rem; font-weight:600; margin-bottom:.4rem; color:var(--color-text-muted);">Environment Variables</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:.5rem;" id="dbEnvGrid"></div>
+      </div>
+
+      <!-- Table row counts -->
+      <div id="dbTableCounts" style="display:none; margin-bottom:1rem;">
+        <div style="font-size:.78rem; font-weight:600; margin-bottom:.4rem; color:var(--color-text-muted);">Database Tables</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:.4rem;" id="dbTableGrid"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="settings-actions">
+        <button class="btn btn--secondary" onclick="rcSetupTestConnection()">
+          <i data-lucide="activity" aria-hidden="true"></i>
+          <span data-es="Probar Conexión" data-en="Test Connection">Test Connection</span>
+        </button>
+        <button class="btn btn--secondary" onclick="rcSetupRunMigration()">
+          <i data-lucide="database" aria-hidden="true"></i>
+          <span data-es="Ejecutar Migración" data-en="Run Migration">Run Migration</span>
+        </button>
+        <button class="btn btn--secondary" onclick="rcSetupCopySql()">
+          <i data-lucide="copy" aria-hidden="true"></i>
+          <span data-es="Copiar SQL" data-en="Copy Migration SQL">Copy Migration SQL</span>
+        </button>
+      </div>
+
+      <!-- Migration results -->
+      <div id="dbMigrationResults" style="display:none; margin-top:1rem;">
+        <div style="font-size:.78rem; font-weight:600; margin-bottom:.4rem; color:var(--color-text-muted);">Migration Results</div>
+        <div id="dbMigrationGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:.4rem;"></div>
+      </div>
+    </div>
+
     <!-- Save all settings -->
     <div style="margin-top: 1rem;">
       <button class="btn btn--primary" onclick="rcSettingsSave()">
@@ -8894,7 +8947,7 @@
     _origShowScreen(route);
     if (route === 'profile') rcProfileLoad();
     if (route === 'users') rcUsersRefresh();
-    if (route === 'settings') rcSettingsLoad();
+    if (route === 'settings') { rcSettingsLoad(); rcSetupRefreshStatus(); }
   };
 
   /* ============================================================
@@ -9104,6 +9157,160 @@
       if (window.lucide) lucide.createIcons();
     } catch (e) {
       rcToast('Failed to check usage: ' + e.message, 'error');
+    }
+  }
+
+  /* ============================================================
+     DATABASE CONFIGURATION (Improvement #20)
+     ============================================================ */
+
+  var __setupMigrationSql = ''; // cached migration SQL from API
+
+  async function rcSetupRefreshStatus() {
+    var dot = document.getElementById('dbStatusDot');
+    var txt = document.getElementById('dbStatusText');
+    var envPanel = document.getElementById('dbEnvVars');
+    var envGrid = document.getElementById('dbEnvGrid');
+    var tablePanel = document.getElementById('dbTableCounts');
+    var tableGrid = document.getElementById('dbTableGrid');
+    if (!dot || !txt) return;
+
+    dot.style.background = '#6b7177';
+    txt.textContent = 'Checking connection…';
+
+    try {
+      var data = await rcApi('/api/setup?action=status');
+
+      // Env vars
+      if (envPanel && envGrid && data.envVars) {
+        envPanel.style.display = '';
+        envGrid.innerHTML = Object.entries(data.envVars).map(function(e) {
+          var set = e[1];
+          return '<div style="display:flex; align-items:center; gap:.35rem; padding:.35rem .6rem; border-radius:5px; background:' + (set ? '#f0fdf4' : '#fef2f2') + '; border:1px solid ' + (set ? '#bbf7d0' : '#fecaca') + '; font-size:.72rem;">' +
+            '<span style="width:7px;height:7px;border-radius:50%;background:' + (set ? '#22c55e' : '#ef4444') + ';flex-shrink:0;"></span>' +
+            '<span style="font-weight:500; color:' + (set ? '#166534' : '#991b1b') + ';">' + e[0].replace(/_/g, ' ') + '</span>' +
+          '</div>';
+        }).join('');
+      }
+
+      if (data.connected && data.migrated) {
+        dot.style.background = '#22c55e';
+        var total = data.totalRows || 0;
+        txt.textContent = '✅ Connected & migrated — ' + total + ' total rows';
+
+        // Table counts
+        if (tablePanel && tableGrid && data.tables) {
+          tablePanel.style.display = '';
+          tableGrid.innerHTML = Object.entries(data.tables).map(function(e) {
+            var count = e[1];
+            var ok = count >= 0;
+            return '<div style="display:flex; justify-content:space-between; align-items:center; padding:.35rem .6rem; border-radius:5px; background:var(--color-surface); border:1px solid var(--color-border); font-size:.72rem;">' +
+              '<span style="font-weight:500;">' + e[0] + '</span>' +
+              '<span style="font-weight:700; color:' + (ok ? 'var(--color-primary)' : 'var(--color-danger)') + ';">' + (ok ? count : '✗') + '</span>' +
+            '</div>';
+          }).join('');
+        }
+      } else if (data.connected && !data.migrated) {
+        dot.style.background = '#f59e0b';
+        txt.textContent = '⚠️ Connected but tables not created. Click "Run Migration".';
+        if (tablePanel) tablePanel.style.display = 'none';
+      } else {
+        dot.style.background = '#ef4444';
+        txt.textContent = '❌ Not connected: ' + (data.reason || 'Unknown');
+        if (tablePanel) tablePanel.style.display = 'none';
+      }
+
+      if (window.lucide) lucide.createIcons();
+    } catch (e) {
+      dot.style.background = '#ef4444';
+      txt.textContent = '❌ Status check failed: ' + e.message;
+    }
+  }
+
+  async function rcSetupTestConnection() {
+    rcToast('Testing connection…', 'info');
+    try {
+      var data = await rcApi('/api/setup?action=test', { method: 'POST' });
+      if (data.ok) {
+        rcToast('✅ ' + data.message, 'success');
+      } else {
+        rcToast('❌ ' + (data.error || 'Test failed'), 'error');
+      }
+      rcSetupRefreshStatus();
+    } catch (e) {
+      rcToast('Connection test failed: ' + e.message, 'error');
+    }
+  }
+
+  async function rcSetupRunMigration() {
+    // Inline confirmation
+    var result = await showModal({
+      title: 'Run Database Migration',
+      sub: 'This will create all 9 tables, indexes, triggers, and RLS policies. Existing tables will not be affected (IF NOT EXISTS).',
+      fields: [],
+      confirmText: 'Run Migration',
+      confirmClass: 'btn--primary'
+    });
+    if (!result) return;
+
+    rcToast('Running migration…', 'info');
+    try {
+      var data = await rcApi('/api/setup?action=migrate', { method: 'POST' });
+
+      // Cache the SQL for copy
+      if (data.migrationSql) __setupMigrationSql = data.migrationSql;
+
+      // Show results
+      var resultPanel = document.getElementById('dbMigrationResults');
+      var resultGrid = document.getElementById('dbMigrationGrid');
+      if (resultPanel && resultGrid && data.tables) {
+        resultPanel.style.display = '';
+        resultGrid.innerHTML = Object.entries(data.tables).map(function(e) {
+          var ok = e[1].startsWith('✅');
+          return '<div style="display:flex; justify-content:space-between; align-items:center; padding:.4rem .6rem; border-radius:5px; background:' + (ok ? '#f0fdf4' : '#fef2f2') + '; border:1px solid ' + (ok ? '#bbf7d0' : '#fecaca') + '; font-size:.72rem;">' +
+            '<span style="font-weight:500;">' + e[0] + '</span>' +
+            '<span style="font-size:.68rem; color:' + (ok ? '#166534' : '#991b1b') + ';">' + e[1] + '</span>' +
+          '</div>';
+        }).join('');
+      }
+
+      rcToast(data.message || 'Migration complete.', 'success');
+      rcSetupRefreshStatus();
+    } catch (e) {
+      rcToast('Migration failed: ' + e.message, 'error');
+    }
+  }
+
+  async function rcSetupCopySql() {
+    if (!__setupMigrationSql) {
+      // Fetch it from the API
+      rcToast('Fetching migration SQL…', 'info');
+      try {
+        var data = await rcApi('/api/setup?action=migrate', { method: 'POST' });
+        if (data.migrationSql) __setupMigrationSql = data.migrationSql;
+      } catch (e) {
+        rcToast('Failed to fetch SQL: ' + e.message, 'error');
+        return;
+      }
+    }
+
+    if (__setupMigrationSql) {
+      try {
+        await navigator.clipboard.writeText(__setupMigrationSql);
+        rcToast('✅ Migration SQL copied to clipboard! Paste it in the Supabase SQL Editor.', 'success');
+      } catch {
+        // Fallback for clipboard API failure
+        var ta = document.createElement('textarea');
+        ta.value = __setupMigrationSql;
+        ta.style.cssText = 'position:fixed;top:-9999px;';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        rcToast('✅ Migration SQL copied! Paste it in the Supabase SQL Editor.', 'success');
+      }
+    } else {
+      rcToast('No migration SQL available.', 'error');
     }
   }
 
