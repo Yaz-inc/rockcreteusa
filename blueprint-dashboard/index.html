@@ -4794,88 +4794,112 @@
       </div>
     </div>
 
-    <!-- Database Configuration (Improvement #20) -->
-    <div class="card settings-section">
-      <div class="settings-section-title" data-es="Base de Datos" data-en="Database Configuration">Database Configuration</div>
-      <p style="font-size:.82rem; color:var(--color-text-muted); margin:0 0 1rem;">
-        Supabase connection status and migration tools. Environment variables are configured on the hosting platform (Vercel).
-      </p>
-
-      <!-- Connection status panel -->
-      <div id="dbStatusPanel" style="margin-bottom:1rem;">
-        <div style="display:flex; align-items:center; gap:.5rem; padding:.7rem 1rem; border-radius:var(--radius-sm); background:var(--color-surface-2); border:1px solid var(--color-border);">
-          <span id="dbStatusDot" style="width:10px; height:10px; border-radius:50%; background:#6b7177; flex-shrink:0;"></span>
-          <span id="dbStatusText" style="font-size:.82rem; color:var(--color-text);">Checking connection…</span>
-          <button class="btn btn--ghost" onclick="rcSetupRefreshStatus()" style="margin-left:auto; font-size:.72rem; padding:.2rem .5rem;">
-            <i data-lucide="refresh-cw" style="width:12px;height:12px;"></i> Refresh
-          </button>
-        </div>
-      </div>
-
-      <!-- Environment Variables -->
-      <div id="dbEnvVars" style="display:none; margin-bottom:1rem;">
-        <div style="font-size:.78rem; font-weight:600; margin-bottom:.4rem; color:var(--color-text-muted);">Environment Variables</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:.5rem;" id="dbEnvGrid"></div>
-      </div>
-
-      <!-- Table row counts -->
-      <div id="dbTableCounts" style="display:none; margin-bottom:1rem;">
-        <div style="font-size:.78rem; font-weight:600; margin-bottom:.4rem; color:var(--color-text-muted);">Database Tables</div>
-        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:.4rem;" id="dbTableGrid"></div>
-      </div>
-
-      <!-- Actions -->
-      <div class="settings-actions">
-        <button class="btn btn--secondary" onclick="rcSetupTestConnection()">
-          <i data-lucide="activity" aria-hidden="true"></i>
-          <span data-es="Probar Conexión" data-en="Test Connection">Test Connection</span>
-        </button>
-        <button class="btn btn--secondary" onclick="rcSetupRunMigration()">
-          <i data-lucide="database" aria-hidden="true"></i>
-          <span data-es="Ejecutar Migración" data-en="Run Migration">Run Migration</span>
-        </button>
-        <button class="btn btn--secondary" onclick="rcSetupCopySql()">
-          <i data-lucide="copy" aria-hidden="true"></i>
-          <span data-es="Copiar SQL" data-en="Copy Migration SQL">Copy Migration SQL</span>
-        </button>
-      </div>
-
-      <!-- Migration results -->
-      <div id="dbMigrationResults" style="display:none; margin-top:1rem;">
-        <div style="font-size:.78rem; font-weight:600; margin-bottom:.4rem; color:var(--color-text-muted);">Migration Results</div>
-        <div id="dbMigrationGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:.4rem;"></div>
-      </div>
-    </div>
-
     <!-- Save all settings -->
-    <div style="margin-top: 1rem;">
+    <div style="margin-top: 1rem; margin-bottom: 1.5rem;">
       <button class="btn btn--primary" onclick="rcSettingsSave()">
         <i data-lucide="save" aria-hidden="true"></i>
         <span data-es="Guardar Toda la Configuración" data-en="Save All Settings">Save All Settings</span>
       </button>
     </div>
 
-    <!-- Data Management -->
+    <!-- Database & Data Management (Improvement #20) -->
     <div class="card settings-section">
-      <div class="settings-section-title" data-es="Gestión de Datos" data-en="Data Management">Data Management</div>
-      <div class="data-mgmt-grid">
-        <div class="data-mgmt-card">
-          <i data-lucide="download" style="width:28px;height:28px;"></i>
-          <h3 data-es="Exportar Datos" data-en="Export Data">Export Data</h3>
-          <p data-es="Descargar todos los datos del sistema como JSON" data-en="Download all system data as JSON">Download all system data as JSON</p>
+      <div class="settings-section-title" data-es="Base de Datos y Migración" data-en="Database & Migration">Database & Migration</div>
+      <p style="font-size:.82rem; color:var(--color-text-muted); margin:0 0 1.2rem;">
+        Move your data to a new Supabase database in 3 simple steps.
+      </p>
+
+      <!-- STEP 1: Export -->
+      <div style="margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; gap:.6rem; margin-bottom:.6rem;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:var(--color-primary); color:#fff; font-size:.75rem; font-weight:700; flex-shrink:0;">1</span>
+          <h3 style="margin:0; font-size:.95rem; font-weight:600;">Export Current Data</h3>
+        </div>
+        <p style="font-size:.8rem; color:var(--color-text-muted); margin:0 0 .6rem; padding-left:2.4rem;">
+          Download a complete backup of all your data (users, tasks, milestones, progress, teams, settings). Keep this file safe.
+        </p>
+        <div style="padding-left:2.4rem;">
           <button class="btn btn--secondary" onclick="rcSettingsExport()">
             <i data-lucide="download" aria-hidden="true"></i>
-            <span data-es="Exportar Todo" data-en="Export All">Export All</span>
+            <span data-es="Descargar Backup" data-en="Download Backup">Download Backup</span>
           </button>
         </div>
-        <div class="data-mgmt-card">
-          <i data-lucide="upload" style="width:28px;height:28px;"></i>
-          <h3 data-es="Importar Datos" data-en="Import Data">Import Data</h3>
-          <p data-es="Cargar datos desde un archivo JSON exportado previamente" data-en="Upload data from a previously exported JSON file">Upload data from a previously exported JSON file</p>
+      </div>
+
+      <hr style="border:none; border-top:1px dashed var(--color-border); margin:0 0 1.5rem;">
+
+      <!-- STEP 2: Connect -->
+      <div style="margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; gap:.6rem; margin-bottom:.6rem;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:var(--color-primary); color:#fff; font-size:.75rem; font-weight:700; flex-shrink:0;">2</span>
+          <h3 style="margin:0; font-size:.95rem; font-weight:600;">Connect New Database</h3>
+        </div>
+        <p style="font-size:.8rem; color:var(--color-text-muted); margin:0 0 .8rem; padding-left:2.4rem;">
+          Enter your new Supabase project credentials. Find these at
+          <a href="https://supabase.com/dashboard/project/_/settings/api" target="_blank" rel="noopener">supabase.com → Project Settings → API</a>.
+        </p>
+
+        <!-- Connection status -->
+        <div style="padding-left:2.4rem; margin-bottom:.8rem;">
+          <div style="display:flex; align-items:center; gap:.5rem; padding:.55rem .8rem; border-radius:var(--radius-sm); background:var(--color-surface-2); border:1px solid var(--color-border);">
+            <span id="dbStatusDot" style="width:10px; height:10px; border-radius:50%; background:#6b7177; flex-shrink:0;"></span>
+            <span id="dbStatusText" style="font-size:.8rem; color:var(--color-text);">Checking connection…</span>
+            <button class="btn btn--ghost" onclick="rcSetupRefreshStatus()" style="margin-left:auto; font-size:.7rem; padding:.15rem .4rem;">
+              <i data-lucide="refresh-cw" style="width:11px;height:11px;"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Supabase credentials -->
+        <div style="padding-left:2.4rem;">
+          <div class="settings-grid">
+            <div class="settings-field">
+              <label>Supabase URL</label>
+              <input type="url" id="setupSupabaseUrl" placeholder="https://your-project.supabase.co" />
+              <div class="field-hint">Your Supabase project URL</div>
+            </div>
+            <div class="settings-field">
+              <label>Service Role Key</label>
+              <input type="password" id="setupSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIs..." />
+              <div class="field-hint">Found under Settings → API → service_role (secret)</div>
+            </div>
+          </div>
+
+          <div class="settings-actions" style="margin-top:.6rem;">
+            <button class="btn btn--primary" onclick="rcSetupConnect()">
+              <i data-lucide="plug" aria-hidden="true"></i>
+              <span data-es="Conectar y Preparar" data-en="Connect & Setup">Connect & Setup</span>
+            </button>
+            <button class="btn btn--secondary" onclick="rcSetupTestConnection()">
+              <i data-lucide="activity" aria-hidden="true"></i>
+              <span data-es="Probar" data-en="Test">Test</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table status (shown after connection) -->
+        <div id="dbTableCounts" style="display:none; margin-top:.8rem; padding-left:2.4rem;">
+          <div style="font-size:.76rem; font-weight:600; margin-bottom:.35rem; color:var(--color-text-muted);">Database Tables</div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:.35rem;" id="dbTableGrid"></div>
+        </div>
+      </div>
+
+      <hr style="border:none; border-top:1px dashed var(--color-border); margin:0 0 1.5rem;">
+
+      <!-- STEP 3: Import -->
+      <div>
+        <div style="display:flex; align-items:center; gap:.6rem; margin-bottom:.6rem;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:var(--color-primary); color:#fff; font-size:.75rem; font-weight:700; flex-shrink:0;">3</span>
+          <h3 style="margin:0; font-size:.95rem; font-weight:600;">Import Data</h3>
+        </div>
+        <p style="font-size:.8rem; color:var(--color-text-muted); margin:0 0 .6rem; padding-left:2.4rem;">
+          Upload the JSON backup file you exported in Step 1. All data will be imported into your new database.
+        </p>
+        <div style="padding-left:2.4rem;">
           <input type="file" id="settingsImportFile" accept=".json" style="display:none;" onchange="rcSettingsImport(event)" />
           <button class="btn btn--secondary" onclick="document.getElementById('settingsImportFile').click()">
             <i data-lucide="upload" aria-hidden="true"></i>
-            <span data-es="Importar Archivo" data-en="Import File">Import File</span>
+            <span data-es="Importar Backup" data-en="Import Backup">Import Backup</span>
           </button>
         </div>
       </div>
@@ -9161,18 +9185,15 @@
   }
 
   /* ============================================================
-     DATABASE CONFIGURATION (Improvement #20)
+     DATABASE & MIGRATION (Improvement #20 — 3-step workflow)
      ============================================================ */
-
-  var __setupMigrationSql = ''; // cached migration SQL from API
 
   async function rcSetupRefreshStatus() {
     var dot = document.getElementById('dbStatusDot');
     var txt = document.getElementById('dbStatusText');
-    var envPanel = document.getElementById('dbEnvVars');
-    var envGrid = document.getElementById('dbEnvGrid');
     var tablePanel = document.getElementById('dbTableCounts');
     var tableGrid = document.getElementById('dbTableGrid');
+    var urlInput = document.getElementById('setupSupabaseUrl');
     if (!dot || !txt) return;
 
     dot.style.background = '#6b7177';
@@ -9181,22 +9202,15 @@
     try {
       var data = await rcApi('/api/setup?action=status');
 
-      // Env vars
-      if (envPanel && envGrid && data.envVars) {
-        envPanel.style.display = '';
-        envGrid.innerHTML = Object.entries(data.envVars).map(function(e) {
-          var set = e[1];
-          return '<div style="display:flex; align-items:center; gap:.35rem; padding:.35rem .6rem; border-radius:5px; background:' + (set ? '#f0fdf4' : '#fef2f2') + '; border:1px solid ' + (set ? '#bbf7d0' : '#fecaca') + '; font-size:.72rem;">' +
-            '<span style="width:7px;height:7px;border-radius:50%;background:' + (set ? '#22c55e' : '#ef4444') + ';flex-shrink:0;"></span>' +
-            '<span style="font-weight:500; color:' + (set ? '#166534' : '#991b1b') + ';">' + e[0].replace(/_/g, ' ') + '</span>' +
-          '</div>';
-        }).join('');
+      // Pre-fill URL input if we have one and field is empty
+      if (urlInput && !urlInput.value && data.supabaseUrl) {
+        urlInput.value = data.supabaseUrl;
       }
 
       if (data.connected && data.migrated) {
         dot.style.background = '#22c55e';
         var total = data.totalRows || 0;
-        txt.textContent = '✅ Connected & migrated — ' + total + ' total rows';
+        txt.textContent = '✅ Connected — ' + total + ' rows across 9 tables';
 
         // Table counts
         if (tablePanel && tableGrid && data.tables) {
@@ -9204,7 +9218,7 @@
           tableGrid.innerHTML = Object.entries(data.tables).map(function(e) {
             var count = e[1];
             var ok = count >= 0;
-            return '<div style="display:flex; justify-content:space-between; align-items:center; padding:.35rem .6rem; border-radius:5px; background:var(--color-surface); border:1px solid var(--color-border); font-size:.72rem;">' +
+            return '<div style="display:flex; justify-content:space-between; align-items:center; padding:.3rem .55rem; border-radius:5px; background:var(--color-surface); border:1px solid var(--color-border); font-size:.72rem;">' +
               '<span style="font-weight:500;">' + e[0] + '</span>' +
               '<span style="font-weight:700; color:' + (ok ? 'var(--color-primary)' : 'var(--color-danger)') + ';">' + (ok ? count : '✗') + '</span>' +
             '</div>';
@@ -9212,11 +9226,11 @@
         }
       } else if (data.connected && !data.migrated) {
         dot.style.background = '#f59e0b';
-        txt.textContent = '⚠️ Connected but tables not created. Click "Run Migration".';
+        txt.textContent = '⚠️ Connected but tables not created yet.';
         if (tablePanel) tablePanel.style.display = 'none';
       } else {
         dot.style.background = '#ef4444';
-        txt.textContent = '❌ Not connected: ' + (data.reason || 'Unknown');
+        txt.textContent = '❌ Not connected' + (data.reason ? ': ' + data.reason : '');
         if (tablePanel) tablePanel.style.display = 'none';
       }
 
@@ -9227,8 +9241,48 @@
     }
   }
 
-  async function rcSetupTestConnection() {
+  async function rcSetupConnect() {
+    var url = (document.getElementById('setupSupabaseUrl')?.value || '').trim();
+    var key = (document.getElementById('setupSupabaseKey')?.value || '').trim();
+
+    if (!url || !key) {
+      rcToast('Please enter both Supabase URL and Service Role Key.', 'error');
+      return;
+    }
+
     rcToast('Testing connection…', 'info');
+    try {
+      var data = await rcApi('/api/setup?action=connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url, key: key })
+      });
+
+      if (data.ok) {
+        rcToast('✅ ' + data.message, 'success');
+
+        // Show instructions in a modal
+        if (data.instructions) {
+          await showModal({
+            title: 'Connection Successful!',
+            sub: data.instructions.replace(/\\n/g, '\n'),
+            fields: [],
+            confirmText: 'Got it',
+            confirmClass: 'btn--primary'
+          });
+        }
+
+        rcSetupRefreshStatus();
+      } else {
+        rcToast('❌ ' + (data.error || 'Connection failed'), 'error');
+      }
+    } catch (e) {
+      rcToast('Connection failed: ' + e.message, 'error');
+    }
+  }
+
+  async function rcSetupTestConnection() {
+    rcToast('Testing current connection…', 'info');
     try {
       var data = await rcApi('/api/setup?action=test', { method: 'POST' });
       if (data.ok) {
@@ -9239,78 +9293,6 @@
       rcSetupRefreshStatus();
     } catch (e) {
       rcToast('Connection test failed: ' + e.message, 'error');
-    }
-  }
-
-  async function rcSetupRunMigration() {
-    // Inline confirmation
-    var result = await showModal({
-      title: 'Run Database Migration',
-      sub: 'This will create all 9 tables, indexes, triggers, and RLS policies. Existing tables will not be affected (IF NOT EXISTS).',
-      fields: [],
-      confirmText: 'Run Migration',
-      confirmClass: 'btn--primary'
-    });
-    if (!result) return;
-
-    rcToast('Running migration…', 'info');
-    try {
-      var data = await rcApi('/api/setup?action=migrate', { method: 'POST' });
-
-      // Cache the SQL for copy
-      if (data.migrationSql) __setupMigrationSql = data.migrationSql;
-
-      // Show results
-      var resultPanel = document.getElementById('dbMigrationResults');
-      var resultGrid = document.getElementById('dbMigrationGrid');
-      if (resultPanel && resultGrid && data.tables) {
-        resultPanel.style.display = '';
-        resultGrid.innerHTML = Object.entries(data.tables).map(function(e) {
-          var ok = e[1].startsWith('✅');
-          return '<div style="display:flex; justify-content:space-between; align-items:center; padding:.4rem .6rem; border-radius:5px; background:' + (ok ? '#f0fdf4' : '#fef2f2') + '; border:1px solid ' + (ok ? '#bbf7d0' : '#fecaca') + '; font-size:.72rem;">' +
-            '<span style="font-weight:500;">' + e[0] + '</span>' +
-            '<span style="font-size:.68rem; color:' + (ok ? '#166534' : '#991b1b') + ';">' + e[1] + '</span>' +
-          '</div>';
-        }).join('');
-      }
-
-      rcToast(data.message || 'Migration complete.', 'success');
-      rcSetupRefreshStatus();
-    } catch (e) {
-      rcToast('Migration failed: ' + e.message, 'error');
-    }
-  }
-
-  async function rcSetupCopySql() {
-    if (!__setupMigrationSql) {
-      // Fetch it from the API
-      rcToast('Fetching migration SQL…', 'info');
-      try {
-        var data = await rcApi('/api/setup?action=migrate', { method: 'POST' });
-        if (data.migrationSql) __setupMigrationSql = data.migrationSql;
-      } catch (e) {
-        rcToast('Failed to fetch SQL: ' + e.message, 'error');
-        return;
-      }
-    }
-
-    if (__setupMigrationSql) {
-      try {
-        await navigator.clipboard.writeText(__setupMigrationSql);
-        rcToast('✅ Migration SQL copied to clipboard! Paste it in the Supabase SQL Editor.', 'success');
-      } catch {
-        // Fallback for clipboard API failure
-        var ta = document.createElement('textarea');
-        ta.value = __setupMigrationSql;
-        ta.style.cssText = 'position:fixed;top:-9999px;';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        ta.remove();
-        rcToast('✅ Migration SQL copied! Paste it in the Supabase SQL Editor.', 'success');
-      }
-    } else {
-      rcToast('No migration SQL available.', 'error');
     }
   }
 

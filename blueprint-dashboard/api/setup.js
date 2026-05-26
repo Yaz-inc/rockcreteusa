@@ -219,15 +219,13 @@ export default async function handler(req, res) {
     // Status check doesn't require auth (so setup wizard can check before login exists)
     if (req.method === 'GET' && action === 'status') {
       const supabase = getSupabase();
+      const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+
       if (!supabase) {
         return setJson(res, 200, {
           connected: false,
+          supabaseUrl: '',
           reason: 'SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set',
-          envVars: {
-            SUPABASE_URL: !!process.env.SUPABASE_URL,
-            SUPABASE_SERVICE_KEY: !!(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY),
-            SESSION_SECRET: !!process.env.SESSION_SECRET,
-          },
         });
       }
 
@@ -239,12 +237,8 @@ export default async function handler(req, res) {
           return setJson(res, 200, {
             connected: true,
             migrated: false,
-            reason: 'Database connected but tables not yet created. Run migration.',
-            envVars: {
-              SUPABASE_URL: true,
-              SUPABASE_SERVICE_KEY: true,
-              SESSION_SECRET: !!process.env.SESSION_SECRET,
-            },
+            supabaseUrl,
+            reason: 'Connected but tables not yet created.',
           });
         }
         if (error) throw error;
@@ -264,24 +258,64 @@ export default async function handler(req, res) {
         return setJson(res, 200, {
           connected: true,
           migrated: true,
+          supabaseUrl,
           tables: counts,
           totalRows: Object.values(counts).filter(v => v >= 0).reduce((a, b) => a + b, 0),
-          envVars: {
-            SUPABASE_URL: true,
-            SUPABASE_SERVICE_KEY: true,
-            SESSION_SECRET: !!process.env.SESSION_SECRET,
-          },
         });
       } catch (err) {
         return setJson(res, 200, {
           connected: false,
+          supabaseUrl,
           reason: err.message,
-          envVars: {
-            SUPABASE_URL: true,
-            SUPABASE_SERVICE_KEY: true,
-            SESSION_SECRET: !!process.env.SESSION_SECRET,
-          },
         });
+      }
+    }
+
+    /* ── POST: Connect & Setup (test + migrate with provided credentials) ── */
+    if (req.method === 'POST' && action === 'connect') {
+      const body = parseBody(req);
+      const url = (body.url || '').trim();
+      const key = (body.key || '').trim();
+
+      if (!url || !key) {
+        return setJson(res, 400, { ok: false, error: 'Supabase URL and Service Role Key are required.' });
+      }
+
+      // Test connection with provided credentials
+      let testClient;
+      try {
+        testClient = createClient(url, key, {
+          auth: { autoRefreshToken: false, persistSession: false },
+        });
+      } catch (e) {
+        return setJson(res, 400, { ok: false, error: 'Invalid Supabase URL format: ' + e.message });
+      }
+
+      const start = Date.now();
+      try {
+        const { data, error } = await testClient.from('users').select('id').limit(1);
+        const latency = Date.now() - start;
+
+        if (error && error.code !== '42P01') {
+          return setJson(res, 200, { ok: false, error: 'Connection failed: ' + error.message, latency });
+        }
+
+        // Connection successful!
+        // Note: On Vercel, env vars must be set via the Vercel dashboard.
+        // We return success + instructions.
+        const migrated = !(error && error.code === '42P01');
+
+        return setJson(res, 200, {
+          ok: true,
+          latency,
+          migrated,
+          message: migrated
+            ? `Connected successfully! (${latency}ms) — Tables already exist.`
+            : `Connected! (${latency}ms) — Tables not found. Set these credentials as Vercel environment variables (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY), then click "Run Migration" below.`,
+          instructions: 'To complete the setup, add these as Vercel Environment Variables:\n\n1. SUPABASE_URL = ' + url + '\n2. SUPABASE_SERVICE_ROLE_KEY = ' + key.slice(0, 8) + '...\n3. SESSION_SECRET = (any random string, 32+ chars)',
+        });
+      } catch (err) {
+        return setJson(res, 200, { ok: false, error: 'Connection failed: ' + err.message, latency: Date.now() - start });
       }
     }
 
