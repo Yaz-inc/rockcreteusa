@@ -69,10 +69,10 @@ Some UI elements use inline `onclick` handlers (e.g., `onclick="showModal(...)"`
 
 **Recommendation**: Use `addEventListener()` exclusively.
 
-### 10. Improvement #20 — Setup API UI
-Backend `api/setup.js` is fully functional but the frontend UI (System Settings panel for Supabase configuration) has not been built yet.
+### 10. ~~Improvement #20 — Setup API UI~~ ✅ RESOLVED (V21)
+~~Backend `api/setup.js` is fully functional but the frontend UI (System Settings panel for Supabase configuration) has not been built yet.~~
 
-**Recommendation**: Add a "Database" tab to System Settings with connect/migrate/test/export/import buttons.
+**Resolved**: V21 added the full Database & Migration UI as a 3-step wizard in System Settings (Export → Connect → Import) plus the How To help page with deployment instructions.
 
 ## Extension Points
 
