@@ -5,6 +5,46 @@ Versioning follows the pattern: `V<major>_<minor>` where major = milestone relea
 
 ---
 
+## V21 — Database & Migration UI, How To Help Page (2026-05-26)
+
+Database self-service configuration, simplified data migration workflow, and comprehensive in-app documentation.
+
+**Improvement #20 — Database & Migration UI (Settings)**
+- Replaced technical "Database Configuration" + "Data Management" cards with unified **3-step wizard**:
+  - **Step 1 — Export Current Data**: "Download Backup" button exports all 9 tables as JSON
+  - **Step 2 — Connect New Database**: Supabase URL + Service Role Key inputs, connection status bar (green/amber/red), Test + Connect & Setup buttons, table row counts grid
+  - **Step 3 — Import Data**: Upload JSON backup to import into new database
+- Numbered step circles with brand-color styling + dashed dividers
+- Connection status auto-loads on Settings screen open
+- Supabase URL auto-populated from current connection
+- `POST /api/setup?action=connect` — tests user-provided Supabase credentials + returns Vercel env var instructions modal
+- Removed env var badges and migration/SQL copy buttons (too technical for end users)
+
+**How To Help Page (`#help`)**
+- New screen accessible to **all logged-in users** (life-buoy icon in sidebar)
+- **Quick Start** — 4-card grid: Track Projects, Milestones, Teams, Configure
+- **Deploy to a New Domain** — 5-step numbered guide with:
+  - Export data → Create Supabase project → Deploy to Vercel → Create tables → Import data
+  - Env var code block with syntax highlighting
+  - Visual flow diagram (Old App → JSON → New App)
+- **Staff Notes & Activity Feed** — edit, delete, URL linking how-to
+- **User Roles & Permissions** — full role/access matrix table (6 roles × 3 permissions)
+- **Email Setup** — step-by-step Resend configuration (6 steps + domain warning)
+- **FAQ** — 5 collapsible `<details>` questions (password reset, add member, backup, language, Supabase limits)
+- **Version Info** — footer with version + credits link
+- Route added to `accountRoutes` to bypass module access filtering
+
+**API Changes**
+- `GET /api/setup?action=status` — now returns `supabaseUrl` for UI pre-fill, removed `envVars` object
+- `POST /api/setup?action=connect` — NEW: tests connection with user-provided URL + Key, returns setup instructions
+
+**Documentation**
+- Updated CHANGELOG.md with V21 release notes
+- Updated AI-KNOWLEDGE-BASE.md with new architecture details
+- Updated api-reference.md with new setup endpoints
+
+---
+
 ## V20 — Edit/Delete Notes, URL Auto-Linking, Setup API, Email Fix (2026-05-21)
 
 Major UX improvements to staff notes, activity feed, email configuration, and data portability.

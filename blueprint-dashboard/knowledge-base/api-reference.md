@@ -279,6 +279,79 @@ Update own profile (name, display name, password). **Requires:** valid session.
 
 ---
 
+## Setup — Database Management (Super Admin Only)
+
+### GET `/api/setup?action=status`
+Check database connection status, table row counts, and current Supabase URL.
+**No auth required** (allows setup wizard to work before first login).
+
+**Response (200):**
+```json
+{
+  "connected": true,
+  "migrated": true,
+  "supabaseUrl": "https://xxx.supabase.co",
+  "tables": { "users": 3, "teams": 1, "tasks": 5, ... },
+  "totalRows": 42
+}
+```
+
+---
+
+### POST `/api/setup?action=test`
+Test current server connection latency. **Requires:** Super Admin.
+
+**Response (200):** `{ "ok": true, "message": "Connected! Latency: 45ms", "latency": 45 }`
+
+---
+
+### POST `/api/setup?action=connect`
+Test connection with user-provided Supabase credentials. **No auth required.**
+
+**Request:**
+```json
+{ "url": "https://new-project.supabase.co", "key": "eyJhbGciOiJIUz..." }
+```
+
+**Response (200):**
+```json
+{
+  "ok": true,
+  "latency": 120,
+  "migrated": false,
+  "message": "Connected! (120ms) — Tables not found...",
+  "instructions": "To complete setup, add these as Vercel Environment Variables..."
+}
+```
+
+---
+
+### POST `/api/setup?action=migrate`
+Run full database migration SQL (creates 9 tables + indexes + triggers + RLS). **Requires:** Super Admin.
+
+**Response (200):**
+```json
+{
+  "ok": true,
+  "message": "Migration complete. 9 tables created/verified.",
+  "tables": { "users": "✅ Created", "teams": "✅ Created", ... }
+}
+```
+
+---
+
+### GET `/api/setup?action=export`
+Export all 9 tables as JSON. **Requires:** Super Admin.
+
+---
+
+### POST `/api/setup?action=import`
+Import data from JSON backup into all 9 tables. **Requires:** Super Admin.
+
+**Request body:** Full JSON export object with table arrays.
+
+---
+
 ## Common Headers
 
 | Header | Used By | Purpose |

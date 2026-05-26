@@ -2,39 +2,42 @@
 
 > **Purpose**: This file is the onboarding reference for any AI agent (Claude, GPT, Copilot, etc.) that needs to understand, modify, or extend the Rockcrete USA Blueprint Dashboard. Read this file FIRST before making any changes.
 
-> **Last Updated**: 2026-05-20 | **Current Version**: V17_A
+> **Last Updated**: 2026-05-26 | **Current Version**: V21
 
 ---
 
 ## 1. Architecture Overview
 
 ### Single-File SPA
-The entire frontend is a **monolithic `index.html`** (~7,900 lines) with:
+The entire frontend is a **monolithic `index.html`** (~9,800 lines) with:
 - **Inline `<style>`** (lines ~50–920): Complete CSS design system, all component styles, responsive breakpoints
-- **Inline HTML body** (lines ~920–6800): Sidebar nav, all screen sections, modal dialogs, auth dialog
-- **Inline `<script>`** (lines ~6800–7900): SPA routing, API client, auth flow, milestone/progress CRUD, UI state
+- **Inline HTML body** (lines ~920–5150): Sidebar nav, all screen sections (including Help & Settings), modal dialogs, auth dialog
+- **Inline `<script>`** (lines ~5150–9800): SPA routing, API client, auth flow, milestone/progress CRUD, tracker state, team management, setup wizard, UI state
 
 **No build step. No framework. No bundler.** Deployed as-is to Vercel.
 
 ### Serverless API Layer
 All backend logic lives in **Vercel serverless functions** under `api/`:
 
-| File | Lines | Purpose | Blob Key |
-|------|-------|---------|----------|
-| `auth.js` | 737 | User auth, sessions, forgot-password | `rockcrete/users.json`, `rockcrete/sessions.json`, `rockcrete/reset-tokens.json` |
-| `users.js` | 565 | Super Admin user CRUD, role/module management | `rockcrete/users.json` |
-| `profile.js` | 211 | Self-service profile updates | `rockcrete/users.json` |
-| `settings.js` | 434 | System config, email, export/import | `rockcrete/settings.json` |
-| `milestones.js` | 249 | Milestone CRUD | `rockcrete/milestones.json` |
-| `progress.js` | 169 | Activity feed & progress updates | `rockcrete/progress.json` |
-| `tracker.js` | 156 | Project tracker state | `rockcrete/project-tracker-state.json` |
-| `session.js` | 47 | Legacy shared-password gate | (uses env var `BLUEPRINT_PASSWORD`) |
+| File | Purpose | DB Tables |
+|------|---------|----------|
+| `auth.js` | User auth, sessions, forgot-password, seed | `users`, `reset_tokens` |
+| `users.js` | Super Admin user CRUD, role/module management | `users`, `tasks` |
+| `profile.js` | Self-service profile updates | `users` |
+| `settings.js` | System config, email, export/import | `settings` + all 9 tables (export/import) |
+| `milestones.js` | Milestone CRUD | `milestones` |
+| `progress.js` | Activity feed & progress updates (edit/delete) | `progress_updates` |
+| `tracker.js` | Project tracker state persistence | `tracker_state` |
+| `teams.js` | Team & task management | `teams`, `team_members`, `tasks`, `users` |
+| `setup.js` | Database status, test, migrate, connect, export/import | All 9 tables |
+| `db.js` | Shared database client (48 exports, 37 async DB functions) | All 9 tables |
 
-### Database: Vercel Blob Storage
-All shared state is stored in **Vercel Blob** (`@vercel/blob`) as JSON files. There is no SQL database.
-- Read: `list({ prefix })` → find blob → `fetch(blob.url)` → `.json()`
-- Write: `put(path, JSON.stringify(data), { addRandomSuffix: false, allowOverwrite: true })`
-- All writes are full-file overwrites (read-modify-write pattern)
+### Database: Supabase (PostgreSQL)
+All shared state is stored in **Supabase** (PostgreSQL) via the `@supabase/supabase-js` client using `service_role` key (bypasses RLS).
+- **9 tables**: `users`, `teams`, `team_members`, `tasks`, `milestones`, `progress_updates`, `tracker_state`, `settings`, `reset_tokens`
+- **Client**: Singleton created in `db.js` via `getSupabase()`
+- **Pattern**: Standard Supabase query builder (`.select()`, `.insert()`, `.update()`, `.delete()`, `.upsert()`)
+- **Joins**: Team/Task queries use Supabase foreign key joins (e.g., `select('*, team_members(id,user_id,..., users(...))')`)
 
 ### Dual Auth System
 1. **Layer 1 — Edge Middleware** (`middleware.js`): HTTP Basic Auth using `BLUEPRINT_PASSWORD` env var. Gates the entire site at the Vercel Edge. This is the outer door.
@@ -146,11 +149,11 @@ Default module access templates are defined in `auth.js` via `getDefaultModuleAc
 
 | Variable | Purpose | Where to Set |
 |----------|---------|--------------|
-| `BLUEPRINT_PASSWORD` | HTTP Basic Auth password (Layer 1) | Vercel Dashboard → Settings → Environment Variables |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob storage access | Auto-set by Vercel when Blob store is created |
-| `SESSION_SECRET` | HMAC signing key for session cookies | Vercel Dashboard (auto-generated 64-char hex) |
-| `RESEND_API_KEY` | Resend API key for transactional emails | Vercel Dashboard (DevOps to configure) |
-| `RESEND_FROM_EMAIL` | Sender email address | Vercel Dashboard (e.g., noreply@newmindsgroup.com) |
+| `SUPABASE_URL` | Supabase project URL | Vercel Dashboard → Settings → Environment Variables |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service_role key (bypasses RLS) | Vercel Dashboard |
+| `SESSION_SECRET` | HMAC signing key for session cookies | Vercel Dashboard (any random 32+ char string) |
+| `RESEND_API_KEY` | Resend API key for transactional emails | Configured in System Settings UI |
+| `RESEND_FROM_EMAIL` | Sender email address | Configured in System Settings UI |
 
 ---
 
@@ -158,21 +161,23 @@ Default module access templates are defined in `auth.js` via `getDefaultModuleAc
 
 ```
 blueprint-dashboard/
-├── index.html              ← Monolithic SPA (7,900+ lines)
+├── index.html              ← Monolithic SPA (9,800+ lines)
 ├── middleware.js            ← Vercel Edge: HTTP Basic Auth gate
 ├── vercel.json             ← Vercel deploy config (rewrites, headers)
-├── package.json            ← Dependencies: @vercel/blob
+├── package.json            ← Dependencies: @supabase/supabase-js
 ├── CHANGELOG.md            ← Version history (THIS IS THE SOURCE OF TRUTH)
 ├── AI-KNOWLEDGE-BASE.md    ← THIS FILE — AI agent onboarding reference
 ├── api/
+│   ├── db.js               ← Shared Supabase client (48 exports, 37 DB functions)
 │   ├── auth.js             ← User auth, sessions, forgot-password, seed
 │   ├── users.js            ← Super Admin user CRUD, role/module management
 │   ├── profile.js          ← Self-service profile updates
 │   ├── settings.js         ← System config, email, export/import
 │   ├── milestones.js       ← Milestone CRUD
-│   ├── progress.js         ← Activity feed & progress updates
+│   ├── progress.js         ← Activity feed & progress updates (edit/delete)
 │   ├── tracker.js          ← Project tracker state persistence
-│   └── session.js          ← Legacy shared-password session gate
+│   ├── teams.js            ← Team & task management
+│   └── setup.js            ← Database status, test, migrate, connect
 ├── data/
 │   └── project-tracker.json ← Static seed data
 ├── docs/
@@ -206,11 +211,11 @@ blueprint-dashboard/
 
 ### Adding a New API Endpoint
 1. Create `api/{name}.js` following the existing pattern (see Section 2)
-2. Import `{ list, put } from '@vercel/blob'`
-3. Implement `setJson()`, `parseBody()`, `readBlob()`, `writeBlob()` helpers
-4. Add auth check via `getSessionUser(req)` if the endpoint requires authentication
-5. Use the read-modify-write pattern for Blob storage updates
-6. Test with curl: `curl -X POST https://blueprint-dashboard-chi.vercel.app/api/{name} -H "Content-Type: application/json" -d '{...}'`
+2. Import needed functions from `./db.js` (e.g., `setJson`, `parseBody`, `requireAuth`, data functions)
+3. Export a single `handler(req, res)` function
+4. Add auth check: `const { user } = await requireAuth(req)` + `requireSuperAdmin(user)` if needed
+5. Use the existing db.js CRUD functions (e.g., `getAllUsers()`, `upsertUser()`, etc.)
+6. Test with curl: `curl -X POST https://your-domain.vercel.app/api/{name} -H "Content-Type: application/json" -d '{...}'`
 
 ### Adding a New User Role
 1. Add the role name to `VALID_ROLES` in `auth.js`
@@ -284,10 +289,11 @@ Only works when `rockcrete/users.json` does not exist or is empty (`[]`).
 ## 10. Critical Warnings
 
 1. **Never modify `middleware.js`** without testing — it gates the entire site
-2. **Never change Blob key paths** — existing data would become orphaned
+2. **Always import DB functions from `db.js`** — never create direct Supabase clients in API files
 3. **Always use timing-safe comparisons** for password/session verification
 4. **Always add bilingual attributes** (`data-en` + `data-es`) for user-facing text
 5. **Never put badges/icons inside bilingual elements** — use flex container with siblings
-6. **Always use `addRandomSuffix: false, allowOverwrite: true`** when writing to Blob
+6. **Use `rcToast()` for all user feedback** — never use `alert()`, `prompt()`, or `confirm()`
 7. **Always update CHANGELOG.md** when making changes
 8. **Always update this file** when adding new modules, APIs, or changing architecture
+9. **Keep the How To page updated** when adding new features or changing workflows
