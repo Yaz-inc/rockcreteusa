@@ -2708,6 +2708,7 @@
       <a class="nav-link" data-route="profile" href="#profile" data-rc-auth="loggedin"><i data-lucide="user-circle" aria-hidden="true"></i><span data-es="Mi Perfil" data-en="My Profile">My Profile</span><span class="nav-new">New</span></a>
       <a class="nav-link" data-route="team-mgmt" href="#team-mgmt" data-rc-auth="loggedin"><i data-lucide="network" aria-hidden="true"></i><span data-es="Gestión de Equipos" data-en="Team Management">Team Management</span><span class="nav-new nav-new--pink" style="vertical-align:middle;">New</span></a>
       <a class="nav-link" data-route="users" href="#users" data-rc-auth="super_admin"><i data-lucide="users-cog" aria-hidden="true"></i><span data-es="Gestión de Usuarios" data-en="User Management">User Management</span><span class="nav-new">New</span></a>
+      <a class="nav-link" data-route="help" href="#help" data-rc-auth="loggedin"><i data-lucide="life-buoy" aria-hidden="true"></i><span data-es="Cómo Usar" data-en="How To">How To</span></a>
       <a class="nav-link" data-route="settings" href="#settings" data-rc-auth="super_admin"><i data-lucide="settings" aria-hidden="true"></i><span data-es="Configuración del Sistema" data-en="System Settings">System Settings</span><span class="nav-new">New</span></a>
       <button id="navAuthLogout" class="nav-link nav-auth-btn nav-auth--loggedin" style="width:100%; text-align:left; background:none; border:none; cursor:pointer; color: var(--color-error, #ef4444);"
         aria-label="Sign out">
@@ -4905,6 +4906,244 @@
       </div>
     </div>
   </div><!-- /screen-settings -->
+
+  <!-- ============================================================ -->
+  <!-- SCREEN: HOW TO (Help & Documentation)                        -->
+  <!-- ============================================================ -->
+  <div class="screen" id="screen-help">
+    <div class="screen-header">
+      <h1 class="display" data-es="Cómo Usar" data-en="How To">How To</h1>
+      <p class="screen-subtitle" data-es="Guía completa para usar el portal" data-en="Complete guide to using the Blueprint Portal">Complete guide to using the Blueprint Portal</p>
+    </div>
+
+    <!-- Quick Start -->
+    <div class="card settings-section">
+      <div class="settings-section-title" style="display:flex; align-items:center; gap:.5rem;">
+        <i data-lucide="rocket" style="width:20px;height:20px;color:var(--color-primary);"></i>
+        Quick Start
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:1rem; margin-top:.8rem;">
+        <div style="padding:1rem; border-radius:var(--radius-sm); background:var(--color-surface-2); border:1px solid var(--color-border);">
+          <div style="font-size:1.5rem; margin-bottom:.3rem;">📋</div>
+          <div style="font-weight:600; font-size:.85rem; margin-bottom:.3rem;">Track Projects</div>
+          <div style="font-size:.75rem; color:var(--color-text-muted);">Go to <strong>Project Tracker</strong> to view phases, tasks, status, and assignments.</div>
+        </div>
+        <div style="padding:1rem; border-radius:var(--radius-sm); background:var(--color-surface-2); border:1px solid var(--color-border);">
+          <div style="font-size:1.5rem; margin-bottom:.3rem;">🎯</div>
+          <div style="font-weight:600; font-size:.85rem; margin-bottom:.3rem;">Add Milestones</div>
+          <div style="font-size:.75rem; color:var(--color-text-muted);">Go to <strong>Team Progress</strong> to create milestones, post updates, and track activity.</div>
+        </div>
+        <div style="padding:1rem; border-radius:var(--radius-sm); background:var(--color-surface-2); border:1px solid var(--color-border);">
+          <div style="font-size:1.5rem; margin-bottom:.3rem;">👥</div>
+          <div style="font-weight:600; font-size:.85rem; margin-bottom:.3rem;">Manage Team</div>
+          <div style="font-size:.75rem; color:var(--color-text-muted);">Go to <strong>Team Management</strong> to create teams, assign members, and manage tasks.</div>
+        </div>
+        <div style="padding:1rem; border-radius:var(--radius-sm); background:var(--color-surface-2); border:1px solid var(--color-border);">
+          <div style="font-size:1.5rem; margin-bottom:.3rem;">⚙️</div>
+          <div style="font-weight:600; font-size:.85rem; margin-bottom:.3rem;">Configure</div>
+          <div style="font-size:.75rem; color:var(--color-text-muted);">Super Admins: go to <strong>System Settings</strong> to configure email, branding, and database.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deploy to New Domain -->
+    <div class="card settings-section">
+      <div class="settings-section-title" style="display:flex; align-items:center; gap:.5rem;">
+        <i data-lucide="globe" style="width:20px;height:20px;color:var(--color-primary);"></i>
+        Deploy to a New Domain
+      </div>
+      <p style="font-size:.82rem; color:var(--color-text-muted); margin:.5rem 0 1rem;">
+        Want to run this portal for a different project or client? Follow these steps to deploy your own copy with all the data.
+      </p>
+
+      <!-- Step 1 -->
+      <div style="margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:var(--color-primary); color:#fff; font-size:.8rem; font-weight:700; flex-shrink:0;">1</span>
+          <h3 style="margin:0; font-size:.95rem; font-weight:600;">Export Your Data</h3>
+        </div>
+        <div style="padding-left:2.6rem; font-size:.82rem; color:var(--color-text-muted); line-height:1.7;">
+          Go to <strong>System Settings → Database & Migration → Step 1</strong><br>
+          Click <strong>"Download Backup"</strong> — saves a JSON file with all your data<br>
+          <em>Keep this file safe — it contains users, tasks, milestones, progress, teams, and settings</em>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:var(--color-primary); color:#fff; font-size:.8rem; font-weight:700; flex-shrink:0;">2</span>
+          <h3 style="margin:0; font-size:.95rem; font-weight:600;">Create a New Supabase Project</h3>
+        </div>
+        <div style="padding-left:2.6rem; font-size:.82rem; color:var(--color-text-muted); line-height:1.7;">
+          Go to <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">supabase.com/dashboard</a> → Click <strong>"New Project"</strong><br>
+          Choose a name and region → Wait for it to be ready (~1 min)<br>
+          Go to <strong>Settings → API</strong> → Copy your <strong>Project URL</strong> and <strong>service_role key</strong>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:var(--color-primary); color:#fff; font-size:.8rem; font-weight:700; flex-shrink:0;">3</span>
+          <h3 style="margin:0; font-size:.95rem; font-weight:600;">Deploy to Vercel</h3>
+        </div>
+        <div style="padding-left:2.6rem; font-size:.82rem; color:var(--color-text-muted); line-height:1.7;">
+          Go to <a href="https://vercel.com/new" target="_blank" rel="noopener">vercel.com/new</a> → Import the GitHub repo<br>
+          Add <strong>3 environment variables</strong>:
+          <div style="margin:.5rem 0; padding:.6rem .8rem; background:var(--color-surface-2); border-radius:var(--radius-sm); border:1px solid var(--color-border); font-family:'JetBrains Mono',monospace; font-size:.72rem; line-height:1.8;">
+            SUPABASE_URL = <span style="color:var(--color-primary);">https://your-project.supabase.co</span><br>
+            SUPABASE_SERVICE_ROLE_KEY = <span style="color:var(--color-primary);">eyJhbGciOiJIUz...</span><br>
+            SESSION_SECRET = <span style="color:var(--color-primary);">any-random-string-32-chars-or-more</span>
+          </div>
+          Click <strong>"Deploy"</strong> → Wait ~1 min
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div style="margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:var(--color-primary); color:#fff; font-size:.8rem; font-weight:700; flex-shrink:0;">4</span>
+          <h3 style="margin:0; font-size:.95rem; font-weight:600;">Create Tables & First Admin</h3>
+        </div>
+        <div style="padding-left:2.6rem; font-size:.82rem; color:var(--color-text-muted); line-height:1.7;">
+          Visit your new site → You'll see the <strong>Seed</strong> screen<br>
+          Enter your admin email and password → Click <strong>"Create Super Admin"</strong><br>
+          Go to <strong>Settings → Database & Migration → Step 2</strong><br>
+          The app will auto-detect the connected database and create all tables
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div>
+        <div style="display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem;">
+          <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:#22c55e; color:#fff; font-size:.8rem; font-weight:700; flex-shrink:0;">✓</span>
+          <h3 style="margin:0; font-size:.95rem; font-weight:600;">Import Your Data</h3>
+        </div>
+        <div style="padding-left:2.6rem; font-size:.82rem; color:var(--color-text-muted); line-height:1.7;">
+          Go to <strong>Settings → Database & Migration → Step 3</strong><br>
+          Click <strong>"Import Backup"</strong> → Select the JSON file from Step 1<br>
+          ✅ <strong>Done!</strong> All data is now in your new deployment
+        </div>
+      </div>
+
+      <!-- Visual diagram -->
+      <div style="margin-top:1.5rem; padding:1rem; background:var(--color-surface-2); border-radius:var(--radius-sm); border:1px solid var(--color-border); text-align:center; font-size:.78rem; color:var(--color-text-muted); font-family:'JetBrains Mono',monospace; line-height:2;">
+        Old App &nbsp;──[Export JSON]──→&nbsp; 📄 backup.json &nbsp;──[Import]──→&nbsp; New App<br>
+        <span style="font-size:.68rem;">Each deployment = its own Supabase + its own Vercel + same GitHub repo</span>
+      </div>
+    </div>
+
+    <!-- Staff Notes Guide -->
+    <div class="card settings-section">
+      <div class="settings-section-title" style="display:flex; align-items:center; gap:.5rem;">
+        <i data-lucide="message-square-text" style="width:20px;height:20px;color:var(--color-primary);"></i>
+        Staff Notes & Activity Feed
+      </div>
+      <div style="font-size:.82rem; color:var(--color-text-muted); line-height:1.8; margin-top:.5rem;">
+        <strong>Adding notes:</strong> Open any task in the Project Tracker → Scroll to "Staff Notes" → Type your note and click <strong>Add Note</strong>.<br><br>
+        <strong>Editing:</strong> Hover over any note → Click the <strong>✏️ Edit</strong> button → Edit inline → Click <strong>Save</strong> or press <strong>Ctrl+Enter</strong>. Press <strong>Escape</strong> to cancel.<br><br>
+        <strong>Deleting:</strong> Hover over any note → Click the <strong>🗑️ Delete</strong> button → Confirm with the red <strong>Delete</strong> button. Click <strong>Cancel</strong> to keep it.<br><br>
+        <strong>Links:</strong> Any URL you post in a note will automatically become a clickable link that opens in a new tab.
+      </div>
+    </div>
+
+    <!-- User Roles -->
+    <div class="card settings-section">
+      <div class="settings-section-title" style="display:flex; align-items:center; gap:.5rem;">
+        <i data-lucide="shield" style="width:20px;height:20px;color:var(--color-primary);"></i>
+        User Roles & Permissions
+      </div>
+      <div style="overflow-x:auto; margin-top:.8rem;">
+        <table style="width:100%; border-collapse:collapse; font-size:.78rem;">
+          <thead>
+            <tr style="border-bottom:2px solid var(--color-border);">
+              <th style="text-align:left; padding:.5rem .6rem; font-weight:600;">Role</th>
+              <th style="text-align:left; padding:.5rem .6rem; font-weight:600;">Description</th>
+              <th style="text-align:center; padding:.5rem .6rem; font-weight:600;">Users</th>
+              <th style="text-align:center; padding:.5rem .6rem; font-weight:600;">Settings</th>
+              <th style="text-align:center; padding:.5rem .6rem; font-weight:600;">Tracker</th>
+            </tr>
+          </thead>
+          <tbody style="color:var(--color-text-muted);">
+            <tr style="border-bottom:1px solid var(--color-border);"><td style="padding:.45rem .6rem; font-weight:600; color:var(--color-text);">Super Admin</td><td style="padding:.45rem .6rem;">Full system access, manages everything</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td><td style="text-align:center;">✅</td></tr>
+            <tr style="border-bottom:1px solid var(--color-border);"><td style="padding:.45rem .6rem; font-weight:600; color:var(--color-text);">Admin</td><td style="padding:.45rem .6rem;">Project management, most settings</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">✅</td></tr>
+            <tr style="border-bottom:1px solid var(--color-border);"><td style="padding:.45rem .6rem; font-weight:600; color:var(--color-text);">PM</td><td style="padding:.45rem .6rem;">Task management, progress updates</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">✅</td></tr>
+            <tr style="border-bottom:1px solid var(--color-border);"><td style="padding:.45rem .6rem; font-weight:600; color:var(--color-text);">Web Dev</td><td style="padding:.45rem .6rem;">Development tasks, tracker editing</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">✅</td></tr>
+            <tr style="border-bottom:1px solid var(--color-border);"><td style="padding:.45rem .6rem; font-weight:600; color:var(--color-text);">Team</td><td style="padding:.45rem .6rem;">Basic task tracking and notes</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">📖</td></tr>
+            <tr><td style="padding:.45rem .6rem; font-weight:600; color:var(--color-text);">Client</td><td style="padding:.45rem .6rem;">Read-only view of project progress</td><td style="text-align:center;">❌</td><td style="text-align:center;">❌</td><td style="text-align:center;">📖</td></tr>
+          </tbody>
+        </table>
+        <div style="font-size:.7rem; color:var(--color-text-muted); margin-top:.4rem;">✅ = Full access &nbsp;&nbsp; 📖 = Read only &nbsp;&nbsp; ❌ = No access</div>
+      </div>
+    </div>
+
+    <!-- Email Setup -->
+    <div class="card settings-section">
+      <div class="settings-section-title" style="display:flex; align-items:center; gap:.5rem;">
+        <i data-lucide="mail" style="width:20px;height:20px;color:var(--color-primary);"></i>
+        Email Setup (Password Resets)
+      </div>
+      <div style="font-size:.82rem; color:var(--color-text-muted); line-height:1.8; margin-top:.5rem;">
+        <strong>1.</strong> Create a free account at <a href="https://resend.com" target="_blank" rel="noopener">resend.com</a><br>
+        <strong>2.</strong> Add and verify your sending domain (follow their DNS setup guide)<br>
+        <strong>3.</strong> Generate an API key at <a href="https://resend.com/api-keys" target="_blank" rel="noopener">resend.com/api-keys</a><br>
+        <strong>4.</strong> Go to <strong>System Settings → Email Configuration</strong><br>
+        <strong>5.</strong> Paste your API key → Set "From Email" to an address on your verified domain<br>
+        <strong>6.</strong> Click <strong>"Verify Connection"</strong> → Then <strong>"Send Test Email"</strong><br><br>
+        <strong>⚠️ Important:</strong> The "From Email" domain must match a verified domain in your Resend account. For example, if your domain is <code>notifications.example.com</code>, your From Email should be <code>noreply@notifications.example.com</code>.
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="card settings-section">
+      <div class="settings-section-title" style="display:flex; align-items:center; gap:.5rem;">
+        <i data-lucide="help-circle" style="width:20px;height:20px;color:var(--color-primary);"></i>
+        Frequently Asked Questions
+      </div>
+      <div style="margin-top:.8rem;">
+        <details style="margin-bottom:.8rem; padding:.6rem .8rem; border-radius:var(--radius-sm); background:var(--color-surface-2); border:1px solid var(--color-border);">
+          <summary style="font-weight:600; font-size:.85rem; cursor:pointer; color:var(--color-text);">How do I reset a user's password?</summary>
+          <div style="font-size:.8rem; color:var(--color-text-muted); margin-top:.5rem; line-height:1.6;">
+            Go to <strong>User Management</strong> → Click the user → Click <strong>"Reset Password"</strong>. If email is configured, they'll receive a reset code. Otherwise, you can set a temporary password directly.
+          </div>
+        </details>
+        <details style="margin-bottom:.8rem; padding:.6rem .8rem; border-radius:var(--radius-sm); background:var(--color-surface-2); border:1px solid var(--color-border);">
+          <summary style="font-weight:600; font-size:.85rem; cursor:pointer; color:var(--color-text);">How do I add a new team member?</summary>
+          <div style="font-size:.8rem; color:var(--color-text-muted); margin-top:.5rem; line-height:1.6;">
+            <strong>Step 1:</strong> Go to <strong>User Management</strong> → Click <strong>"Add User"</strong> → Enter their email and assign a role.<br>
+            <strong>Step 2:</strong> Go to <strong>Team Management</strong> → Open a team → Click <strong>"Add Member"</strong> → Select the user.
+          </div>
+        </details>
+        <details style="margin-bottom:.8rem; padding:.6rem .8rem; border-radius:var(--radius-sm); background:var(--color-surface-2); border:1px solid var(--color-border);">
+          <summary style="font-weight:600; font-size:.85rem; cursor:pointer; color:var(--color-text);">How do I backup my data?</summary>
+          <div style="font-size:.8rem; color:var(--color-text-muted); margin-top:.5rem; line-height:1.6;">
+            Go to <strong>System Settings → Database & Migration → Step 1</strong> → Click <strong>"Download Backup"</strong>. This exports everything (users, tasks, milestones, settings, teams) as a single JSON file. Keep it safe!
+          </div>
+        </details>
+        <details style="margin-bottom:.8rem; padding:.6rem .8rem; border-radius:var(--radius-sm); background:var(--color-surface-2); border:1px solid var(--color-border);">
+          <summary style="font-weight:600; font-size:.85rem; cursor:pointer; color:var(--color-text);">How do I switch between English and Spanish?</summary>
+          <div style="font-size:.8rem; color:var(--color-text-muted); margin-top:.5rem; line-height:1.6;">
+            Click the <strong>language toggle</strong> (EN/ES) in the top header bar. The entire interface will switch instantly. Your preference is saved automatically.
+          </div>
+        </details>
+        <details style="padding:.6rem .8rem; border-radius:var(--radius-sm); background:var(--color-surface-2); border:1px solid var(--color-border);">
+          <summary style="font-weight:600; font-size:.85rem; cursor:pointer; color:var(--color-text);">What is the Supabase free tier limit?</summary>
+          <div style="font-size:.8rem; color:var(--color-text-muted); margin-top:.5rem; line-height:1.6;">
+            Supabase free tier includes: <strong>500 MB database</strong>, <strong>50,000 monthly active users</strong>, <strong>unlimited API requests</strong>. More than enough for project management. You can upgrade anytime at <a href="https://supabase.com/pricing" target="_blank" rel="noopener">supabase.com/pricing</a>.
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Version Info -->
+    <div class="card settings-section" style="text-align:center;">
+      <div style="font-size:.78rem; color:var(--color-text-muted);">
+        <strong>Rockcrete USA Blueprint Portal</strong> — Version V20<br>
+        Built by <a href="https://newmindsgroup.com" target="_blank" rel="noopener">New Minds Group</a> — Powered by Supabase + Vercel
+      </div>
+    </div>
+  </div><!-- /screen-help -->
 
   <!-- ============================================================ -->
   <!-- SCREEN: FALLBACK (orphan routes)                             -->
@@ -8015,7 +8254,7 @@
     if (!user || !user.moduleAccess) return;
 
     // Account group links are always handled by rcUpdateAuthUI
-    var accountRoutes = ['profile', 'team-mgmt', 'users', 'settings'];
+    var accountRoutes = ['profile', 'team-mgmt', 'users', 'settings', 'help'];
 
     document.querySelectorAll('.sidebar .nav-link[data-route]').forEach(function(link) {
       var route = link.getAttribute('data-route');
